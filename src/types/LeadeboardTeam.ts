@@ -1,0 +1,21 @@
+import { Team } from './Team';
+import { TeamMember } from './TeamMember';
+import { ILeaderboardTeam } from './interfaces/ILeaderboardTeam';
+import { ITeam } from './interfaces/ITeam';
+
+export class LeaderboardTeam extends Team {
+  totalWins: number;
+  totalLosses: number;
+  totalPoints: number;
+  rank: number;
+  previousRank?: number;
+
+  constructor(props: ILeaderboardTeam) {
+    super(props);
+    this.totalWins = props.totalWins;
+    this.totalLosses = props.totalLosses;
+    this.totalPoints = props.totalPoints;
+    this.rank = props.rank;
+    this.previousRank = props.previousRank;
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "gs-paintball-tracker",
+  "version": "4.6.0",
+  "description": "gs-paintball-tracker",
+  "license": "MIT",
+
+  "main": "./dist/main/main.js",
+  "scripts": {
+    "rebuild": "node -r ts-node/register ../../.erb/scripts/electron-rebuild.js",
+    "postinstall": "npm run rebuild && npm run link-modules",
+    "link-modules": "node -r ts-node/register ../../.erb/scripts/link-modules.ts"
+  },
+  "dependencies": {}
+}
