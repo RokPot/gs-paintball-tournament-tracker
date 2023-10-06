@@ -1,3 +1,4 @@
+import CustomMenuItem from './Navbar/CustomMenuItem';
 import {
   faChartSimple,
   faHouse,
@@ -6,7 +7,7 @@ import {
   faTicket,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Icon, Typography, styled, useTheme } from '@mui/material';
+import { Icon, Typography, alpha, styled, useTheme } from '@mui/material';
 import { Menu, MenuItem, Sidebar } from 'react-pro-sidebar';
 import { Link, matchPath, useLocation } from 'react-router-dom';
 
@@ -24,62 +25,81 @@ interface IProps {
   children: React.ReactNode;
 }
 
+const navBarItems = [
+  {
+    icon: faHouse,
+    path: '/',
+    title: 'Home',
+    to: '/',
+  },
+  {
+    icon: faTicket,
+    path: '/leagues/*',
+    title: 'Leagues',
+    to: '/leagues',
+  },
+  {
+    icon: faPeopleGroup,
+    path: '/teams/*',
+    title: 'Teams',
+    to: '/teams',
+  },
+  {
+    icon: faNetworkWired,
+    path: '/tournament/*',
+    title: 'Tournament',
+    to: '/tournament',
+  },
+  {
+    icon: faChartSimple,
+    path: '/scoreboard/*',
+    title: 'Scoreboard',
+    to: '/scoreboard',
+  },
+];
+
 const Layout: React.FC<IProps> = ({ children }) => {
-  const { pathname } = useLocation();
   const theme = useTheme();
 
   return (
     <LayoutContainer>
-      <Sidebar width="200px" collapsed={false}>
+      <Sidebar
+        width="200px"
+        collapsed={false}
+        backgroundColor={theme.palette.background.paper}
+      >
         <Typography>GS Paintball Tournament Tracker</Typography>
         <Menu
           menuItemStyles={{
             button: ({ level, active }) => {
-              // only apply styles on first level elements of the tree
               if (level === 0)
                 return {
                   color: active
-                    ? theme.palette.primary.main
+                    ? theme.palette.text.primary
                     : theme.palette.text.secondary,
+                  fontWeight: active
+                    ? theme.typography.fontWeightBold
+                    : theme.typography.fontWeightMedium,
+                  transition: 'background 0.3s',
+                  background: active
+                    ? alpha(theme.palette.primary.main, 0.3)
+                    : theme.palette.background.default,
+                  ':hover': {
+                    background: alpha(theme.palette.primary.light, 0.2),
+                  },
                 };
             },
           }}
         >
-          <MenuItem
-            active={!!matchPath('/', pathname)}
-            component={<Link to="/" />}
-            icon={<FontAwesomeIcon icon={faHouse} />}
-          >
-            Home
-          </MenuItem>
-          <MenuItem
-            active={!!matchPath('/leagues/*', pathname)}
-            component={<Link to="/leagues" />}
-            icon={<FontAwesomeIcon icon={faTicket} />}
-          >
-            Leagues
-          </MenuItem>
-          <MenuItem
-            active={!!matchPath('/teams/*', pathname)}
-            component={<Link to="/teams" />}
-            icon={<FontAwesomeIcon icon={faPeopleGroup} />}
-          >
-            Teams
-          </MenuItem>
-          <MenuItem
-            active={!!matchPath('/tournament/*', pathname)}
-            component={<Link to="/tournament" />}
-            icon={<FontAwesomeIcon icon={faNetworkWired} />}
-          >
-            Tournament
-          </MenuItem>
-          <MenuItem
-            active={!!matchPath('/scoreboard/*', pathname)}
-            component={<Link to="/scoreboard" />}
-            icon={<FontAwesomeIcon icon={faChartSimple} />}
-          >
-            Scoreboard
-          </MenuItem>
+          {navBarItems.map((item, index) => (
+            <CustomMenuItem
+              icon={item.icon}
+              path={item.path}
+              title={item.title}
+              to={item.to}
+              key={index}
+            />
+          ))}
         </Menu>
       </Sidebar>
       {children}
