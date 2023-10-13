@@ -1,5 +1,8 @@
+import LogoImage from '../../../assets/logo3.svg';
+import LogoTextImage from '../../../assets/logo_text.svg';
 import CustomMenuItem from './Navbar/CustomMenuItem';
 import {
+  faBars,
   faChartSimple,
   faHouse,
   faNetworkWired,
@@ -7,9 +10,10 @@ import {
   faTicket,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Icon, Typography, alpha, styled, useTheme } from '@mui/material';
-import { Menu, MenuItem, Sidebar } from 'react-pro-sidebar';
-import { Link, matchPath, useLocation } from 'react-router-dom';
+import { IconButton, alpha, styled, useTheme } from '@mui/material';
+import clsx from 'clsx';
+import { useState } from 'react';
+import { Menu, Sidebar } from 'react-pro-sidebar';
 
 const LayoutContainer = styled('div')(
   (props) => `
@@ -20,9 +24,26 @@ const LayoutContainer = styled('div')(
   background-color: ${props.theme.palette.background.default};
 `
 );
+const StyledMenuButtonContainer = styled('div')(
+  (props) => `
+  display: flex;
+  width: 100%;
 
+`
+);
+const StyledLogoContainer = styled('div')(
+  (props) => `
+  display: flex;
+  width: 100%;
+  height: 100px;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+`
+);
 interface IProps {
   children: React.ReactNode;
+  className?: string;
 }
 
 const navBarItems = [
@@ -58,17 +79,41 @@ const navBarItems = [
   },
 ];
 
-const Layout: React.FC<IProps> = ({ children }) => {
+const Layout: React.FC<IProps> = ({ children, className }) => {
   const theme = useTheme();
-
+  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
   return (
-    <LayoutContainer>
+    <LayoutContainer className={className}>
       <Sidebar
-        width="200px"
-        collapsed={false}
+        width="180px"
+        collapsed={isMenuCollapsed}
         backgroundColor={theme.palette.background.paper}
       >
-        <Typography>GS Paintball Tournament Tracker</Typography>
+        <StyledLogoContainer>
+          <img className="logo-image" src={LogoImage} width={65} height={95} />
+          <div
+            className={clsx(
+              'logo-text',
+              isMenuCollapsed ? 'collapsed' : 'open'
+            )}
+          >
+            {true && <img src={LogoTextImage} width={90} height={40} />}
+          </div>
+        </StyledLogoContainer>
+
+        <StyledMenuButtonContainer>
+          <IconButton
+            size="small"
+            onClick={() => setIsMenuCollapsed((old) => !old)}
+            className={clsx(
+              'menu-icon',
+              isMenuCollapsed ? 'collapsed' : 'open'
+            )}
+          >
+            <FontAwesomeIcon icon={faBars} />
+          </IconButton>
+        </StyledMenuButtonContainer>
+
         <Menu
           menuItemStyles={{
             button: ({ level, active }) => {
@@ -107,4 +152,38 @@ const Layout: React.FC<IProps> = ({ children }) => {
   );
 };
 
-export default Layout;
+export default styled(Layout)`
+  .menu-icon {
+    transition: all 0.5s;
+    transform: rotate(180deg);
+    margin-left: 25px;
+  }
+  .menu-icon.collapsed {
+    transform: rotate(180deg);
+  }
+  .menu-icon.open {
+    transform: rotate(0deg);
+  }
+  .logo-text {
+    transition: all 0.3s;
+    height: 100%;
+    display: flex;
+    align-items: end;
+    padding-bottom: 5px;
+    padding-left: 45px;
+    width: 120px;
+  }
+  .logo-text.open {
+    width: 120px;
+    opacity: 1;
+  }
+  .logo-text.collapsed {
+    width: 120px;
+    opacity: 0;
+    padding-left: 0px;
+  }
+  .logo-image {
+    position: absolute;
+    left: 7px;
+  }
+`;
