@@ -5,6 +5,8 @@ import { Tournament } from 'types/Tournament';
 export interface ILeague {
   id: string;
 
+  name: string;
+
   teams: Team[];
 
   tournaments: Tournament[];

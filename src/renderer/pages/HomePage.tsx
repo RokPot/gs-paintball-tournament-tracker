@@ -5,11 +5,11 @@ import {
   Avatar,
   Card,
   CardHeader,
-  Container,
   IconButton,
   Typography,
   css,
 } from '@mui/material';
+import PageContainer from 'components/shared/PageContainer';
 
 const StyledRootContainer = styled('div')(
   (props) => css`
@@ -29,62 +29,60 @@ const StyledStackingContainer = styled('div')(
 );
 const HomePage: React.FC = () => {
   return (
-    <Container maxWidth={false}>
-      <StyledRootContainer>
-        <Typography variant="h6">Leagues</Typography>
-        <StyledStackingContainer>
-          <Card style={{ width: '400px' }}>
-            <CardHeader
-              action={
-                <IconButton aria-label="settings">
-                  <FontAwesomeIcon icon={faCogs} width={15} />
-                </IconButton>
-              }
-              title="SLO Cup 2022"
-              subheader="22.5.2022 - 30.10.2022"
-            />
-          </Card>
-          <Card>
-            <CardHeader
-              avatar={
-                <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe">
-                  R
-                </Avatar>
-              }
-              action={<IconButton aria-label="settings"></IconButton>}
-              title="Shrimp and Chorizo Paella"
-              subheader="September 14, 2016"
-            />
-          </Card>
-          <Card>
-            <CardHeader
-              avatar={
-                <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe">
-                  R
-                </Avatar>
-              }
-              action={<IconButton aria-label="settings"></IconButton>}
-              title="Shrimp and Chorizo Paella"
-              subheader="September 14, 2016"
-            />
-          </Card>
-          <Card>
-            <CardHeader
-              avatar={
-                <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe">
-                  R
-                </Avatar>
-              }
-              action={<IconButton aria-label="settings"></IconButton>}
-              title="Shrimp and Chorizo Paella"
-              subheader="September 14, 2016"
-            />
-          </Card>
-        </StyledStackingContainer>
+    <PageContainer>
+      <Typography variant="h6">Leagues</Typography>
+      <StyledStackingContainer>
+        <Card style={{ width: '400px' }}>
+          <CardHeader
+            action={
+              <IconButton aria-label="settings">
+                <FontAwesomeIcon icon={faCogs} width={15} />
+              </IconButton>
+            }
+            title="SLO Cup 2022"
+            subheader="22.5.2022 - 30.10.2022"
+          />
+        </Card>
+        <Card>
+          <CardHeader
+            avatar={
+              <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe">
+                R
+              </Avatar>
+            }
+            action={<IconButton aria-label="settings"></IconButton>}
+            title="Shrimp and Chorizo Paella"
+            subheader="September 14, 2016"
+          />
+        </Card>
+        <Card>
+          <CardHeader
+            avatar={
+              <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe">
+                R
+              </Avatar>
+            }
+            action={<IconButton aria-label="settings"></IconButton>}
+            title="Shrimp and Chorizo Paella"
+            subheader="September 14, 2016"
+          />
+        </Card>
+        <Card>
+          <CardHeader
+            avatar={
+              <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe">
+                R
+              </Avatar>
+            }
+            action={<IconButton aria-label="settings"></IconButton>}
+            title="Shrimp and Chorizo Paella"
+            subheader="September 14, 2016"
+          />
+        </Card>
+      </StyledStackingContainer>
 
-        <Typography variant="h6">Latest</Typography>
-      </StyledRootContainer>
-    </Container>
+      <Typography variant="h6">Latest</Typography>
+    </PageContainer>
   );
 };
 

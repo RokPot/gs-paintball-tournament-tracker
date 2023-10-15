@@ -10,7 +10,7 @@
  */
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { BrowserWindow, app, ipcMain, shell } from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import path from 'path';
@@ -71,7 +71,7 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    icon: getAssetPath('icon.png'),
+    icon: getAssetPath('icon.ico'),
     webPreferences: {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')

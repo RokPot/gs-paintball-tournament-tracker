@@ -10,10 +10,11 @@ import {
   faTicket,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IconButton, alpha, styled, useTheme } from '@mui/material';
+import { IconButton, Typography, alpha, styled, useTheme } from '@mui/material';
 import clsx from 'clsx';
 import { useState } from 'react';
 import { Menu, Sidebar } from 'react-pro-sidebar';
+import useGlobalStore from 'store/GlobalStore';
 
 const LayoutContainer = styled('div')(
   (props) => `
@@ -82,6 +83,7 @@ const navBarItems = [
 const Layout: React.FC<IProps> = ({ children, className }) => {
   const theme = useTheme();
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
+  const selectedLeague = useGlobalStore((state) => state.selectedLeague);
   return (
     <LayoutContainer className={className}>
       <Sidebar
@@ -89,63 +91,76 @@ const Layout: React.FC<IProps> = ({ children, className }) => {
         collapsed={isMenuCollapsed}
         backgroundColor={theme.palette.background.paper}
       >
-        <StyledLogoContainer>
-          <img className="logo-image" src={LogoImage} width={65} height={95} />
-          <div
-            className={clsx(
-              'logo-text',
-              isMenuCollapsed ? 'collapsed' : 'open'
-            )}
-          >
-            {true && <img src={LogoTextImage} width={90} height={40} />}
-          </div>
-        </StyledLogoContainer>
-
-        <StyledMenuButtonContainer>
-          <IconButton
-            size="small"
-            onClick={() => setIsMenuCollapsed((old) => !old)}
-            className={clsx(
-              'menu-icon',
-              isMenuCollapsed ? 'collapsed' : 'open'
-            )}
-          >
-            <FontAwesomeIcon icon={faBars} />
-          </IconButton>
-        </StyledMenuButtonContainer>
-
-        <Menu
-          menuItemStyles={{
-            button: ({ level, active }) => {
-              if (level === 0)
-                return {
-                  color: active
-                    ? theme.palette.text.primary
-                    : theme.palette.text.secondary,
-                  fontWeight: active
-                    ? theme.typography.fontWeightBold
-                    : theme.typography.fontWeightMedium,
-                  transition: 'background 0.3s',
-                  background: active
-                    ? alpha(theme.palette.primary.main, 0.3)
-                    : theme.palette.background.default,
-                  ':hover': {
-                    background: alpha(theme.palette.primary.light, 0.2),
-                  },
-                };
-            },
-          }}
+        <div
+          style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
         >
-          {navBarItems.map((item, index) => (
-            <CustomMenuItem
-              icon={item.icon}
-              path={item.path}
-              title={item.title}
-              to={item.to}
-              key={index}
+          <StyledLogoContainer>
+            <img
+              className="logo-image"
+              src={LogoImage}
+              width={65}
+              height={95}
             />
-          ))}
-        </Menu>
+            <div
+              className={clsx(
+                'logo-text',
+                isMenuCollapsed ? 'collapsed' : 'open'
+              )}
+            >
+              {true && <img src={LogoTextImage} width={90} height={40} />}
+            </div>
+          </StyledLogoContainer>
+
+          <StyledMenuButtonContainer>
+            <IconButton
+              size="small"
+              onClick={() => setIsMenuCollapsed((old) => !old)}
+              className={clsx(
+                'menu-icon',
+                isMenuCollapsed ? 'collapsed' : 'open'
+              )}
+            >
+              <FontAwesomeIcon icon={faBars} />
+            </IconButton>
+          </StyledMenuButtonContainer>
+          <div style={{ flex: '1' }}>
+            <Menu
+              style={{ display: 'flex', flexDirection: 'column' }}
+              menuItemStyles={{
+                button: ({ level, active }) => {
+                  if (level === 0)
+                    return {
+                      color: active
+                        ? theme.palette.text.primary
+                        : theme.palette.text.secondary,
+                      fontWeight: active
+                        ? theme.typography.fontWeightBold
+                        : theme.typography.fontWeightMedium,
+                      transition: 'background 0.3s',
+                      background: active
+                        ? alpha(theme.palette.primary.main, 0.3)
+                        : theme.palette.background.default,
+                      ':hover': {
+                        background: alpha(theme.palette.primary.light, 0.2),
+                      },
+                    };
+                },
+              }}
+            >
+              {navBarItems.map((item, index) => (
+                <CustomMenuItem
+                  icon={item.icon}
+                  path={item.path}
+                  title={item.title}
+                  to={item.to}
+                  key={index}
+                />
+              ))}
+            </Menu>
+          </div>
+
+          <Typography marginTop="auto">{selectedLeague?.name}</Typography>
+        </div>
       </Sidebar>
       {children}
     </LayoutContainer>
