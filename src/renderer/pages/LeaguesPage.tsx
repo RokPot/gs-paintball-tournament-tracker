@@ -1,11 +1,17 @@
-import styled from '@emotion/styled';
 import {
   faCheckToSlot,
   faListDots,
   faRemove,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, IconButton, Typography, css, useTheme } from '@mui/material';
+import {
+  Button,
+  IconButton,
+  Typography,
+  css,
+  styled,
+  useTheme,
+} from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
 import LeagueDetails from 'components/leagues/LeagueDetails';
 import DataTable from 'components/leagues/LeaguesTable';
@@ -16,19 +22,6 @@ import { useState } from 'react';
 import useGlobalStore from 'store/GlobalStore';
 import { League } from 'types/League';
 
-const style = {
-  position: 'absolute' as 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  pt: 2,
-  px: 4,
-  pb: 3,
-};
 const StyledHeaderContainer = styled('div')(
   () => css`
     display: flex;
@@ -37,11 +30,55 @@ const StyledHeaderContainer = styled('div')(
     justify-content: space-between;
   `
 );
+
+const StyledDivider = styled('div')(
+  (props) => css`
+    width: 1px;
+    height: 100%;
+    background-color: ${props.theme.palette.grey[200]};
+  `
+);
+
+const StyledActiveBadge = styled('div')(
+  (props) => css`
+    padding: 3px;
+    border-radius: 5px;
+    -webkit-animation: glow linear 3s infinite;
+    animation: glow linear 3s infinite;
+    @-webkit-keyframes glow {
+      0% {
+        background-color: transparent;
+      }
+      50% {
+        background-color: ${props.theme.palette.success.light};
+      }
+      100% {
+        background-color: transparent;
+      }
+    }
+    @keyframes glow {
+      0% {
+        background-color: transparent;
+      }
+      50% {
+        background-color: ${props.theme.palette.success.light};
+      }
+      100% {
+        background-color: transparent;
+      }
+    }
+  `
+);
+
 const LeaguesPage: React.FC = () => {
-  const { setSelectedLeague, addLeague, updateSelectedLeague, allLeagues } =
-    useGlobalStore();
+  const {
+    setSelectedLeague,
+    addLeague,
+    updateSelectedLeague,
+    allLeagues,
+    selectedLeague,
+  } = useGlobalStore();
   const [isLeagueModalOpen, setIsLeagueModalOpen] = useState(false);
-  const [leagues, setLeagues] = useState<League[]>([]);
 
   const theme = useTheme();
 
@@ -53,21 +90,44 @@ const LeaguesPage: React.FC = () => {
     }
     setIsLeagueModalOpen(false);
   };
-  const onEditClick = (param: any) => {
-    console.log(param);
+  const onEditClick = (league: League) => {
+    console.log(league);
+  };
+  const onRemoveClick = (league: League) => {
+    console.log(league);
+  };
+  const onToggleActiveClick = (league: League) => {
+    setSelectedLeague(selectedLeague?.id === league.id ? undefined : league);
   };
   const columns: GridColDef<League>[] = [
-    { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'name', headerName: 'League name' },
+    {
+      field: 'isLeagueSelected',
+      headerName: '',
+      width: 50,
+      renderCell: (params) => {
+        return (
+          params.row?.isLeagueSelected && (
+            <StyledActiveBadge>Active</StyledActiveBadge>
+          )
+        );
+      },
+    },
+    {
+      field: 'name',
+      headerName: 'League name',
+      minWidth: 150,
+      maxWidth: 350,
+    },
     {
       field: 'teams',
       headerName: '# of Participating teams',
-      flex: 1,
+      width: 200,
       valueGetter: (params) => `${params?.row?.teams?.length || 0}`,
     },
     {
       field: 'tournaments',
       headerName: '# of Tournaments',
+      flex: 1,
       valueGetter: (params) => `${params?.row?.tournaments?.length || 0}`,
     },
     {
@@ -87,7 +147,7 @@ const LeaguesPage: React.FC = () => {
               <FontAwesomeIcon icon={faListDots} width={15} height={15} />
             </IconButton>
             <IconButton
-              onClick={() => onEditClick(params.row)}
+              onClick={() => onRemoveClick(params.row)}
               style={{ height: '30px' }}
             >
               <FontAwesomeIcon
@@ -98,62 +158,70 @@ const LeaguesPage: React.FC = () => {
               />
             </IconButton>
             <IconButton
-              onClick={() => onEditClick(params.row)}
+              onClick={() => onToggleActiveClick(params.row)}
               style={{ height: '30px' }}
             >
-              <FontAwesomeIcon icon={faCheckToSlot} width={15} height={15} />
+              <FontAwesomeIcon
+                icon={faCheckToSlot}
+                width={15}
+                height={15}
+                color={
+                  selectedLeague?.id === params.row.id
+                    ? theme.palette.error.dark
+                    : theme.palette.success.dark
+                }
+              />
             </IconButton>
           </FlexContainer>
         );
       },
     },
   ];
-  const rows: League[] = [
-    {
-      id: '1',
-      leaderboard: [],
-      name: 'League 1',
-      teams: [{} as any],
-      tournaments: [],
-    },
-    { id: '2', leaderboard: [], name: 'League 2', teams: [], tournaments: [] },
-    { id: '3', leaderboard: [], name: 'League 3', teams: [], tournaments: [] },
-    { id: '4', leaderboard: [], name: 'League 4', teams: [], tournaments: [] },
-    { id: '5', leaderboard: [], name: 'League 5', teams: [], tournaments: [] },
-    {
-      id: 'z6sdf6',
-      leaderboard: [],
-      name: 'League 6',
-      teams: [],
-      tournaments: [],
-    },
-  ];
+  console.log(selectedLeague, allLeagues);
   return (
     <PageContainer>
       <StyledHeaderContainer>
-        <Typography variant="h5">Leagues</Typography>
+        <Typography variant="h4">Leagues</Typography>
         <Button onClick={() => setIsLeagueModalOpen(true)}>
           <Typography variant="body1">Create a new league</Typography>
         </Button>
       </StyledHeaderContainer>
-      <Button
-        onClick={() => {
-          setSelectedLeague({
-            id: 'asd',
-            leaderboard: [],
-            name: 'League1',
-            teams: [],
-            tournaments: [],
-          });
-          setIsLeagueModalOpen(true);
-        }}
-      >
-        hello
-      </Button>
-      <DataTable columns={columns} rows={rows} />
-      {allLeagues?.map((league) => (
-        <div>{league.name}</div>
-      ))}
+
+      <DataTable columns={columns} rows={allLeagues} />
+      {!selectedLeague && (
+        <>
+          <Typography>
+            No league is selected. Please select one before procceeding
+          </Typography>
+        </>
+      )}
+      {selectedLeague && (
+        <>
+          <Typography variant="h4Medium">{selectedLeague.name}</Typography>
+          <FlexContainer width="100%" margin={0} height="100%">
+            <FlexContainer
+              flexDirection="column"
+              width="100%"
+              alignItems="flex-start"
+              height="100%"
+              padding="8px"
+            >
+              <Typography variant="p1Medium">League tournaments</Typography>
+            </FlexContainer>
+            <StyledDivider />
+            <FlexContainer
+              flexDirection="column"
+              width="100%"
+              alignItems="flex-start"
+              height="100%"
+              padding="8px"
+            >
+              <Typography variant="p1Medium">League teams</Typography>
+              <FlexContainer></FlexContainer>
+            </FlexContainer>
+          </FlexContainer>
+        </>
+      )}
       <CustomModal
         isModalOpen={isLeagueModalOpen}
         onClose={() => {

@@ -14,6 +14,8 @@ export class League {
 
   leaderboard: LeaderboardTeam[];
 
+  isLeagueSelected?: boolean;
+
   constructor(props: ILeague) {
     this.id = props.id;
     this.name = props.name;

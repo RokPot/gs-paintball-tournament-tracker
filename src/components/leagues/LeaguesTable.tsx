@@ -6,9 +6,15 @@ interface IProps {
   className?: string;
   columns: GridColDef[];
   rows: any[];
+  onRowSelect?: (selected: any) => void;
 }
 
-const DataTable: React.FC<IProps> = ({ className, columns, rows }) => {
+const DataTable: React.FC<IProps> = ({
+  className,
+  columns,
+  rows,
+  onRowSelect,
+}) => {
   return (
     <div
       className={className}
@@ -23,12 +29,11 @@ const DataTable: React.FC<IProps> = ({ className, columns, rows }) => {
             paginationModel: { page: 0, pageSize: 5 },
           },
         }}
-        checkboxSelection
+        onRowClick={(param1) => onRowSelect?.(param1.row)}
         disableColumnFilter
         disableEval
         disableColumnMenu
         disableColumnSelector={true}
-        disableRowSelectionOnClick
         disableDensitySelector
       />
     </div>

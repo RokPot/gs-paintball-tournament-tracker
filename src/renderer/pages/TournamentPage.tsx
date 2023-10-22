@@ -2,11 +2,10 @@ import { Button, Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
 import TournamentDetailsInfo from 'components/tournament/TournamentDetailsInfo';
-import { useState } from 'react';
-import { Tournament } from 'types/Tournament';
+import useGlobalStore from 'store/GlobalStore';
 
 const TournamentPage: React.FC = () => {
-  const [tournament, setTournament] = useState<Tournament>();
+  const { selectedTournament, setSelectedTournament } = useGlobalStore();
   return (
     <PageContainer>
       <FlexContainer width="100%" justifyContent="space-between">
@@ -17,7 +16,7 @@ const TournamentPage: React.FC = () => {
           <Typography variant="body1">Create a new tournament</Typography>
         </Button>
       </FlexContainer>
-      {tournament && (
+      {selectedTournament && (
         <Typography
           variant="subtitle1"
           color={(theme) => theme.palette.text.secondary}
@@ -26,7 +25,7 @@ const TournamentPage: React.FC = () => {
           existing one
         </Typography>
       )}
-      {!tournament && (
+      {!selectedTournament && (
         <>
           <Typography variant="h5">Tournament details</Typography>
           <FlexContainer width="100%" justifyContent="flex-start" margin={16}>
