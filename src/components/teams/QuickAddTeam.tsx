@@ -7,6 +7,7 @@ import { useFormik } from 'formik';
 import { Team } from 'types/Team';
 import { TeamMember } from 'types/TeamMember';
 import { TeamRole } from 'types/TeamRole';
+import { QuickAddTeamSchema } from 'utils/schemes';
 import { v4 } from 'uuid';
 
 interface IProps {
@@ -16,7 +17,6 @@ interface IProps {
 
 const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
   const theme = useTheme();
-
   const formik = useFormik<Team>({
     initialValues: {
       draw: 0,
@@ -27,6 +27,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
       teamTag: '',
       wins: 0,
     },
+    validationSchema: QuickAddTeamSchema,
     onSubmit: (values: Team) => {
       console.log(values);
       onAccept(values);
@@ -43,7 +44,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
     >
       <Typography variant="h1">Add team</Typography>
       <Typography variant="h3">Details</Typography>
-      <FlexContainer width="100%" margin={16}>
+      <FlexContainer width="100%" margin={16} style={{ marginBottom: '0px' }}>
         <CustomTextField
           label="Team name *"
           id="teamName"
@@ -51,8 +52,8 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
           onChange={formik.handleChange}
           placeholder="Team name"
           variant="outlined"
-          disableError
           style={{ width: '100%' }}
+          helperText={String(formik?.errors?.teamName || ' ')}
           debounceTime={500}
         />
         <CustomTextField
@@ -63,7 +64,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
           placeholder="Team tag"
           variant="outlined"
           style={{ width: '100%' }}
-          disableError
+          helperText={String(formik?.errors?.teamTag || ' ')}
           debounceTime={500}
         />
       </FlexContainer>
@@ -126,6 +127,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
               placeholder="First name"
               variant="outlined"
               style={{ width: '100%' }}
+              error={(formik?.errors?.members?.[index] as any)?.['name']}
               disableError
               size="small"
               debounceTime={500}
@@ -147,6 +149,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
               variant="outlined"
               style={{ width: '100%' }}
               size="small"
+              error={(formik?.errors?.members?.[index] as any)?.['lastName']}
               disableError
               debounceTime={500}
             />
@@ -155,7 +158,11 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
       </FlexContainer>
 
       <FlexContainer flexDirection="row" margin={16}>
-        <Button variant="contained" onClick={formik.submitForm}>
+        <Button
+          variant="contained"
+          onClick={formik.submitForm}
+          disabled={!formik.isValid}
+        >
           <Typography variant="p1">Confirm</Typography>
         </Button>
         <Button variant="outlined" onClick={onCancel}>

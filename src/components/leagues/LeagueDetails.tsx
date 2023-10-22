@@ -1,4 +1,12 @@
-import { Avatar, Button, Typography, useTheme } from '@mui/material';
+import { faRemove } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  Avatar,
+  Button,
+  IconButton,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import CustomTextField from 'components/shared/CustomTextField';
 import FlexContainer from 'components/shared/FlexContainer';
@@ -7,22 +15,37 @@ import { useFormik } from 'formik';
 import { useState } from 'react';
 import { League } from 'types/League';
 import { Team } from 'types/Team';
+import { LeagueDetailsSchema } from 'utils/schemes';
+import { v4 } from 'uuid';
 
 interface AddLeague {
-  name?: string;
-  teams?: Team[];
+  name: string;
+  teams: Team[];
 }
 
 interface IProps {
   league?: League;
+  onConfirm: (league: League) => void;
+  onClose: () => void;
 }
 
-const LeagueDetails: React.FC<IProps> = ({ league }) => {
+const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
   const theme = useTheme();
+
   const formik = useFormik<AddLeague>({
-    initialValues: { name: league?.name, teams: league?.teams },
-    onSubmit: (values: AddLeague) => {},
-    enableReinitialize: true,
+    initialValues: { name: league?.name || '', teams: league?.teams || [] },
+    validationSchema: LeagueDetailsSchema,
+    onSubmit: (values: AddLeague) => {
+      onConfirm(
+        new League({
+          id: v4(),
+          leaderboard: [],
+          name: values.name,
+          teams: values.teams,
+          tournaments: [],
+        })
+      );
+    },
   });
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
   return (
@@ -40,16 +63,18 @@ const LeagueDetails: React.FC<IProps> = ({ league }) => {
         id="name"
         value={formik.values.name}
         onChange={formik.handleChange}
+        helperText={formik?.errors?.name}
         placeholder="League name"
         variant="outlined"
-        disableError
         debounceTime={500}
-        style={{ width: '100%' }}
+        style={{ width: '100%', marginBottom: '0px' }}
       />
-      <FlexContainer justifyContent="space-between" width="100%">
-        <Typography variant="h2" style={{ marginBottom: '0px' }}>
-          Teams
-        </Typography>
+      <FlexContainer
+        justifyContent="space-between"
+        width="100%"
+        style={{ marginBottom: '0px' }}
+      >
+        <Typography variant="h2">Teams</Typography>
         <Button size="small" onClick={() => setIsTeamAddModalOpen(true)}>
           <Typography style={{ textTransform: 'none' }}>
             Add new team
@@ -61,24 +86,49 @@ const LeagueDetails: React.FC<IProps> = ({ league }) => {
         variant="subtitle2"
         color={(theme) => theme.palette.text.disabled}
       >
-        Add teams for the tournament (you can also add them later)
+        Add teams which will participate in the league (you can also add them
+        later)
       </Typography>
-      <FlexContainer highlightRowOnHover width="100%">
-        {formik?.values?.teams?.map((team, index) => (
-          <FlexContainer flexDirection="row" margin={8} padding="8px">
-            <Typography variant="h6Medium">{index}.</Typography>
-            <Avatar>{team?.teamTag}</Avatar>
+      <FlexContainer width="100%" flexDirection="column">
+        {formik?.values?.teams?.map((team: Team, index: number) => (
+          <FlexContainer
+            flexDirection="row"
+            margin={8}
+            padding="8px"
+            key={index}
+            width="100%"
+            highlightRowOnHover
+          >
+            <Typography variant="p1Medium">{index}.</Typography>
+            <Avatar variant="rounded">
+              <Typography
+                variant="p1Medium"
+                style={{ textTransform: 'uppercase' }}
+              >
+                {team?.teamTag}
+              </Typography>
+            </Avatar>
             <Typography>{team?.teamName}</Typography>
             <Typography
               variant="subtitle1"
               color={(theme) => theme.palette.text.secondary}
             >
-              {team?.members
+              {team?.members?.length
                 ? `(${team?.members.length} ${
                     team?.members.length === 1 ? 'member' : 'members'
                   })`
                 : ''}
             </Typography>
+            <IconButton
+              style={{ width: '20px', height: '20px', marginLeft: 'auto' }}
+              onClick={() => {
+                const teams = formik?.values?.teams;
+                teams?.splice(index, 1);
+                formik.setFieldValue('teams', [...(teams || [])]);
+              }}
+            >
+              <FontAwesomeIcon icon={faRemove} width={10} />
+            </IconButton>
           </FlexContainer>
         ))}
       </FlexContainer>
@@ -99,10 +149,14 @@ const LeagueDetails: React.FC<IProps> = ({ league }) => {
         />
       </CustomModal>
       <FlexContainer flexDirection="row" margin={16}>
-        <Button variant="contained" onClick={() => {}}>
+        <Button
+          variant="contained"
+          onClick={formik.submitForm}
+          disabled={!formik.isValid}
+        >
           <Typography variant="p1">Confirm</Typography>
         </Button>
-        <Button variant="outlined" onClick={() => {}}>
+        <Button variant="outlined" onClick={onClose}>
           <Typography variant="p1">Cancel</Typography>
         </Button>
       </FlexContainer>
