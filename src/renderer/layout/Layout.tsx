@@ -159,7 +159,10 @@ const Layout: React.FC<IProps> = ({ children, className }) => {
             </Menu>
           </div>
 
-          <Typography marginTop="auto">{selectedLeague?.name}</Typography>
+          <Typography marginTop="auto">League</Typography>
+          <Typography marginTop="auto">Gluhi Svizci pokal 2022</Typography>
+          <Typography marginTop="auto">Tournament</Typography>
+          <Typography marginTop="auto">2. Turnir 15/9/2022</Typography>
         </div>
       </Sidebar>
       {children}
