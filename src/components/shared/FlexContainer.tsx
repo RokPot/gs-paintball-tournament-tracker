@@ -159,11 +159,18 @@ export default styled(FlexContainer)(
   }
   &:hover {
     ${
-      props.highlightRowOnHover
+      props.highlightRowOnHover && props.flexDirection === 'row'
         ? `background: ${props.theme?.palette.grey[100]};`
         : ''
     }
 
+  }
+  >:hover {
+    ${
+      props.highlightRowOnHover && props.flexDirection === 'column'
+        ? `background: ${props.theme?.palette.grey[100]};`
+        : ''
+    }
   }
 `
 );
