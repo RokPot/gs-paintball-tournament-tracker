@@ -23,4 +23,12 @@ export class League {
     this.tournaments = props.tournaments;
     this.leaderboard = props.leaderboard;
   }
+
+  public addLeaderboardTeam = (leaderboardTeam: LeaderboardTeam) => {
+    this.leaderboard = [...this.leaderboard, leaderboardTeam];
+  };
+
+  public addTeam = (team: Team) => {
+    this.teams = [...this.teams, team];
+  };
 }

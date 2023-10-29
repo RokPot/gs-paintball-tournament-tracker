@@ -51,9 +51,11 @@ const useLeagueStore = create<LeagueStoreState>((set, get) => ({
     }),
 
   addLeague: (league: League) => {
-    (league.leaderboard = league.teams.map((team) => {
-      return createNewLeaderboardTeam(team);
-    })),
+    (league.leaderboard = [
+      ...league.teams.map((team) => {
+        return createNewLeaderboardTeam(team);
+      }),
+    ]),
       set((state) => ({ allLeagues: [...state.allLeagues, league] }));
   },
   updateLeague: (league) =>
@@ -90,14 +92,14 @@ const useLeagueStore = create<LeagueStoreState>((set, get) => ({
     if (!selectedLeague) {
       return state;
     }
-
-    selectedLeague.teams.push(teamToAdd);
-    selectedLeague.leaderboard.push(createNewLeaderboardTeam(teamToAdd));
+    // todo rokpot this doesnt work as intended, why?!?!
+    selectedLeague.addTeam(teamToAdd);
+    selectedLeague.addLeaderboardTeam(createNewLeaderboardTeam(teamToAdd));
 
     if (state.selectedLeague && leagueToUpdate.id === state.selectedLeague.id) {
-      get().refreshSelectedLeague(selectedLeague);
+      state.refreshSelectedLeague(selectedLeague);
     }
-    get().updateLeague(selectedLeague);
+    state.updateLeague(selectedLeague);
   },
   updateSelectedLeague: (league) => {
     set((state) => {

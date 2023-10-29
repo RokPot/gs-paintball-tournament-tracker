@@ -110,74 +110,17 @@ const LeaderboardList: React.FC<IProps> = ({
 
   return (
     <FlexContainer width="100%" flexDirection="column" className={className}>
-      <CustomDataTable columns={columns} rows={teams || []} />
-      {/* {!teams?.length && (
+      {!teams?.length && (
         <Typography
           variant="body2"
           color={(theme) => theme.palette.text.secondary}
         >
-          There are currently no leaderboard.
+          There is currently no leaderboard available.
         </Typography>
       )}
-      {teams?.map((team: Team, index: number) => (
-        <FlexContainer
-          flexDirection="row"
-          margin={8}
-          padding="8px"
-          key={index}
-          width="100%"
-          highlightRowOnHover
-        >
-          <Typography variant="p1Medium" width={30} textAlign="center">
-            {[0, 1, 2].includes(index) ? (
-              <FontAwesomeIcon
-                icon={faTrophy}
-                color={getColor(index)}
-                fontSize={20}
-              />
-            ) : (
-              index + 1 + '.'
-            )}
-          </Typography>
-          <Avatar variant="rounded" style={{ backgroundColor: team.color }}>
-            <Typography
-              variant="p1Medium"
-              style={{ textTransform: 'uppercase' }}
-            >
-              {team?.teamTag}
-            </Typography>
-          </Avatar>
-          <Typography width={100}>{team?.teamName}</Typography>
-          <Typography
-            variant="subtitle1"
-            color={(theme) => theme.palette.text.secondary}
-            width={60}
-          >
-            21 points
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            color={(theme) => theme.palette.text.secondary}
-            width={60}
-          >
-            13 wins
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            color={(theme) => theme.palette.text.secondary}
-            width={60}
-          >
-            13 loses
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            color={(theme) => theme.palette.text.secondary}
-            width={60}
-          >
-            13 draws
-          </Typography>
-        </FlexContainer>
-      ))} */}
+      {!!teams?.length && (
+        <CustomDataTable columns={columns} rows={teams || []} />
+      )}
     </FlexContainer>
   );
 };

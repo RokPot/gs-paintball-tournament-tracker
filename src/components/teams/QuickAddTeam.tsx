@@ -61,7 +61,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
           variant="outlined"
           style={{ width: '100%' }}
           helperText={String(formik?.errors?.teamName || ' ')}
-          debounceTime={500}
+          debounceTime={200}
         />
         <CustomTextField
           label="Team tag *"
@@ -72,7 +72,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
           variant="outlined"
           style={{ width: '100%' }}
           helperText={String(formik?.errors?.teamTag || ' ')}
-          debounceTime={500}
+          debounceTime={200}
         />
       </FlexContainer>
       <FlexContainer width="100%" justifyContent="space-between">
@@ -137,7 +137,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
               error={(formik?.errors?.members?.[index] as any)?.['name']}
               disableError
               size="small"
-              debounceTime={500}
+              debounceTime={200}
             />
             <CustomTextField
               label="Last name*"
@@ -158,7 +158,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
               size="small"
               error={(formik?.errors?.members?.[index] as any)?.['lastName']}
               disableError
-              debounceTime={500}
+              debounceTime={200}
             />
           </FlexContainer>
         ))}
