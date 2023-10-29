@@ -9,7 +9,7 @@ export class Team {
   loses: number;
   draw: number;
   members: TeamMember[];
-
+  color?: string;
   constructor(props: ITeam) {
     this.id = props.id;
     this.teamName = props.teamName;
@@ -17,6 +17,7 @@ export class Team {
     this.wins = props.wins || 0;
     this.loses = props.loses || 0;
     this.draw = props.draw || 0;
-    this.members = props.members;
+    this.members = props.members || [];
+    this.color = props.color || '#ffbbff';
   }
 }

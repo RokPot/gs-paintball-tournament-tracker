@@ -7,6 +7,7 @@ const StyledRootContainer = styled('div')(
     width: 100%;
     flex-direction: column;
     padding: 16px 0px;
+    overflow: auto;
   `
 );
 interface IProps {
@@ -14,7 +15,7 @@ interface IProps {
 }
 const PageContainer: React.FC<IProps> = ({ children }) => {
   return (
-    <Container maxWidth={false}>
+    <Container maxWidth={false} style={{ overflow: 'auto' }}>
       <StyledRootContainer>{children}</StyledRootContainer>
     </Container>
   );

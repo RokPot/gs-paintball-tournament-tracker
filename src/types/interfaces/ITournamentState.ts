@@ -1,4 +1,3 @@
-import { TournamentGroup } from 'types/TournamentGroup';
 import { TournamentStage } from 'types/TournamentStage';
 
 export interface ITournamentState {
@@ -6,7 +5,7 @@ export interface ITournamentState {
 
   isTournamentFinished: boolean;
 
-  isGameInProgress: TournamentGroup[];
+  isGameInProgress: boolean;
 
   stage: TournamentStage;
 }

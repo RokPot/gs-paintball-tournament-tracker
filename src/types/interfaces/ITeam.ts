@@ -7,5 +7,6 @@ export interface ITeam {
   wins?: number;
   loses?: number;
   draw?: number;
-  members: TeamMember[];
+  members?: TeamMember[];
+  color?: string;
 }

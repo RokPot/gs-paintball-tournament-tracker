@@ -1,16 +1,9 @@
-import { faRemove } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  Avatar,
-  Button,
-  IconButton,
-  Typography,
-  useTheme,
-} from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import CustomTextField from 'components/shared/CustomTextField';
 import FlexContainer from 'components/shared/FlexContainer';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
+import TeamsShortList from 'components/teams/TeamShortList';
 import { useFormik } from 'formik';
 import { useState } from 'react';
 import { League } from 'types/League';
@@ -30,8 +23,6 @@ interface IProps {
 }
 
 const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
-  const theme = useTheme();
-
   const formik = useFormik<AddLeague>({
     initialValues: { name: league?.name || '', teams: league?.teams || [] },
     validationSchema: LeagueDetailsSchema,
@@ -66,7 +57,7 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
         helperText={formik?.errors?.name}
         placeholder="League name"
         variant="outlined"
-        debounceTime={500}
+        debounceTime={200}
         style={{ width: '100%', marginBottom: '0px' }}
       />
       <FlexContainer
@@ -89,49 +80,15 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
         Add teams which will participate in the league (you can also add them
         later)
       </Typography>
-      <FlexContainer width="100%" flexDirection="column">
-        {formik?.values?.teams?.map((team: Team, index: number) => (
-          <FlexContainer
-            flexDirection="row"
-            margin={8}
-            padding="8px"
-            key={index}
-            width="100%"
-            highlightRowOnHover
-          >
-            <Typography variant="p1Medium">{index}.</Typography>
-            <Avatar variant="rounded">
-              <Typography
-                variant="p1Medium"
-                style={{ textTransform: 'uppercase' }}
-              >
-                {team?.teamTag}
-              </Typography>
-            </Avatar>
-            <Typography>{team?.teamName}</Typography>
-            <Typography
-              variant="subtitle1"
-              color={(theme) => theme.palette.text.secondary}
-            >
-              {team?.members?.length
-                ? `(${team?.members.length} ${
-                    team?.members.length === 1 ? 'member' : 'members'
-                  })`
-                : ''}
-            </Typography>
-            <IconButton
-              style={{ width: '20px', height: '20px', marginLeft: 'auto' }}
-              onClick={() => {
-                const teams = formik?.values?.teams;
-                teams?.splice(index, 1);
-                formik.setFieldValue('teams', [...(teams || [])]);
-              }}
-            >
-              <FontAwesomeIcon icon={faRemove} width={10} />
-            </IconButton>
-          </FlexContainer>
-        ))}
-      </FlexContainer>
+      <TeamsShortList
+        showRemoveButton
+        onRemoveTeam={(_, index) => {
+          const teams = formik?.values?.teams;
+          teams?.splice(index, 1);
+          formik.setFieldValue('teams', [...(teams || [])]);
+        }}
+        teams={formik?.values?.teams}
+      />
       <CustomModal
         isModalOpen={isTeamAddModalOpen}
         onClose={() => setIsTeamAddModalOpen(false)}
@@ -152,7 +109,7 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
         <Button
           variant="contained"
           onClick={formik.submitForm}
-          disabled={!formik.isValid}
+          disabled={!formik.isValid || !formik.dirty}
         >
           <Typography variant="p1">Confirm</Typography>
         </Button>

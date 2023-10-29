@@ -1,4 +1,3 @@
-import { Game } from 'types/Game';
 import { Team } from 'types/Team';
 import { TournamentGroup } from 'types/TournamentGroup';
 import { TournamentState } from 'types/TournamentState';
@@ -6,9 +5,15 @@ import { TournamentState } from 'types/TournamentState';
 export interface ITournament {
   id: string;
 
-  teams: Team[];
+  teams?: Team[];
 
-  groups: TournamentGroup[];
+  groups?: TournamentGroup[];
 
   state: TournamentState;
+
+  name: string;
+
+  startDate?: Date;
+
+  endDate?: Date;
 }

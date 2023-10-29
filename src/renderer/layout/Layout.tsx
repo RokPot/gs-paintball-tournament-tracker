@@ -8,6 +8,7 @@ const LayoutContainer = styled('div')(
   position: relative;
   height: 100vh;
   background-color: ${props.theme.palette.background.default};
+  overflow: hidden;
 `
 );
 

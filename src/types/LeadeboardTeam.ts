@@ -1,7 +1,5 @@
 import { Team } from './Team';
-import { TeamMember } from './TeamMember';
 import { ILeaderboardTeam } from './interfaces/ILeaderboardTeam';
-import { ITeam } from './interfaces/ITeam';
 
 export class LeaderboardTeam extends Team {
   totalWins: number;

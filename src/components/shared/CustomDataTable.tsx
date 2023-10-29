@@ -9,7 +9,7 @@ interface IProps {
   onRowSelect?: (selected: any) => void;
 }
 
-const DataTable: React.FC<IProps> = ({
+const CustomDataTable: React.FC<IProps> = ({
   className,
   columns,
   rows,
@@ -40,7 +40,7 @@ const DataTable: React.FC<IProps> = ({
   );
 };
 
-export default styled(DataTable)(
+export default styled(CustomDataTable)(
   (props: IProps & { theme?: Theme }) => css`
     .custom-table {
       border: none;

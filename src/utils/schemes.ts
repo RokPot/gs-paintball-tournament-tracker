@@ -1,7 +1,10 @@
 import * as Yup from 'yup';
 
 export const LeagueDetailsSchema = Yup.object().shape({
-  name: Yup.string().min(5, 'League name is too short').required('required'),
+  name: Yup.string()
+    .min(5, 'League name is too short')
+    .required('required')
+    .nonNullable(),
 });
 
 export const QuickAddTeamSchema = Yup.object().shape({

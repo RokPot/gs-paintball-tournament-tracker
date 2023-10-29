@@ -1,9 +1,4 @@
-import { Game } from './Game';
-import { Team } from './Team';
-import { TeamMember } from './TeamMember';
-import { TournamentGroup } from './TournamentGroup';
 import { TournamentStage } from './TournamentStage';
-import { ITournament } from './interfaces/ITournament';
 import { ITournamentState } from './interfaces/ITournamentState';
 
 export class TournamentState {
@@ -11,7 +6,7 @@ export class TournamentState {
 
   isTournamentFinished: boolean;
 
-  isGameInProgress: TournamentGroup[];
+  isGameInProgress: boolean;
 
   stage: TournamentStage;
 

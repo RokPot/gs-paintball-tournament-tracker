@@ -10,6 +10,13 @@ import { TeamRole } from 'types/TeamRole';
 import { QuickAddTeamSchema } from 'utils/schemes';
 import { v4 } from 'uuid';
 
+function randomColor() {
+  let hex = Math.floor(Math.random() * 0xffffff);
+  let color = '#' + hex.toString(16);
+
+  return color;
+}
+
 interface IProps {
   onAccept: (team: Team) => void;
   onCancel: () => void;
@@ -26,10 +33,10 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
       teamName: '',
       teamTag: '',
       wins: 0,
+      color: randomColor(),
     },
     validationSchema: QuickAddTeamSchema,
     onSubmit: (values: Team) => {
-      console.log(values);
       onAccept(values);
     },
   });
