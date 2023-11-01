@@ -92,14 +92,14 @@ const useLeagueStore = create<LeagueStoreState>((set, get) => ({
     if (!selectedLeague) {
       return state;
     }
-    // todo rokpot this doesnt work as intended, why?!?!
-    selectedLeague.addTeam(teamToAdd);
-    selectedLeague.addLeaderboardTeam(createNewLeaderboardTeam(teamToAdd));
+    leagueToUpdate.addTeam(teamToAdd);
+    leagueToUpdate.addLeaderboardTeam(createNewLeaderboardTeam(teamToAdd));
 
+    const updatedLeague = { ...selectedLeague, ...leagueToUpdate };
     if (state.selectedLeague && leagueToUpdate.id === state.selectedLeague.id) {
-      state.refreshSelectedLeague(selectedLeague);
+      state.refreshSelectedLeague(updatedLeague);
     }
-    state.updateLeague(selectedLeague);
+    state.updateLeague(updatedLeague);
   },
   updateSelectedLeague: (league) => {
     set((state) => {

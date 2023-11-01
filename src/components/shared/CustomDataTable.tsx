@@ -7,6 +7,7 @@ interface IProps {
   columns: GridColDef[];
   rows: any[];
   onRowSelect?: (selected: any) => void;
+  height?: string;
 }
 
 const CustomDataTable: React.FC<IProps> = ({
@@ -14,11 +15,16 @@ const CustomDataTable: React.FC<IProps> = ({
   columns,
   rows,
   onRowSelect,
+  height,
 }) => {
   return (
     <div
       className={className}
-      style={{ maxHeight: '370px', minHeight: '370px', width: '100%' }}
+      style={{
+        maxHeight: height || '370px',
+        minHeight: height || '370px',
+        width: '100%',
+      }}
     >
       <DataGrid
         className={'custom-table'}

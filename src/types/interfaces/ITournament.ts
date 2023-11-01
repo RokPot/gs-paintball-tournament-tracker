@@ -1,5 +1,8 @@
+import { Dayjs } from 'dayjs';
+import { GameSettings } from 'types/GameSettings';
 import { Team } from 'types/Team';
 import { TournamentGroup } from 'types/TournamentGroup';
+import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentState } from 'types/TournamentState';
 
 export interface ITournament {
@@ -13,7 +16,11 @@ export interface ITournament {
 
   name: string;
 
-  startDate?: Date;
+  startDate?: Dayjs;
 
-  endDate?: Date;
+  endDate?: Dayjs;
+
+  settings?: TournamentSettings;
+
+  gameSettings?: GameSettings;
 }

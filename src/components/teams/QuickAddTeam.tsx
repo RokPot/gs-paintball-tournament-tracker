@@ -41,6 +41,21 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
     },
   });
 
+  const addNewTeamMember = () => {
+    formik.setFieldValue('members', [
+      ...formik.values.members,
+      {
+        name: '',
+        lastName: '',
+        dob: new Date(),
+        id: v4(),
+        role: TeamRole.player,
+        shirtNumber: 0,
+        tag: '',
+      } as TeamMember,
+    ]);
+  };
+
   return (
     <FlexContainer
       padding="16px"
@@ -77,23 +92,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
       </FlexContainer>
       <FlexContainer width="100%" justifyContent="space-between">
         <Typography variant="h3">Team members</Typography>
-        <IconButton
-          style={{ width: '45px' }}
-          onClick={() =>
-            formik.setFieldValue('members', [
-              ...formik.values.members,
-              {
-                name: '',
-                lastName: '',
-                dob: new Date(),
-                id: v4(),
-                role: TeamRole.player,
-                shirtNumber: 0,
-                tag: '',
-              } as TeamMember,
-            ])
-          }
-        >
+        <IconButton style={{ width: '45px' }} onClick={addNewTeamMember}>
           <FontAwesomeIcon
             icon={faAdd}
             color={theme.palette.primary.main}
@@ -162,6 +161,9 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
             />
           </FlexContainer>
         ))}
+        <Button variant="text" onClick={addNewTeamMember}>
+          <Typography variant="p1">Add new team member</Typography>
+        </Button>
       </FlexContainer>
 
       <FlexContainer flexDirection="row" margin={16}>

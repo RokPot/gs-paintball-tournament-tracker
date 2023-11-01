@@ -1,13 +1,17 @@
-import { GameState } from './GameState';
-import { Match } from './Match';
-import { Team } from './Team';
-import { TeamMember } from './TeamMember';
-import { TournamentGroup } from './TournamentGroup';
-import { IGame } from './interfaces/IGame';
+import { v4 } from 'uuid';
 
 export interface TournamentSettings {
   id: string;
   numberOfWinsRequired: number;
   twoWinsDifference: boolean;
-  gameTimeInSeconds: number;
+  switchGroups: boolean;
+  switchGames: boolean;
 }
+
+export const DefaultTournamentSettings: TournamentSettings = {
+  id: v4(),
+  numberOfWinsRequired: 2,
+  twoWinsDifference: false,
+  switchGroups: false,
+  switchGames: false,
+};

@@ -1,7 +1,13 @@
+import { DefaultGameSettings, GameSettings } from './GameSettings';
 import { Team } from './Team';
 import { TournamentGroup } from './TournamentGroup';
+import {
+  DefaultTournamentSettings,
+  TournamentSettings,
+} from './TournamentSettings';
 import { TournamentState } from './TournamentState';
 import { ITournament } from './interfaces/ITournament';
+import { Dayjs } from 'dayjs';
 
 export class Tournament {
   id: string;
@@ -14,9 +20,13 @@ export class Tournament {
 
   name: string;
 
-  startDate?: Date;
+  startDate?: Dayjs;
 
-  endDate?: Date;
+  endDate?: Dayjs;
+
+  settings: TournamentSettings;
+
+  gameSettings: GameSettings;
 
   constructor(props: ITournament) {
     this.id = props.id;
@@ -26,5 +36,7 @@ export class Tournament {
     this.name = props.name;
     this.startDate = props.startDate;
     this.endDate = props.endDate;
+    this.settings = props.settings || DefaultTournamentSettings;
+    this.gameSettings = props.gameSettings || DefaultGameSettings;
   }
 }

@@ -2,10 +2,10 @@ import { Button, Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
 import TournamentDetailsInfo from 'components/tournament/TournamentDetailsInfo';
-import useGlobalStore from 'store/GlobalStore';
+import useTournamentStore from 'store/TournamentStore';
 
 const TournamentPage: React.FC = () => {
-  const { selectedTournament, setSelectedTournament } = useGlobalStore();
+  const { selectedTournament, setSelectedTournament } = useTournamentStore();
   return (
     <PageContainer>
       <FlexContainer width="100%" justifyContent="space-between">

@@ -109,7 +109,12 @@ const LeaderboardList: React.FC<IProps> = ({
   ];
 
   return (
-    <FlexContainer width="100%" flexDirection="column" className={className}>
+    <FlexContainer
+      width="100%"
+      flexDirection="column"
+      className={className}
+      height="100%"
+    >
       {!teams?.length && (
         <Typography
           variant="body2"
@@ -119,7 +124,7 @@ const LeaderboardList: React.FC<IProps> = ({
         </Typography>
       )}
       {!!teams?.length && (
-        <CustomDataTable columns={columns} rows={teams || []} />
+        <CustomDataTable height="100%" columns={columns} rows={teams || []} />
       )}
     </FlexContainer>
   );

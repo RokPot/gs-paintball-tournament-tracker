@@ -1,15 +1,15 @@
-import { GameState } from './GameState';
-import { Match } from './Match';
-import { Team } from './Team';
-import { TeamMember } from './TeamMember';
-import { TournamentGroup } from './TournamentGroup';
-import { IGame } from './interfaces/IGame';
+import { v4 } from 'uuid';
 
 export interface GameSettings {
   id: string;
   longBreakTimeInSeconds: number;
   shortBreakTimeInSeconds: number;
-  numberOfWinsRequired: number;
-  twoWinsDifference: boolean;
   gameTimeInSeconds: number;
 }
+
+export const DefaultGameSettings: GameSettings = {
+  id: v4(),
+  gameTimeInSeconds: 5 * 60,
+  longBreakTimeInSeconds: 1 * 60,
+  shortBreakTimeInSeconds: 0.5 * 60,
+};

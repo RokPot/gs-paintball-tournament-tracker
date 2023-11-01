@@ -20,12 +20,16 @@ import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
+import AddTournament from 'components/tournament/AddTournament';
 import TournamentShortList from 'components/tournament/TournamentListShort';
+import dayjs from 'dayjs';
 import { useState } from 'react';
 import useLeagueStore from 'store/LeagueStore';
+import { DefaultGameSettings } from 'types/GameSettings';
 import { League } from 'types/League';
 import { Team } from 'types/Team';
 import { Tournament } from 'types/Tournament';
+import { DefaultTournamentSettings } from 'types/TournamentSettings';
 import { TournamentStage } from 'types/TournamentStage';
 import { TournamentState } from 'types/TournamentState';
 
@@ -90,6 +94,8 @@ const LeaguesPage: React.FC = () => {
   const [isLeagueModalOpen, setIsLeagueModalOpen] = useState(false);
   const [selectedRowLeague, setSelectedRowLeague] = useState<League>();
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
+  const [isTournamentAddModalOpen, setIsTournamentAddModalOpen] =
+    useState(false);
 
   const theme = useTheme();
 
@@ -194,8 +200,10 @@ const LeaguesPage: React.FC = () => {
   const tournaments: Tournament[] = [
     {
       name: 'Tournament 1',
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: dayjs(),
+      endDate: dayjs(),
+      gameSettings: DefaultGameSettings,
+      settings: DefaultTournamentSettings,
       groups: [
         {
           games: [],
@@ -271,7 +279,9 @@ const LeaguesPage: React.FC = () => {
     },
     {
       name: 'Tournament 2',
-      startDate: new Date(),
+      startDate: dayjs(),
+      gameSettings: DefaultGameSettings,
+      settings: DefaultTournamentSettings,
       groups: [
         {
           games: [],
@@ -346,8 +356,10 @@ const LeaguesPage: React.FC = () => {
       ],
     },
     {
-      endDate: new Date(),
-      startDate: new Date(),
+      startDate: dayjs(),
+      endDate: dayjs(),
+      gameSettings: DefaultGameSettings,
+      settings: DefaultTournamentSettings,
       name: 'Tournament 3',
       groups: [
         {
@@ -474,7 +486,7 @@ const LeaguesPage: React.FC = () => {
               width="100%"
               alignItems="flex-start"
               height="100%"
-              padding="8px"
+              padding="8px 8px 0px 8px"
               style={{ borderRight: `1px solid ${theme.palette.divider}` }}
             >
               <FlexContainer
@@ -486,7 +498,9 @@ const LeaguesPage: React.FC = () => {
                 <Button
                   variant="contained"
                   style={{ width: '140px' }}
-                  onClick={() => {}}
+                  onClick={() => {
+                    setIsTournamentAddModalOpen(true);
+                  }}
                 >
                   <Typography variant="subtitle2">New tournament</Typography>
                 </Button>
@@ -500,7 +514,7 @@ const LeaguesPage: React.FC = () => {
               width="100%"
               alignItems="flex-start"
               height="100%"
-              padding="8px"
+              padding="8px 8px 0px 8px"
             >
               <FlexContainer
                 justifyContent="space-between"
@@ -551,6 +565,22 @@ const LeaguesPage: React.FC = () => {
             setIsTeamAddModalOpen(false);
           }}
           onCancel={() => setIsTeamAddModalOpen(false)}
+        />
+      </CustomModal>
+      <CustomModal
+        isModalOpen={isTournamentAddModalOpen}
+        onClose={() => setIsTournamentAddModalOpen(false)}
+        width={600}
+      >
+        <AddTournament
+          league={selectedRowLeague}
+          onAccept={(tournament) => {
+            if (!selectedRowLeague) {
+              return;
+            }
+            setIsTournamentAddModalOpen(false);
+          }}
+          onCancel={() => setIsTournamentAddModalOpen(false)}
         />
       </CustomModal>
     </PageContainer>
