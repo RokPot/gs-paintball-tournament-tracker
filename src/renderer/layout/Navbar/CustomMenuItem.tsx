@@ -13,7 +13,6 @@ interface IProps {
 
 const CustomMenuItem: React.FC<IProps> = ({ path, icon, title, to }) => {
   const { pathname } = useLocation();
-
   const isPathActive = !!matchPath(path, pathname);
   const theme = useTheme();
 
