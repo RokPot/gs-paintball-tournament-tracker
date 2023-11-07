@@ -1,33 +1,41 @@
-import { uniqBy } from 'lodash';
+import usePouchDB from './pouchDB';
 import { useCallback } from 'react';
-import useGlobalStore from 'store/GlobalStore';
 import { Team } from 'types/Team';
 
-const TeamService = () => {
-  const { selectedLeague, setSelectedLeague, allTeams, addTeam } =
-    useGlobalStore();
+const useTeamService = () => {
+  const db = usePouchDB('teams');
 
-  const addNewTeam = useCallback((team: Team, addToCurrentLeague: boolean) => {
-    addTeam(team);
-    if (!addToCurrentLeague) {
-      return;
-    }
-
-    setSelectedLeague(
-      selectedLeague
-        ? {
-            ...selectedLeague,
-            teams: uniqBy([...selectedLeague.teams, team], (c) => c.id),
-          }
-        : undefined
-    );
+  const addNewTeam = useCallback(async (team: Team) => {
+    const res = await db.post(team.toDto());
   }, []);
-  const updateTeam = useCallback((team: Team) => {}, []);
-  const deleteTeam = useCallback((team: Team) => {}, []);
-  const getTeam = useCallback((team: Team) => {}, []);
-  const getTeams = useCallback((team: Team) => {}, []);
+  const updateTeam = useCallback(async (team: Team) => {}, []);
+  const deleteTeam = useCallback(async (team: Team) => {}, []);
+  const getTeam = useCallback((teamId: Team) => {}, []);
+  const getTeams = useCallback(async () => {
+    await db
+      .query('_teams/all')
+      .then(function (res) {
+        // got the query results
+        console.log(res);
+      })
+      .catch(function (err) {
+        // some error
+        console.log(err);
+      });
+    const docs = await db.allDocs<Team>({
+      include_docs: true,
+      attachments: true,
+    });
+    return docs.rows.map((row) => new Team(row.doc!)) || [];
+  }, []);
 
-  return { addNewTeam, updateTeam, deleteTeam, getTeam, getTeams };
+  return {
+    addNewTeam,
+    updateTeam,
+    deleteTeam,
+    getTeam,
+    getTeams,
+  };
 };
 
-export default TeamService;
+export default useTeamService;

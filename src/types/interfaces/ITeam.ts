@@ -1,6 +1,7 @@
 import { TeamMember } from 'types/TeamMember';
+import { PouchDBDto } from 'types/dto/PouchDBDto';
 
-export interface ITeam {
+export interface ITeam extends PouchDBDto {
   id: string;
   teamName: String;
   teamTag: string;

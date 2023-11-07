@@ -11,6 +11,7 @@ interface LeagueStoreState {
   refreshSelectedLeague: (league: League) => void;
   updateSelectedLeague: (league: League) => void;
   allLeagues: League[];
+  setLeagues: (leagues: League[]) => void;
   addLeague: (league: League) => void;
   updateLeague: (league: League) => void;
 }
@@ -36,6 +37,7 @@ const useLeagueStore = create<LeagueStoreState>((set, get) => ({
       selectedLeague:
         state.selectedLeague?.id === league.id ? league : undefined,
     })),
+  setLeagues: (leagues: League[]) => set(() => ({ allLeagues: leagues })),
   setSelectedLeague: (league?: League) =>
     set((state) => {
       if (state.selectedLeague) {

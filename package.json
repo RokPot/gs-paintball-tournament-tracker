@@ -15,7 +15,8 @@
     "start:preload": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.preload.dev.ts",
     "start:renderer": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack serve --config ./.erb/configs/webpack.config.renderer.dev.ts",
     "start-main-debug": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3003 && electron . --inspect=5858  --remote-debugging-port=9223\"",
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc"
   },
   "browserslist": [],
   "prettier": {
@@ -84,6 +85,7 @@
     "electron-updater": "^5.3.0",
     "formik": "^2.4.5",
     "lodash": "^4.17.21",
+    "pouchdb-browser": "^8.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-pro-sidebar": "^1.1.0-alpha.1",
@@ -106,6 +108,7 @@
     "@types/jest": "^29.5.2",
     "@types/lodash": "^4.14.173",
     "@types/node": "20.2.5",
+    "@types/pouchdb": "^6.4.1",
     "@types/react": "^18.2.8",
     "@types/react-dom": "^18.2.4",
     "@types/react-test-renderer": "^18.0.0",

@@ -14,7 +14,6 @@ import { IconButton, Typography, alpha, styled, useTheme } from '@mui/material';
 import clsx from 'clsx';
 import { useState } from 'react';
 import { Menu, Sidebar } from 'react-pro-sidebar';
-import useGlobalStore from 'store/GlobalStore';
 
 const StyledMenuButtonContainer = styled('div')(
   (props) => `
@@ -42,17 +41,18 @@ const navBarItems = [
     to: '/',
   },
   {
-    icon: faTicket,
-    path: '/leagues/*',
-    title: 'Leagues',
-    to: '/leagues',
-  },
-  {
     icon: faPeopleGroup,
     path: '/teams/*',
     title: 'Teams',
     to: '/teams',
   },
+  {
+    icon: faTicket,
+    path: '/leagues/*',
+    title: 'Leagues',
+    to: '/leagues',
+  },
+
   {
     icon: faNetworkWired,
     path: '/tournament/*',
@@ -70,7 +70,7 @@ const navBarItems = [
 const SidebarNav: React.FC = () => {
   const theme = useTheme();
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
-  const selectedLeague = useGlobalStore((state) => state.selectedLeague);
+
   return (
     <Sidebar
       width="180px"

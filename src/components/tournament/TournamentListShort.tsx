@@ -43,10 +43,10 @@ const TournamentShortList: React.FC<IProps> = ({ tournaments }) => {
               color={(theme) => theme.palette.text.disabled}
             >
               {tournament?.startDate && (
-                <>Started: {tournament.startDate.toLocaleDateString('sl-si')}</>
+                <>Started: {tournament.startDate.toISOString()}</>
               )}{' '}
               {tournament?.endDate && (
-                <>Finished: {tournament.endDate.toLocaleDateString('sl-si')}</>
+                <>Finished: {tournament.endDate.toISOString()}</>
               )}
             </Typography>
           </FlexContainer>

@@ -1,9 +1,9 @@
+import { PouchDBDto } from './PouchDBDto';
 import { LeaderboardTeam } from 'types/LeadeboardTeam';
 import { Team } from 'types/Team';
 import { Tournament } from 'types/Tournament';
-import { PouchDBDto } from 'types/dto/PouchDBDto';
 
-export interface ILeague extends PouchDBDto {
+export interface LeagueDto extends PouchDBDto {
   id: string;
 
   name: string;
@@ -13,4 +13,6 @@ export interface ILeague extends PouchDBDto {
   tournaments: Tournament[];
 
   leaderboard: LeaderboardTeam[];
+
+  isLeagueSelected?: boolean;
 }

@@ -6,6 +6,7 @@ import QuickAddTeam from 'components/teams/QuickAddTeam';
 import TeamsShortList from 'components/teams/TeamShortList';
 import { useFormik } from 'formik';
 import { useState } from 'react';
+import useTeamService from 'services/TeamService';
 import { League } from 'types/League';
 import { Team } from 'types/Team';
 import { LeagueDetailsSchema } from 'utils/schemes';
@@ -23,13 +24,16 @@ interface IProps {
 }
 
 const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
+  const { addNewTeam } = useTeamService();
   const formik = useFormik<AddLeague>({
     initialValues: { name: league?.name || '', teams: league?.teams || [] },
     validationSchema: LeagueDetailsSchema,
     onSubmit: (values: AddLeague) => {
+      const teamId = v4();
       onConfirm(
         new League({
-          id: v4(),
+          id: teamId,
+          _id: teamId,
           leaderboard: [],
           name: values.name,
           teams: values.teams,
@@ -96,6 +100,7 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
       >
         <QuickAddTeam
           onAccept={(team) => {
+            addNewTeam(team);
             formik.setFieldValue('teams', [
               ...(formik?.values?.teams || []),
               team,

@@ -22,16 +22,10 @@ import LeaderboardList from 'components/teams/LeaderboardList';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
 import AddTournament from 'components/tournament/AddTournament';
 import TournamentShortList from 'components/tournament/TournamentListShort';
-import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import useLeagueService from 'services/LeagueService';
 import useLeagueStore from 'store/LeagueStore';
-import { DefaultGameSettings } from 'types/GameSettings';
 import { League } from 'types/League';
-import { Team } from 'types/Team';
-import { Tournament } from 'types/Tournament';
-import { DefaultTournamentSettings } from 'types/TournamentSettings';
-import { TournamentStage } from 'types/TournamentStage';
-import { TournamentState } from 'types/TournamentState';
 
 const StyledHeaderContainer = styled('div')(
   () => css`
@@ -89,6 +83,7 @@ const LeaguesPage: React.FC = () => {
     updateLeague,
     addTeamToLeague,
     allLeagues,
+    setLeagues,
     selectedLeague,
   } = useLeagueStore();
   const [isLeagueModalOpen, setIsLeagueModalOpen] = useState(false);
@@ -96,10 +91,18 @@ const LeaguesPage: React.FC = () => {
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
   const [isTournamentAddModalOpen, setIsTournamentAddModalOpen] =
     useState(false);
-
+  const { addNewLeague, getLeagues } = useLeagueService();
   const theme = useTheme();
 
-  const confirmLeague = (league: League, isEdit: boolean) => {
+  useEffect(() => {
+    const getAllLeagues = async () => {
+      setLeagues(await getLeagues());
+    };
+    getAllLeagues();
+  }, []);
+
+  const confirmLeague = async (league: League, isEdit: boolean) => {
+    await addNewLeague(league.toDto());
     if (isEdit) {
       updateSelectedLeague(league);
     } else {
@@ -197,245 +200,7 @@ const LeaguesPage: React.FC = () => {
       },
     },
   ];
-  const tournaments: Tournament[] = [
-    {
-      name: 'Tournament 1',
-      startDate: dayjs(),
-      endDate: dayjs(),
-      gameSettings: DefaultGameSettings,
-      settings: DefaultTournamentSettings,
-      groups: [
-        {
-          games: [],
-          groupIndex: 0,
-          id: '',
-          teams: [
-            new Team({
-              id: '1',
-              members: [],
-              teamName: 'team1',
-              teamTag: 'tag1',
-              draw: 0,
-              loses: 0,
-              wins: 0,
-            }),
-            new Team({
-              id: '2',
-              members: [],
-              teamName: 'team2',
-              teamTag: 'tag2',
-              draw: 0,
-              loses: 0,
-              wins: 0,
-            }),
-            new Team({
-              id: '3',
-              members: [],
-              teamName: 'team3',
-              teamTag: 'tag3',
-              draw: 0,
-              loses: 0,
-              wins: 0,
-            }),
-          ],
-        },
-      ],
-      id: '',
-      state: new TournamentState({
-        id: '',
-        isGameInProgress: false,
-        isTournamentFinished: false,
-        stage: TournamentStage.startStage,
-      }),
-      teams: [
-        new Team({
-          id: '1',
-          members: [],
-          teamName: 'team1',
-          teamTag: 'tag1',
-          draw: 0,
-          loses: 0,
-          wins: 0,
-        }),
-        new Team({
-          id: '2',
-          members: [],
-          teamName: 'team2',
-          teamTag: 'tag2',
-          draw: 0,
-          loses: 0,
-          wins: 0,
-        }),
-        new Team({
-          id: '3',
-          members: [],
-          teamName: 'team3',
-          teamTag: 'tag3',
-          draw: 0,
-          loses: 0,
-          wins: 0,
-        }),
-      ],
-    },
-    {
-      name: 'Tournament 2',
-      startDate: dayjs(),
-      gameSettings: DefaultGameSettings,
-      settings: DefaultTournamentSettings,
-      groups: [
-        {
-          games: [],
-          groupIndex: 0,
-          id: '',
-          teams: [
-            new Team({
-              id: '1',
-              members: [],
-              teamName: 'team1',
-              teamTag: 'tag1',
-              draw: 0,
-              loses: 0,
-              wins: 0,
-            }),
-            new Team({
-              id: '2',
-              members: [],
-              teamName: 'team2',
-              teamTag: 'tag2',
-              draw: 0,
-              loses: 0,
-              wins: 0,
-            }),
-            new Team({
-              id: '3',
-              members: [],
-              teamName: 'team3',
-              teamTag: 'tag3',
-              draw: 0,
-              loses: 0,
-              wins: 0,
-            }),
-          ],
-        },
-      ],
-      id: '',
-      state: new TournamentState({
-        id: '',
-        isGameInProgress: false,
-        isTournamentFinished: false,
-        stage: TournamentStage.startStage,
-      }),
-      teams: [
-        new Team({
-          id: '1',
-          members: [],
-          teamName: 'team1',
-          teamTag: 'tag1',
-          draw: 0,
-          loses: 0,
-          wins: 0,
-        }),
-        new Team({
-          id: '2',
-          members: [],
-          teamName: 'team2',
-          teamTag: 'tag2',
-          draw: 0,
-          loses: 0,
-          wins: 0,
-        }),
-        new Team({
-          id: '3',
-          members: [],
-          teamName: 'team3',
-          teamTag: 'tag3',
-          draw: 0,
-          loses: 0,
-          wins: 0,
-        }),
-      ],
-    },
-    {
-      startDate: dayjs(),
-      endDate: dayjs(),
-      gameSettings: DefaultGameSettings,
-      settings: DefaultTournamentSettings,
-      name: 'Tournament 3',
-      groups: [
-        {
-          games: [],
-          groupIndex: 0,
-          id: '',
-          teams: [
-            new Team({
-              id: '1',
-              members: [],
-              teamName: 'team1',
-              teamTag: 'tag1',
-              draw: 0,
-              loses: 0,
-              wins: 0,
-            }),
-            new Team({
-              id: '2',
-              members: [],
-              teamName: 'team2',
-              teamTag: 'tag2',
-              draw: 0,
-              loses: 0,
-              wins: 0,
-            }),
-            new Team({
-              id: '3',
-              members: [],
-              teamName: 'team3',
-              teamTag: 'tag3',
-              draw: 0,
-              loses: 0,
-              wins: 0,
-            }),
-          ],
-        },
-      ],
-      id: '',
-      state: new TournamentState({
-        id: '',
-        isGameInProgress: false,
-        isTournamentFinished: false,
-        stage: TournamentStage.startStage,
-      }),
-      teams: [
-        new Team({
-          id: '1',
-          members: [],
-          teamName: 'team1',
-          teamTag: 'tag1',
-          draw: 0,
-          loses: 0,
-          wins: 0,
-        }),
-        new Team({
-          id: '2',
-          members: [],
-          teamName: 'team2',
-          teamTag: 'tag2',
-          draw: 0,
-          loses: 0,
-          wins: 0,
-        }),
-        new Team({
-          id: '3',
-          members: [],
-          teamName: 'team3',
-          teamTag: 'tag3',
-          draw: 0,
-          loses: 0,
-          wins: 0,
-        }),
-      ],
-    },
-  ];
-  console.log(selectedLeague, allLeagues);
+
   return (
     <PageContainer>
       <StyledHeaderContainer>
