@@ -1,27 +1,22 @@
-import usePouchDB from './pouchDB';
+import usePouchDB, { pouchDbName } from './pouchDB';
 import { useCallback } from 'react';
 import { Team } from 'types/Team';
 
 const useTeamService = () => {
-  const db = usePouchDB('teams');
+  const db = usePouchDB(pouchDbName);
 
   const addNewTeam = useCallback(async (team: Team) => {
-    const res = await db.post(team.toDto());
+    await db.post(team.toDto());
+    return await db.get<Team>(team._id);
   }, []);
   const updateTeam = useCallback(async (team: Team) => {}, []);
   const deleteTeam = useCallback(async (team: Team) => {}, []);
-  const getTeam = useCallback((teamId: Team) => {}, []);
+  const getTeam = useCallback(async (teamId: string) => {
+    return await db.get<Team>(teamId, {
+      attachments: true,
+    });
+  }, []);
   const getTeams = useCallback(async () => {
-    await db
-      .query('_teams/all')
-      .then(function (res) {
-        // got the query results
-        console.log(res);
-      })
-      .catch(function (err) {
-        // some error
-        console.log(err);
-      });
     const docs = await db.allDocs<Team>({
       include_docs: true,
       attachments: true,

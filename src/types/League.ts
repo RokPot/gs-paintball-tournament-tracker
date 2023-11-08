@@ -22,9 +22,9 @@ export class League extends IPouchDB {
     super(props._id, props._rev, 'league');
     this.id = props.id;
     this.name = props.name;
-    this.teams = props.teams;
-    this.tournaments = props.tournaments;
-    this.leaderboard = props.leaderboard;
+    this.teams = props.teams || [];
+    this.tournaments = props.tournaments || [];
+    this.leaderboard = props.leaderboard || [];
   }
 
   public addLeaderboardTeam = (leaderboardTeam: LeaderboardTeam) => {
@@ -39,11 +39,12 @@ export class League extends IPouchDB {
     return {
       _id: this._id,
       _rev: this._rev,
+      docType: this.docType,
       id: this.id,
       name: this.name,
-      teams: this.teams,
-      tournaments: this.tournaments,
-      leaderboard: this.leaderboard,
+      teamIds: this.teams.map((team) => ({ _id: team._id })),
+      tournamentIds: this.tournaments.map((tournament) => tournament.id),
+      leaderboardTeamIds: this.leaderboard.map((tournament) => tournament.id),
     };
   };
 }

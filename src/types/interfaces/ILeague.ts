@@ -8,9 +8,9 @@ export interface ILeague extends PouchDBDto {
 
   name: string;
 
-  teams: Team[];
+  teams?: Team[];
 
-  tournaments: Tournament[];
+  tournaments?: Tournament[];
 
-  leaderboard: LeaderboardTeam[];
+  leaderboard?: LeaderboardTeam[];
 }

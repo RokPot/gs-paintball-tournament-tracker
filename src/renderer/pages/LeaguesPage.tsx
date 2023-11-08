@@ -24,6 +24,7 @@ import AddTournament from 'components/tournament/AddTournament';
 import TournamentShortList from 'components/tournament/TournamentListShort';
 import { useEffect, useState } from 'react';
 import useLeagueService from 'services/LeagueService';
+import useTeamService from 'services/TeamService';
 import useLeagueStore from 'store/LeagueStore';
 import { League } from 'types/League';
 
@@ -92,6 +93,7 @@ const LeaguesPage: React.FC = () => {
   const [isTournamentAddModalOpen, setIsTournamentAddModalOpen] =
     useState(false);
   const { addNewLeague, getLeagues } = useLeagueService();
+  const { addNewTeam } = useTeamService();
   const theme = useTheme();
 
   useEffect(() => {
@@ -322,11 +324,12 @@ const LeaguesPage: React.FC = () => {
         width={600}
       >
         <QuickAddTeam
-          onAccept={(team) => {
+          onAccept={async (team) => {
             if (!selectedRowLeague) {
               return;
             }
-            addTeamToLeague(selectedRowLeague, team);
+            const addedTeam = await addNewTeam(team);
+            addTeamToLeague(selectedRowLeague, addedTeam);
             setIsTeamAddModalOpen(false);
           }}
           onCancel={() => setIsTeamAddModalOpen(false)}
