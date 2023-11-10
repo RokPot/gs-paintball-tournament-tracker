@@ -3,7 +3,7 @@ import { PouchDBDto } from 'types/dto/PouchDBDto';
 
 export interface ITeam extends PouchDBDto {
   id: string;
-  teamName: String;
+  teamName: string;
   teamTag: string;
   wins?: number;
   loses?: number;

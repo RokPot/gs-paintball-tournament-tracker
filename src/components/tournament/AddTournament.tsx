@@ -105,7 +105,7 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
           variant="subtitle2"
           color={(theme) => theme.palette.text.disabled}
         >
-          Add teams from league that will participate in this tournament
+          Add teams from league that will participate in this tournament asd
         </Typography>
         <Autocomplete
           multiple
@@ -124,6 +124,11 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
                 value: team,
               })) || []
           }
+          isOptionEqualToValue={(option, value) => {
+            console.log(option);
+            console.log(value);
+            return option.value.id === value.value.id;
+          }}
           getOptionLabel={(option) => option.title.toString()}
           renderOption={(props, option) => (
             <Typography {...props}>

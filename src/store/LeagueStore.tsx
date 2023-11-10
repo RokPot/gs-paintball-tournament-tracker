@@ -2,6 +2,7 @@ import { uniqBy } from 'lodash';
 import { LeaderboardTeam } from 'types/LeadeboardTeam';
 import { League } from 'types/League';
 import { Team } from 'types/Team';
+import { v4 } from 'uuid';
 import { create } from 'zustand';
 
 interface LeagueStoreState {
@@ -11,14 +12,17 @@ interface LeagueStoreState {
   refreshSelectedLeague: (league: League) => void;
   updateSelectedLeague: (league: League) => void;
   allLeagues: League[];
-  setLeagues: (leagues: League[]) => void;
+  setLeagues: (leagues?: League[]) => void;
   addLeague: (league: League) => void;
   updateLeague: (league: League) => void;
 }
 
-const createNewLeaderboardTeam = (team: Team) => {
+export const createNewLeaderboardTeam = (team: Team) => {
+  const id = v4();
   return new LeaderboardTeam({
-    ...team,
+    _id: id,
+    id: id,
+    team,
     rank: 0,
     totalLosses: 0,
     totalPoints: 0,
@@ -37,7 +41,8 @@ const useLeagueStore = create<LeagueStoreState>((set, get) => ({
       selectedLeague:
         state.selectedLeague?.id === league.id ? league : undefined,
     })),
-  setLeagues: (leagues: League[]) => set(() => ({ allLeagues: leagues })),
+  setLeagues: (leagues?: League[]) =>
+    set(() => ({ allLeagues: leagues || [] })),
   setSelectedLeague: (league?: League) =>
     set((state) => {
       if (state.selectedLeague) {

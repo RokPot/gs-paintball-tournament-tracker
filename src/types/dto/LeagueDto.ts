@@ -14,7 +14,7 @@ export interface LeagueDto extends PouchDBDto {
 
   leaderboard?: LeaderboardTeam[];
 
-  teamIds: { _id: string }[];
+  teamIds: string[];
 
   tournamentIds: string[];
 

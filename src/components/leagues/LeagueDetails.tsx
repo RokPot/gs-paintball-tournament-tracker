@@ -1,12 +1,20 @@
-import { Button, Typography } from '@mui/material';
+import {
+  Autocomplete,
+  Avatar,
+  Button,
+  TextField,
+  Typography,
+} from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import CustomTextField from 'components/shared/CustomTextField';
 import FlexContainer from 'components/shared/FlexContainer';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
 import TeamsShortList from 'components/teams/TeamShortList';
 import { useFormik } from 'formik';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useTeamService from 'services/TeamService';
+import { createNewLeaderboardTeam } from 'store/LeagueStore';
+import useTeamStore from 'store/TeamStore';
 import { League } from 'types/League';
 import { Team } from 'types/Team';
 import { LeagueDetailsSchema } from 'utils/schemes';
@@ -24,7 +32,17 @@ interface IProps {
 }
 
 const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
-  const { addNewTeam } = useTeamService();
+  const { addNewTeam, getTeams } = useTeamService();
+  const { allTeams, setAllTeams } = useTeamStore();
+
+  useEffect(() => {
+    const getAllTeams = async () => {
+      const teams = await getTeams();
+      setAllTeams(teams);
+    };
+    getAllTeams();
+  }, []);
+
   const formik = useFormik<AddLeague>({
     initialValues: { name: league?.name || '', teams: league?.teams || [] },
     validationSchema: LeagueDetailsSchema,
@@ -34,7 +52,9 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
         new League({
           id: teamId,
           _id: teamId,
-          leaderboard: [],
+          leaderboard: values.teams.map((team) => {
+            return createNewLeaderboardTeam(team);
+          }),
           name: values.name,
           teams: values.teams,
           tournaments: [],
@@ -42,6 +62,7 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
       );
     },
   });
+
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
   return (
     <FlexContainer
@@ -84,6 +105,75 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
         Add teams which will participate in the league (you can also add them
         later)
       </Typography>
+      <Autocomplete
+        multiple
+        fullWidth
+        value={
+          formik?.values?.teams?.map((team) => ({
+            title: team.teamName,
+            value: team,
+          })) || []
+        }
+        options={
+          allTeams.map((team) => ({
+            title: team.teamName,
+            value: team,
+          })) || []
+        }
+        getOptionLabel={(option) => option.title.toString()}
+        renderOption={(props, option) => (
+          <Typography {...props}>
+            <Avatar
+              variant="rounded"
+              style={{
+                backgroundColor: option.value.color,
+                height: '25px',
+                width: '25px',
+                marginRight: '8px',
+              }}
+            >
+              <Typography
+                variant="body1"
+                style={{ textTransform: 'uppercase' }}
+              >
+                {option.value.teamTag}
+              </Typography>
+            </Avatar>
+            {option.value.teamName}
+          </Typography>
+        )}
+        disableCloseOnSelect
+        filterSelectedOptions
+        onChange={(_, value) =>
+          formik.setFieldValue(
+            'teams',
+            value.map((val) => val.value)
+          )
+        }
+        limitTags={-1}
+        renderTags={() => (
+          <Typography
+            variant="body1"
+            color={(theme) => theme.palette.text.secondary}
+          >
+            {formik.values?.teams?.length >= 1 && formik.values?.teams.length}{' '}
+            {formik.values?.teams?.length > 0
+              ? formik.values?.teams.length === 1
+                ? 'team'
+                : 'teams'
+              : ''}{' '}
+            {formik.values?.teams?.length >= 1 && 'selected'}
+          </Typography>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Participating teams"
+            placeholder="Select teams"
+          />
+        )}
+      />
+
       <TeamsShortList
         showRemoveButton
         onRemoveTeam={(_, index) => {

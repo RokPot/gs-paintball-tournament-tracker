@@ -42,7 +42,7 @@ const LeaderboardList: React.FC<IProps> = ({
       renderCell: (params) => {
         return (
           <Typography variant="p1Medium" width={30} textAlign="center">
-            {[0, 1, 2, 3].includes(params.row.rank) ? (
+            {[0, 1, 2].includes(params.row.rank) ? (
               <FontAwesomeIcon
                 icon={faTrophy}
                 color={getColor(params?.row?.rank)}
@@ -66,7 +66,7 @@ const LeaderboardList: React.FC<IProps> = ({
             <Avatar
               variant="rounded"
               style={{
-                backgroundColor: params?.row?.color,
+                backgroundColor: params?.row?.team?.color,
                 marginRight: '8px',
               }}
             >
@@ -74,10 +74,10 @@ const LeaderboardList: React.FC<IProps> = ({
                 variant="p1Medium"
                 style={{ textTransform: 'uppercase' }}
               >
-                {params?.row?.teamTag}
+                {params?.row?.team.teamTag}
               </Typography>
             </Avatar>
-            <Typography width={100}>{params?.row?.teamName}</Typography>
+            <Typography width={100}>{params?.row?.team.teamName}</Typography>
           </>
         );
       },

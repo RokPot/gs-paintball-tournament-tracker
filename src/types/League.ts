@@ -42,9 +42,9 @@ export class League extends IPouchDB {
       docType: this.docType,
       id: this.id,
       name: this.name,
-      teamIds: this.teams.map((team) => ({ _id: team._id })),
+      teamIds: this.teams.map((team) => team._id),
       tournamentIds: this.tournaments.map((tournament) => tournament.id),
-      leaderboardTeamIds: this.leaderboard.map((tournament) => tournament.id),
+      leaderboardTeamIds: this.leaderboard.map((tournament) => tournament._id),
     };
   };
 }

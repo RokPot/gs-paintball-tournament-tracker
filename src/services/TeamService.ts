@@ -1,6 +1,8 @@
 import usePouchDB, { pouchDbName } from './pouchDB';
 import { useCallback } from 'react';
+import { LeaderboardTeam } from 'types/LeadeboardTeam';
 import { Team } from 'types/Team';
+import { TeamDto } from 'types/dto/TeamDto';
 
 const useTeamService = () => {
   const db = usePouchDB(pouchDbName);
@@ -9,6 +11,15 @@ const useTeamService = () => {
     await db.post(team.toDto());
     return await db.get<Team>(team._id);
   }, []);
+
+  const addNewLeaderBoardTeam = useCallback(
+    async (teams: LeaderboardTeam[]) => {
+      const res = await db.bulkDocs([...teams.map((team) => team.toDto())]);
+      return null;
+    },
+    []
+  );
+
   const updateTeam = useCallback(async (team: Team) => {}, []);
   const deleteTeam = useCallback(async (team: Team) => {}, []);
   const getTeam = useCallback(async (teamId: string) => {
@@ -17,11 +28,15 @@ const useTeamService = () => {
     });
   }, []);
   const getTeams = useCallback(async () => {
-    const docs = await db.allDocs<Team>({
+    const myMapFunction = (doc: any, emit: any) => {
+      if (doc.docType === 'team') {
+        emit(doc);
+      }
+    };
+    const result = await db.query<TeamDto>(myMapFunction, {
       include_docs: true,
-      attachments: true,
     });
-    return docs.rows.map((row) => new Team(row.doc!)) || [];
+    return result.rows.map((row) => new Team(row.doc!)) || [];
   }, []);
 
   return {
@@ -30,6 +45,7 @@ const useTeamService = () => {
     deleteTeam,
     getTeam,
     getTeams,
+    addNewLeaderBoardTeam,
   };
 };
 

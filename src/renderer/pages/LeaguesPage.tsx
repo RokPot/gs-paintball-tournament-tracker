@@ -77,23 +77,15 @@ const StyledActiveBadge = styled('div')(
 );
 
 const LeaguesPage: React.FC = () => {
-  const {
-    setSelectedLeague,
-    addLeague,
-    updateSelectedLeague,
-    updateLeague,
-    addTeamToLeague,
-    allLeagues,
-    setLeagues,
-    selectedLeague,
-  } = useLeagueStore();
+  const { setLeagues, allLeagues, setSelectedLeague, selectedLeague } =
+    useLeagueStore();
   const [isLeagueModalOpen, setIsLeagueModalOpen] = useState(false);
   const [selectedRowLeague, setSelectedRowLeague] = useState<League>();
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
   const [isTournamentAddModalOpen, setIsTournamentAddModalOpen] =
     useState(false);
   const { addNewLeague, getLeagues } = useLeagueService();
-  const { addNewTeam } = useTeamService();
+  const { addNewTeam, addNewLeaderBoardTeam } = useTeamService();
   const theme = useTheme();
 
   useEffect(() => {
@@ -104,12 +96,9 @@ const LeaguesPage: React.FC = () => {
   }, []);
 
   const confirmLeague = async (league: League, isEdit: boolean) => {
+    await addNewLeaderBoardTeam(league.leaderboard);
     await addNewLeague(league.toDto());
-    if (isEdit) {
-      updateSelectedLeague(league);
-    } else {
-      addLeague(league);
-    }
+
     setIsLeagueModalOpen(false);
   };
 
@@ -329,7 +318,6 @@ const LeaguesPage: React.FC = () => {
               return;
             }
             const addedTeam = await addNewTeam(team);
-            addTeamToLeague(selectedRowLeague, addedTeam);
             setIsTeamAddModalOpen(false);
           }}
           onCancel={() => setIsTeamAddModalOpen(false)}

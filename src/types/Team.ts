@@ -5,7 +5,7 @@ import { ITeam } from './interfaces/ITeam';
 
 export class Team extends IPouchDB {
   id: string;
-  teamName: String;
+  teamName: string;
   teamTag: string;
   wins: number;
   loses: number;
