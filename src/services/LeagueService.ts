@@ -1,5 +1,5 @@
 import useTeamService from './TeamService';
-import usePouchDB, { pouchDbName } from './pouchDB';
+import usePouchDB, { DocType, pouchDbName } from './pouchDB';
 import groupBy from 'lodash/groupBy';
 import { useCallback } from 'react';
 import { League } from 'types/League';
@@ -8,6 +8,7 @@ import {
   getRootElementAndLinkedDocs,
   mapLeaderboardTeamsFromResponse,
   mapTeamsFromResponse,
+  mapTournamentsFromResponse,
 } from 'utils/PouchDBUtils';
 
 const useLeagueService = () => {
@@ -30,16 +31,16 @@ const useLeagueService = () => {
   }, []);
   const getLeagues = useCallback(async () => {
     const myMapFunction = (doc: any, emit: any) => {
-      if (doc.docType === 'league') {
-        emit(doc, 'league');
+      if (doc.docType === DocType.League) {
+        emit(doc, DocType.League);
         if (doc.teamIds) {
           doc.teamIds.forEach(function (item: any) {
-            emit(doc._id, { _id: item, type: 'team' });
+            emit(doc._id, { _id: item, type: DocType.Team });
           });
         }
         if (doc.leaderboardTeamIds) {
           doc.leaderboardTeamIds.forEach(function (item: any) {
-            emit(doc._id, { _id: item, type: 'leaderboard' });
+            emit(doc._id, { _id: item, type: DocType.LeaderboardTeam });
           });
         }
       }
@@ -51,12 +52,12 @@ const useLeagueService = () => {
     const leagues: League[] = [];
     const groupedResults = groupBy(result.rows, (row) => row.id);
     for (const key of Object.keys(groupedResults)) {
-      const { rootDoc, otherDocs } = getRootElementAndLinkedDocs(
+      const { rootDoc, otherDocs } = getRootElementAndLinkedDocs<LeagueDto>(
         groupedResults[key],
-        'league'
+        DocType.League
       );
 
-      const rootLeague = rootDoc?.doc as LeagueDto;
+      const rootLeague = rootDoc;
       if (!rootLeague) {
         return;
       }
@@ -64,15 +65,21 @@ const useLeagueService = () => {
 
       const teams = mapTeamsFromResponse(
         rootLeague?.teamIds,
-        otherDocs.filter((val) => val.value.type === 'team')
+        otherDocs.filter((val) => val.value.type === DocType.Team)
       );
       const leaderboardTeams = mapLeaderboardTeamsFromResponse(
         rootLeague?.leaderboardTeamIds,
         teams,
-        otherDocs.filter((val) => val.value.type === 'leaderboard')
+        otherDocs.filter((val) => val.value.type === DocType.LeaderboardTeam)
+      );
+      const tournaments = mapTournamentsFromResponse(
+        rootLeague?.leaderboardTeamIds,
+        teams,
+        otherDocs.filter((val) => val.value.type === DocType.Tournament)
       );
       newLeague.teams = teams;
       newLeague.leaderboard = leaderboardTeams;
+      newLeague.tournaments = tournaments;
       leagues.push(newLeague);
     }
     return leagues;

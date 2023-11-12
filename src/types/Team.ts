@@ -2,6 +2,7 @@ import { TeamMember } from './TeamMember';
 import { TeamDto } from './dto/TeamDto';
 import { IPouchDB } from './interfaces/IPouchDB';
 import { ITeam } from './interfaces/ITeam';
+import { DocType } from 'services/pouchDB';
 
 export class Team extends IPouchDB {
   id: string;
@@ -13,7 +14,7 @@ export class Team extends IPouchDB {
   members: TeamMember[];
   color?: string;
   constructor(props: ITeam) {
-    super(props._id, props._rev, props.docType || 'team');
+    super(props._id, props._rev, props.docType || DocType.Team);
     this.id = props.id;
     this.teamName = props.teamName;
     this.teamTag = props.teamTag;

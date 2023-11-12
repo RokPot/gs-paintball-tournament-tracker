@@ -4,6 +4,7 @@ import { Tournament } from './Tournament';
 import { LeagueDto } from './dto/LeagueDto';
 import { ILeague } from './interfaces/ILeague';
 import { IPouchDB } from './interfaces/IPouchDB';
+import { DocType } from 'services/pouchDB';
 
 export class League extends IPouchDB {
   id: string;
@@ -19,7 +20,7 @@ export class League extends IPouchDB {
   isLeagueSelected?: boolean;
 
   constructor(props: ILeague) {
-    super(props._id, props._rev, 'league');
+    super(props._id, props._rev, props.docType || DocType.League);
     this.id = props.id;
     this.name = props.name;
     this.teams = props.teams || [];

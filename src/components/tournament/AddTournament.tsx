@@ -16,11 +16,12 @@ import CustomCheckbox from 'components/shared/CustomCheckbox';
 import CustomTextField from 'components/shared/CustomTextField';
 import FlexContainer from 'components/shared/FlexContainer';
 import TeamsShortList from 'components/teams/TeamShortList';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/sl';
 import { useFormik } from 'formik';
-import { DefaultGameSettings, GameSettings } from 'types/GameSettings';
+import { DefaultGameSettings } from 'types/GameSettings';
 import { League } from 'types/League';
+import { Team } from 'types/Team';
 import { Tournament } from 'types/Tournament';
 import {
   DefaultTournamentSettings,
@@ -31,32 +32,94 @@ import { TournamentState } from 'types/TournamentState';
 import { v4 } from 'uuid';
 
 interface IProps {
-  onAccept: (team: Tournament) => void;
+  onAccept: (tournament: Tournament) => void;
   onCancel: () => void;
   league?: League;
 }
 
+interface AddGameSettings {
+  longBreakTimeInSeconds: Dayjs;
+  shortBreakTimeInSeconds: Dayjs;
+  gameTimeInSeconds: Dayjs;
+}
+
+interface AddTournament {
+  name: string;
+  startDate: Dayjs;
+  endDate: Dayjs;
+  gameSettings: {
+    longBreakTimeInSeconds: Dayjs;
+    shortBreakTimeInSeconds: Dayjs;
+    gameTimeInSeconds: Dayjs;
+  };
+  settings: TournamentSettings;
+  teams: Team[];
+}
+
+const convertFromSecondsDayjs = (seconds: number) => {
+  return dayjs()
+    .minute(Math.floor(seconds / 60))
+    .second(seconds % 60);
+};
+
+const fromDayjsToSeconds = (time: Dayjs) => {
+  return time.minute() * time.second();
+};
+
 const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
   const theme = useTheme();
-  const formik = useFormik<Tournament>({
+  const formik = useFormik<AddTournament>({
     initialValues: {
-      groups: [],
-      id: v4(),
       name: '',
-      state: new TournamentState({
-        id: v4(),
-        isGameInProgress: false,
-        isTournamentFinished: false,
-        stage: TournamentStage.startStage,
-      }),
       teams: [],
       startDate: dayjs(),
       endDate: dayjs().add(1, 'day'),
-      gameSettings: DefaultGameSettings,
+      gameSettings: {
+        longBreakTimeInSeconds: convertFromSecondsDayjs(
+          DefaultGameSettings.longBreakTimeInSeconds
+        ),
+        shortBreakTimeInSeconds: convertFromSecondsDayjs(
+          DefaultGameSettings.shortBreakTimeInSeconds
+        ),
+        gameTimeInSeconds: convertFromSecondsDayjs(
+          DefaultGameSettings.gameTimeInSeconds
+        ),
+      },
       settings: DefaultTournamentSettings,
     },
-    onSubmit: (values: Tournament) => {
-      console.log(values);
+    onSubmit: (values: AddTournament) => {
+      const newId = v4();
+      onAccept(
+        new Tournament({
+          name: values.name,
+          gameSettings: {
+            id: v4(),
+            longBreakTimeInSeconds: fromDayjsToSeconds(
+              values.gameSettings.longBreakTimeInSeconds
+            ),
+            shortBreakTimeInSeconds: fromDayjsToSeconds(
+              values.gameSettings.shortBreakTimeInSeconds
+            ),
+            gameTimeInSeconds: fromDayjsToSeconds(
+              values.gameSettings.gameTimeInSeconds
+            ),
+          },
+          settings: values.settings,
+          endDate: values.endDate.toISOString(),
+          startDate: values.startDate.toISOString(),
+
+          groups: [],
+          id: newId,
+          _id: newId,
+          state: new TournamentState({
+            id: v4(),
+            isGameInProgress: false,
+            isTournamentFinished: false,
+            stage: TournamentStage.startStage,
+          }),
+          teams: values.teams,
+        })
+      );
     },
   });
 
@@ -118,15 +181,13 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
           }
           options={
             league?.teams
-              .filter((team) => !formik?.values?.teams.includes(team))
+              .filter((team) => !formik?.values?.teams?.includes(team))
               .map((team) => ({
                 title: team.teamName,
                 value: team,
               })) || []
           }
           isOptionEqualToValue={(option, value) => {
-            console.log(option);
-            console.log(value);
             return option.value.id === value.value.id;
           }}
           getOptionLabel={(option) => option.title.toString()}
@@ -165,13 +226,18 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
               variant="body1"
               color={(theme) => theme.palette.text.secondary}
             >
-              {formik.values?.teams?.length >= 1 && formik.values?.teams.length}{' '}
-              {formik.values?.teams?.length > 0
-                ? formik.values?.teams.length === 1
-                  ? 'team'
-                  : 'teams'
-                : ''}{' '}
-              {formik.values?.teams?.length >= 1 && 'selected'}
+              {formik.values?.teams && (
+                <>
+                  {formik.values?.teams?.length >= 1 &&
+                    formik.values?.teams.length}{' '}
+                  {formik.values?.teams?.length > 0
+                    ? formik.values?.teams.length === 1
+                      ? 'team'
+                      : 'teams'
+                    : ''}{' '}
+                  {formik.values?.teams?.length >= 1 && 'selected'}
+                </>
+              )}
             </Typography>
           )}
           renderInput={(params) => (
@@ -187,7 +253,7 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
           showRemoveButton
           onRemoveTeam={(team, index) => {
             const selectedTeams = formik.values.teams;
-            selectedTeams.splice(
+            selectedTeams?.splice(
               selectedTeams.findIndex(
                 (selectedTeam) => selectedTeam.id === team.id
               ),
@@ -203,7 +269,7 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
           type="number"
           label="Number of wins required *"
           id="name"
-          value={formik.values.settings.numberOfWinsRequired}
+          value={formik.values.settings?.numberOfWinsRequired}
           onChange={formik.handleChange}
           placeholder="2"
           variant="outlined"
@@ -219,7 +285,7 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
               twoWinsDifference: checked,
             } as TournamentSettings)
           }
-          checked={formik.values.settings.twoWinsDifference}
+          checked={formik.values.settings?.twoWinsDifference}
           label="Win Condition: 2 point difference"
           tooltip="If this is checked, then a pair of games will play at the same time and matches will be switched every round."
         />
@@ -230,7 +296,7 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
               switchGames: checked,
             } as TournamentSettings)
           }
-          checked={formik.values.settings.switchGames}
+          checked={formik.values.settings?.switchGames}
           label="Switch paired games"
           tooltip="If this is checked, then a pair of games will play at the same time and matches will be switched every round."
         />
@@ -241,7 +307,7 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
               switchGroups: checked,
             } as TournamentSettings)
           }
-          checked={formik.values.settings.switchGroups}
+          checked={formik.values.settings?.switchGroups}
           label="Switch groups"
           tooltip="If this is checked, then group will rotate after every finished game."
         />
@@ -257,7 +323,7 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
             formik.setFieldValue('gameSettings', {
               ...formik.values.gameSettings,
               gameTimeInSeconds: newTime,
-            } as GameSettings)
+            } as AddGameSettings)
           }
         />
         <FlexContainer width="100%" margin={8}>
@@ -271,7 +337,7 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
               formik.setFieldValue('gameSettings', {
                 ...formik.values.gameSettings,
                 shortBreakTimeInSeconds: newTime,
-              } as GameSettings)
+              } as AddGameSettings)
             }
           />
           <TimePicker
@@ -284,7 +350,7 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
               formik.setFieldValue('gameSettings', {
                 ...formik.values.gameSettings,
                 longBreakTimeInSeconds: newTime,
-              } as GameSettings)
+              } as AddGameSettings)
             }
           />
         </FlexContainer>

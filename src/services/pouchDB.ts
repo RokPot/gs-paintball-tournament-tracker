@@ -1,6 +1,12 @@
 import PouchDb from 'pouchdb-browser';
 
-export const pouchDbName = 'newLeagues3';
+export const pouchDbName = 'newLeagues5';
+export enum DocType {
+  Team = 'team',
+  Tournament = 'tournament',
+  LeaderboardTeam = 'leaderboardTeam',
+  League = 'league',
+}
 
 const usePouchDB = (dbName: string) => {
   const db = new PouchDb(dbName);

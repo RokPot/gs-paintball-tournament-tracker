@@ -1,16 +1,15 @@
+import { PouchDBDto } from './PouchDBDto';
 import { GameSettings } from 'types/GameSettings';
-import { Team } from 'types/Team';
 import { TournamentGroup } from 'types/TournamentGroup';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentState } from 'types/TournamentState';
-import { PouchDBDto } from 'types/dto/PouchDBDto';
 
-export interface ITournament extends PouchDBDto {
+export interface TournamentDto extends PouchDBDto {
   id: string;
 
-  teams?: Team[];
+  teamIds: string[];
 
-  groups?: TournamentGroup[];
+  groups: TournamentGroup[];
 
   state: TournamentState;
 
@@ -20,7 +19,7 @@ export interface ITournament extends PouchDBDto {
 
   endDate?: string;
 
-  settings?: TournamentSettings;
+  settings: TournamentSettings;
 
-  gameSettings?: GameSettings;
+  gameSettings: GameSettings;
 }

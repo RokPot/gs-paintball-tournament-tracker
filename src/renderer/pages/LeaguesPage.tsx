@@ -25,6 +25,7 @@ import TournamentShortList from 'components/tournament/TournamentListShort';
 import { useEffect, useState } from 'react';
 import useLeagueService from 'services/LeagueService';
 import useTeamService from 'services/TeamService';
+import useTournamentService from 'services/TournamentService';
 import useLeagueStore from 'store/LeagueStore';
 import { League } from 'types/League';
 
@@ -86,10 +87,12 @@ const LeaguesPage: React.FC = () => {
     useState(false);
   const { addNewLeague, getLeagues } = useLeagueService();
   const { addNewTeam, addNewLeaderBoardTeam } = useTeamService();
+  const { addNewTournament, getTournaments } = useTournamentService();
   const theme = useTheme();
 
   useEffect(() => {
     const getAllLeagues = async () => {
+      const tournaments = await getTournaments();
       setLeagues(await getLeagues());
     };
     getAllLeagues();
@@ -297,7 +300,6 @@ const LeaguesPage: React.FC = () => {
       <CustomModal
         isModalOpen={isLeagueModalOpen}
         onClose={() => {
-          console.log(1);
           setIsLeagueModalOpen(false);
         }}
         width={700}
@@ -317,7 +319,7 @@ const LeaguesPage: React.FC = () => {
             if (!selectedRowLeague) {
               return;
             }
-            const addedTeam = await addNewTeam(team);
+            await addNewTeam(team);
             setIsTeamAddModalOpen(false);
           }}
           onCancel={() => setIsTeamAddModalOpen(false)}
@@ -330,10 +332,12 @@ const LeaguesPage: React.FC = () => {
       >
         <AddTournament
           league={selectedRowLeague}
-          onAccept={(tournament) => {
+          onAccept={async (tournament) => {
             if (!selectedRowLeague) {
               return;
             }
+            await addNewTournament(tournament.toDto());
+            const tasdsd = await getTournaments();
             setIsTournamentAddModalOpen(false);
           }}
           onCancel={() => setIsTournamentAddModalOpen(false)}

@@ -2,6 +2,7 @@ import { Team } from './Team';
 import { LeaderboardTeamDto } from './dto/LeaderboardTeamDto';
 import { ILeaderboardTeam } from './interfaces/ILeaderboardTeam';
 import { IPouchDB } from './interfaces/IPouchDB';
+import { DocType } from 'services/pouchDB';
 
 export class LeaderboardTeam extends IPouchDB {
   id: string;
@@ -13,7 +14,7 @@ export class LeaderboardTeam extends IPouchDB {
   team: Team;
 
   constructor(props: ILeaderboardTeam) {
-    super(props._id, props._rev, props.docType || 'leaderboardTeam');
+    super(props._id, props._rev, props.docType || DocType.LeaderboardTeam);
     this.id = props.id;
     this.team = props.team;
     this.totalWins = props.totalWins;

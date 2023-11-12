@@ -150,6 +150,9 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
             value.map((val) => val.value)
           )
         }
+        isOptionEqualToValue={(option, value) => {
+          return option.value.id === value.value.id;
+        }}
         limitTags={-1}
         renderTags={() => (
           <Typography

@@ -6,10 +6,13 @@ import {
   TournamentSettings,
 } from './TournamentSettings';
 import { TournamentState } from './TournamentState';
+import { TournamentDto } from './dto/TournamentDto';
+import { IPouchDB } from './interfaces/IPouchDB';
 import { ITournament } from './interfaces/ITournament';
-import { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
+import { DocType } from 'services/pouchDB';
 
-export class Tournament {
+export class Tournament extends IPouchDB {
   id: string;
 
   teams: Team[];
@@ -29,14 +32,32 @@ export class Tournament {
   gameSettings: GameSettings;
 
   constructor(props: ITournament) {
+    super(props._id, props._rev, props.docType || DocType.Tournament);
     this.id = props.id;
     this.teams = props.teams || [];
     this.groups = props.groups || [];
     this.state = props.state;
     this.name = props.name;
-    this.startDate = props.startDate;
-    this.endDate = props.endDate;
+    this.startDate = dayjs(props.startDate);
+    this.endDate = dayjs(props.endDate);
     this.settings = props.settings || DefaultTournamentSettings;
     this.gameSettings = props.gameSettings || DefaultGameSettings;
   }
+
+  public toDto = (): TournamentDto => {
+    return {
+      _id: this._id,
+      _rev: this._rev,
+      docType: this.docType,
+      id: this.id,
+      gameSettings: this.gameSettings,
+      groups: this.groups,
+      name: this.name,
+      settings: this.settings,
+      state: this.state,
+      teamIds: this.teams.map((team) => team._id),
+      endDate: this.endDate?.toISOString(),
+      startDate: this.startDate?.toISOString(),
+    };
+  };
 }
