@@ -85,7 +85,8 @@ const LeaguesPage: React.FC = () => {
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
   const [isTournamentAddModalOpen, setIsTournamentAddModalOpen] =
     useState(false);
-  const { addNewLeague, getLeagues, updateLeague } = useLeagueService();
+  const { addNewLeague, getLeagues, updateLeague, deleteLeague } =
+    useLeagueService();
   const { addNewTeam, addNewLeaderBoardTeam } = useTeamService();
   const { addNewTournament, getTournaments } = useTournamentService();
   const theme = useTheme();
@@ -108,8 +109,8 @@ const LeaguesPage: React.FC = () => {
   const onEditClick = (league: League) => {
     console.log(league);
   };
-  const onRemoveClick = (league: League) => {
-    console.log(league);
+  const onRemoveClick = async (league: League) => {
+    await deleteLeague(league);
   };
   const onToggleActiveClick = (league: League) => {
     setSelectedLeague(selectedLeague?.id === league.id ? undefined : league);

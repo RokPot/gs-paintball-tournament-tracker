@@ -45,11 +45,18 @@ export const mapLeaderboardTeamsFromResponse = <T>(
     if (!teamInResult) {
       continue;
     }
-    const teammm = new LeaderboardTeam({
+    const leaderboardTeamEntity = teams.find(
+      (team) => team._id === teamInResult.teamId
+    );
+
+    if (!leaderboardTeamEntity) {
+      continue;
+    }
+    const leaderboardTeam = new LeaderboardTeam({
       ...teamInResult,
-      team: teams.find((team) => team._id === teamInResult.teamId)!,
+      team: leaderboardTeamEntity,
     });
-    teamsList.push(teammm);
+    teamsList.push(leaderboardTeam);
   }
   return teamsList;
 };

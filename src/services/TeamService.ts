@@ -21,7 +21,15 @@ const useTeamService = () => {
   );
 
   const updateTeam = useCallback(async (team: Team) => {}, []);
-  const deleteTeam = useCallback(async (team: Team) => {}, []);
+  const deleteTeam = useCallback(async (team: Team) => {
+    const res = await db.get<Team>(team._id);
+    try {
+      await db.remove({ _id: res._id, _rev: res._rev });
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
   const getTeam = useCallback(async (teamId: string) => {
     return await db.get<Team>(teamId, {
       attachments: true,
