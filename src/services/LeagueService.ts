@@ -1,27 +1,30 @@
 import useTeamService from './TeamService';
 import usePouchDB, { DocType, pouchDbName } from './pouchDB';
-import groupBy from 'lodash/groupBy';
+import { omit } from 'lodash';
 import { useCallback } from 'react';
 import { League } from 'types/League';
-import { LeagueDto } from 'types/dto/LeagueDto';
-import {
-  getRootElementAndLinkedDocs,
-  mapLeaderboardTeamsFromResponse,
-  mapTeamsFromResponse,
-  mapTournamentsFromResponse,
-} from 'utils/PouchDBUtils';
+import { getLeaguesList } from 'utils/PouchDBUtils';
 
 const useLeagueService = () => {
   const db = usePouchDB(pouchDbName);
   const { getTeam } = useTeamService();
 
-  const addNewLeague = useCallback(async (league: LeagueDto) => {
+  const addNewLeague = useCallback(async (league: League) => {
     try {
-      const res = await db.post(league);
+      const res = await db.post(league.toDto());
     } catch {}
   }, []);
   const updateLeague = useCallback(async (league: League) => {
-    const res = await db.post(league);
+    // console.log(omit(league.toDto(), ['_rev']));
+    // const res = await db.put(omit(league.toDto(), ['_rev']), {});
+    const res = await db.get(league._id);
+    console.log(omit(league.toDto(), ['_rev', '_id']));
+    console.log(omit(league.toDto(), ['_id']));
+    const toUpdate = { ...res, ...omit(league.toDto(), ['_rev', '_id']) };
+    const res1 = await db.put(toUpdate);
+    console.log(res1);
+    const res3 = await db.get(league._id);
+    console.log(res3);
   }, []);
   const deleteLeague = useCallback(async (league: League) => {
     // await db.remove(league._id);
@@ -43,46 +46,18 @@ const useLeagueService = () => {
             emit(doc._id, { _id: item, type: DocType.LeaderboardTeam });
           });
         }
+        if (doc.tournamentIds) {
+          doc.tournamentIds.forEach(function (item: any) {
+            emit(doc._id, { _id: item, type: DocType.Tournament });
+          });
+        }
       }
     };
     const result = await db.query(myMapFunction, {
       include_docs: true,
     });
 
-    const leagues: League[] = [];
-    const groupedResults = groupBy(result.rows, (row) => row.id);
-    for (const key of Object.keys(groupedResults)) {
-      const { rootDoc, otherDocs } = getRootElementAndLinkedDocs<LeagueDto>(
-        groupedResults[key],
-        DocType.League
-      );
-
-      const rootLeague = rootDoc;
-      if (!rootLeague) {
-        return;
-      }
-      const newLeague: League = new League(rootLeague);
-
-      const teams = mapTeamsFromResponse(
-        rootLeague?.teamIds,
-        otherDocs.filter((val) => val.value.type === DocType.Team)
-      );
-      const leaderboardTeams = mapLeaderboardTeamsFromResponse(
-        rootLeague?.leaderboardTeamIds,
-        teams,
-        otherDocs.filter((val) => val.value.type === DocType.LeaderboardTeam)
-      );
-      const tournaments = mapTournamentsFromResponse(
-        rootLeague?.leaderboardTeamIds,
-        teams,
-        otherDocs.filter((val) => val.value.type === DocType.Tournament)
-      );
-      newLeague.teams = teams;
-      newLeague.leaderboard = leaderboardTeams;
-      newLeague.tournaments = tournaments;
-      leagues.push(newLeague);
-    }
-    return leagues;
+    return getLeaguesList(result);
   }, []);
 
   return { addNewLeague, updateLeague, deleteLeague, getLeague, getLeagues };

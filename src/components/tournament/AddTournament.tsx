@@ -63,7 +63,7 @@ const convertFromSecondsDayjs = (seconds: number) => {
 };
 
 const fromDayjsToSeconds = (time: Dayjs) => {
-  return time.minute() * time.second();
+  return (time.minute() || 1) * (time.second() || 60);
 };
 
 const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {

@@ -85,7 +85,7 @@ const LeaguesPage: React.FC = () => {
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
   const [isTournamentAddModalOpen, setIsTournamentAddModalOpen] =
     useState(false);
-  const { addNewLeague, getLeagues } = useLeagueService();
+  const { addNewLeague, getLeagues, updateLeague } = useLeagueService();
   const { addNewTeam, addNewLeaderBoardTeam } = useTeamService();
   const { addNewTournament, getTournaments } = useTournamentService();
   const theme = useTheme();
@@ -100,7 +100,7 @@ const LeaguesPage: React.FC = () => {
 
   const confirmLeague = async (league: League, isEdit: boolean) => {
     await addNewLeaderBoardTeam(league.leaderboard);
-    await addNewLeague(league.toDto());
+    await addNewLeague(league);
 
     setIsLeagueModalOpen(false);
   };
@@ -336,9 +336,17 @@ const LeaguesPage: React.FC = () => {
             if (!selectedRowLeague) {
               return;
             }
-            await addNewTournament(tournament.toDto());
+            const newTournament = await addNewTournament(tournament.toDto());
+            if (!newTournament) {
+              return;
+            }
+            selectedRowLeague.tournaments = [
+              ...selectedRowLeague.tournaments,
+              newTournament,
+            ];
+            await updateLeague(selectedRowLeague);
             const tasdsd = await getTournaments();
-            setIsTournamentAddModalOpen(false);
+            // setIsTournamentAddModalOpen(false);
           }}
           onCancel={() => setIsTournamentAddModalOpen(false)}
         />

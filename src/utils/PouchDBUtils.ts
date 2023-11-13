@@ -1,8 +1,11 @@
+import { groupBy } from 'lodash';
 import { DocType } from 'services/pouchDB';
 import { LeaderboardTeam } from 'types/LeadeboardTeam';
+import { League } from 'types/League';
 import { Team } from 'types/Team';
 import { Tournament } from 'types/Tournament';
 import { LeaderboardTeamDto } from 'types/dto/LeaderboardTeamDto';
+import { LeagueDto } from 'types/dto/LeagueDto';
 import { TeamDto } from 'types/dto/TeamDto';
 import { TournamentDto } from 'types/dto/TournamentDto';
 
@@ -81,4 +84,67 @@ export const getRootElementAndLinkedDocs = <T>(
   }
   const otherDocs = docs.filter((res) => res.value !== wantedDocType);
   return { rootDoc, otherDocs };
+};
+
+export const getTournamentsList = <T>(result: PouchDB.Query.Response<any>) => {
+  const leagues: Tournament[] = [];
+  const groupedResults = groupBy(result.rows, (row) => row.id);
+  for (const key of Object.keys(groupedResults)) {
+    const { rootDoc, otherDocs } = getRootElementAndLinkedDocs<TournamentDto>(
+      groupedResults[key],
+      DocType.League
+    );
+
+    if (!rootDoc) {
+      return;
+    }
+    const newTournament: Tournament = new Tournament(rootDoc);
+
+    const teams = mapTeamsFromResponse(
+      rootDoc?.teamIds,
+      otherDocs.filter((val) => val.value.type === DocType.Team)
+    );
+
+    newTournament.teams = teams;
+
+    leagues.push(newTournament);
+  }
+  return leagues;
+};
+
+export const getLeaguesList = <T>(result: PouchDB.Query.Response<any>) => {
+  const leagues: League[] = [];
+  const groupedResults = groupBy(result.rows, (row) => row.id);
+  for (const key of Object.keys(groupedResults)) {
+    const { rootDoc, otherDocs } = getRootElementAndLinkedDocs<LeagueDto>(
+      groupedResults[key],
+      DocType.League
+    );
+
+    const rootLeague = rootDoc;
+    if (!rootLeague) {
+      return;
+    }
+    const newLeague: League = new League(rootLeague);
+
+    const teams = mapTeamsFromResponse(
+      rootLeague?.teamIds,
+      otherDocs.filter((val) => val.value.type === DocType.Team)
+    );
+    const leaderboardTeams = mapLeaderboardTeamsFromResponse(
+      rootLeague?.leaderboardTeamIds,
+      teams,
+      otherDocs.filter((val) => val.value.type === DocType.LeaderboardTeam)
+    );
+    const tournaments = mapTournamentsFromResponse(
+      rootLeague?.tournamentIds,
+      teams,
+      otherDocs.filter((val) => val.value.type === DocType.Tournament)
+    );
+    newLeague.teams = teams;
+    newLeague.leaderboard = leaderboardTeams;
+    newLeague.tournaments = tournaments;
+    leagues.push(newLeague);
+  }
+  return leagues;
 };

@@ -7,7 +7,6 @@ import { useFormik } from 'formik';
 import { Team } from 'types/Team';
 import { TeamMember } from 'types/TeamMember';
 import { TeamRole } from 'types/TeamRole';
-import { TeamDto } from 'types/dto/TeamDto';
 import { QuickAddTeamSchema } from 'utils/schemes';
 import { v4 } from 'uuid';
 
@@ -23,23 +22,26 @@ interface IProps {
   onCancel: () => void;
 }
 
+interface AddTeam {
+  teamName: string;
+  teamTag: string;
+  members: TeamMember[];
+}
+
 const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
   const theme = useTheme();
-  const formik = useFormik<TeamDto>({
+  const formik = useFormik<AddTeam>({
     initialValues: {
-      draw: 0,
-      id: v4(),
-      _id: v4(),
-      loses: 0,
       members: [],
       teamName: '',
       teamTag: '',
-      wins: 0,
-      color: randomColor(),
     },
     validationSchema: QuickAddTeamSchema,
-    onSubmit: (values: TeamDto) => {
-      onAccept(new Team(values));
+    onSubmit: (values: AddTeam) => {
+      const newId = v4();
+      onAccept(
+        new Team({ ...values, _id: newId, id: newId, color: randomColor() })
+      );
     },
   });
 
