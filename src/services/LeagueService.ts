@@ -24,9 +24,17 @@ const useLeagueService = () => {
     const res = await db.post(league);
   }, []);
   const deleteLeague = useCallback(async (league: League) => {
-    // await db.remove(league._id);
+    try {
+      const resultLeague = await db.get<League>(league._id);
+      await db.remove(resultLeague._id, resultLeague._rev);
+      return true;
+    } catch {
+      return false;
+    }
   }, []);
-  const getLeague = useCallback((league: League) => {
+  const getLeague = useCallback(async (league: League) => {
+    const res = await db.get<League>(league._id);
+
     return db.get(league._id);
   }, []);
   const getLeagues = useCallback(async () => {

@@ -5,6 +5,7 @@ import ScoreboardPage from './pages/ScoreboardPage';
 import TeamsPage from './pages/TeamsPage';
 import TournamentPage from './pages/TournamentPage';
 import { CssBaseline, ThemeProvider } from '@mui/material';
+import ConfirmationModal from 'components/shared/ConfirmationModal';
 import { Route, MemoryRouter as Router, Routes } from 'react-router-dom';
 import { theme } from 'theme/theme';
 
@@ -23,6 +24,7 @@ export default function App() {
           </Routes>
         </Layout>
       </Router>
+      <ConfirmationModal />
     </ThemeProvider>
   );
 }
