@@ -8,6 +8,7 @@ interface IProps {
   rows: any[];
   onRowSelect?: (selected: any) => void;
   height?: string;
+  loading?: boolean;
 }
 
 const CustomDataTable: React.FC<IProps> = ({
@@ -16,6 +17,7 @@ const CustomDataTable: React.FC<IProps> = ({
   rows,
   onRowSelect,
   height,
+  loading,
 }) => {
   return (
     <div
@@ -23,6 +25,7 @@ const CustomDataTable: React.FC<IProps> = ({
       style={{
         maxHeight: height || '370px',
         minHeight: height || '370px',
+        height: height || '370px',
         width: '100%',
       }}
     >
@@ -41,6 +44,7 @@ const CustomDataTable: React.FC<IProps> = ({
         disableColumnMenu
         disableColumnSelector={true}
         disableDensitySelector
+        loading={loading}
       />
     </div>
   );

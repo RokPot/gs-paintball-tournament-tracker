@@ -44,7 +44,12 @@ const useTeamService = () => {
     const result = await db.query<TeamDto>(myMapFunction, {
       include_docs: true,
     });
-    return result.rows.map((row) => new Team(row.doc!)) || [];
+
+    return (
+      result?.rows
+        ?.map((row) => new Team(row.doc!))
+        .filter((row) => row !== undefined) || []
+    );
   }, []);
 
   return {

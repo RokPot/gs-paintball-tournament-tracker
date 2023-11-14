@@ -13,6 +13,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import LeagueDetails from 'components/leagues/LeagueDetails';
 import CustomDataTable from 'components/shared/CustomDataTable';
 import CustomModal from 'components/shared/CustomModal';
@@ -91,18 +92,20 @@ const LeaguesPage: React.FC = () => {
   const { addNewTournament, getTournaments } = useTournamentService();
   const theme = useTheme();
 
+  const queryClient = useQueryClient();
+  const { isPending, error, data, isFetching } = useQuery({
+    queryKey: ['leagues'],
+    queryFn: () => getLeagues().then((res) => res),
+  });
+
   useEffect(() => {
-    const getAllLeagues = async () => {
-      const tournaments = await getTournaments();
-      setLeagues(await getLeagues());
-    };
-    getAllLeagues();
-  }, []);
+    setLeagues(data);
+  }, [data]);
 
   const confirmLeague = async (league: League, isEdit: boolean) => {
     await addNewLeaderBoardTeam(league.leaderboard);
     await addNewLeague(league);
-
+    queryClient.invalidateQueries({ queryKey: ['leagues'] });
     setIsLeagueModalOpen(false);
   };
 
@@ -206,6 +209,7 @@ const LeaguesPage: React.FC = () => {
       </StyledHeaderContainer>
 
       <CustomDataTable
+        loading={isFetching}
         columns={columns}
         rows={allLeagues}
         onRowSelect={(league: League) => setSelectedRowLeague(league)}
