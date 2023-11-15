@@ -38,6 +38,7 @@ const CustomDataTable: React.FC<IProps> = ({
             paginationModel: { page: 0, pageSize: 5 },
           },
         }}
+        pageSizeOptions={[5]}
         onRowClick={(param1) => onRowSelect?.(param1.row)}
         disableColumnFilter
         disableEval

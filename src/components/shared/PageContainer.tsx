@@ -6,17 +6,20 @@ const StyledRootContainer = styled('div')(
     height: 100%;
     width: 100%;
     flex-direction: column;
-    padding: 16px 0px;
+    padding: 16px 16px;
     overflow: auto;
   `
 );
 interface IProps {
   children: React.ReactNode;
+  padding?: string;
 }
-const PageContainer: React.FC<IProps> = ({ children }) => {
+const PageContainer: React.FC<IProps> = ({ children, padding }) => {
   return (
-    <Container maxWidth={false} style={{ overflow: 'auto' }}>
-      <StyledRootContainer>{children}</StyledRootContainer>
+    <Container maxWidth={false} style={{ overflow: 'auto', padding: '0px' }}>
+      <StyledRootContainer style={{ padding: padding }}>
+        {children}
+      </StyledRootContainer>
     </Container>
   );
 };
