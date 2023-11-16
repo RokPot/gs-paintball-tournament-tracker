@@ -71,7 +71,7 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    icon: getAssetPath('logo3.ico'),
+    icon: getAssetPath('new-logo1.ico'),
     webPreferences: {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')

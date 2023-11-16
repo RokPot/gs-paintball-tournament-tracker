@@ -1,4 +1,5 @@
 import DesktopScoreboard from 'components/scoreboard/ui/DesktopScoreboard';
+import MobileScoreboard from 'components/scoreboard/ui/MobileScoreboard';
 import PageContainer from 'components/shared/PageContainer';
 import { useIsResponsive } from 'hooks/ui/useIsResponsive';
 import { useCallback, useState } from 'react';
@@ -7,6 +8,7 @@ import useTimerStore from 'store/ScoreboardStore';
 const ScoreboardPage: React.FC<{ className?: string }> = ({ className }) => {
   const startTimer = useTimerStore((state) => state.startTimer);
   const stopTimer = useTimerStore((state) => state.stopTimer);
+  const [isCountdownInProgress, setIsCountdownInProgress] = useState(false);
   const [isMatchInProgress, setIsMatchInProgress] = useState(false);
 
   const startStopMatch = useCallback(() => {
@@ -21,13 +23,13 @@ const ScoreboardPage: React.FC<{ className?: string }> = ({ className }) => {
 
   const { isMobile } = useIsResponsive();
 
-  // if (isMobile) {
-  //   return (
-  //     <PageContainer padding="0px">
-  //       <MobileScoreboard />
-  //     </PageContainer>
-  //   );
-  // }
+  if (isMobile) {
+    return (
+      <PageContainer padding="0px">
+        <MobileScoreboard />
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer padding="0px">

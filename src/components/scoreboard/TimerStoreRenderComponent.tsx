@@ -1,10 +1,11 @@
 import { Typography } from '@mui/material';
 import { memo } from 'react';
-import useTimerStore from 'store/ScoreboardStore';
 
-const TimerStoreRenderComponent: React.FC = () => {
-  const { duration } = useTimerStore();
+interface IProps {
+  duration: number;
+}
 
+const TimerStoreRenderComponent: React.FC<IProps> = ({ duration }) => {
   const milisecondsToTime = (duration: number) => {
     var miliseconds = (duration % 1000) / 10,
       seconds = Math.floor((duration / 1000) % 60),

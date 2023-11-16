@@ -1,5 +1,6 @@
+import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
+import GameTimerStoreRenderComponent from '../GameTimerStoreRenderComponent';
 import TeamScoreCard from '../TeamScoreCard';
-import TimerStoreRenderComponent from '../TimerStoreRenderComponent';
 import { Button, Card, Typography, alpha, styled } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import { Game } from 'types/Game';
@@ -58,7 +59,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
                 </Typography>
               </div>
 
-              <TimerStoreRenderComponent />
+              <GameTimerStoreRenderComponent />
             </FlexContainer>
 
             <FlexContainer flexDirection="column" padding="0px 10px 0px 10px">
@@ -73,7 +74,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
               </div>
 
               <Typography variant="h3Medium" className="break-text">
-                05:00
+                <BreakTimerStoreRenderComponent />
               </Typography>
             </FlexContainer>
           </FlexContainer>
