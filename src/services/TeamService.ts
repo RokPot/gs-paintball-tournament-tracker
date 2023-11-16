@@ -1,18 +1,26 @@
 import usePouchDB, { pouchDbName } from './pouchDB';
+import { omit } from 'lodash';
 import { useCallback } from 'react';
 import { LeaderboardTeam } from 'types/LeadeboardTeam';
 import { Team } from 'types/Team';
+import { LeaderboardTeamDto } from 'types/dto/LeaderboardTeamDto';
 import { TeamDto } from 'types/dto/TeamDto';
 
 const useTeamService = () => {
   const db = usePouchDB(pouchDbName);
 
-  const addNewTeam = useCallback(async (team: Team) => {
-    await db.post(team.toDto());
-    return await db.get<Team>(team._id);
+  const getTeam = useCallback(async (teamId: string) => {
+    return await db.get<Team>(teamId, {
+      attachments: true,
+    });
   }, []);
 
-  const addNewLeaderBoardTeam = useCallback(
+  const addNewTeam = useCallback(async (team: Team) => {
+    await db.post(team.toDto());
+    return new Team(await db.get<TeamDto>(team._id));
+  }, []);
+
+  const addNewLeaderBoardTeams = useCallback(
     async (teams: LeaderboardTeam[]) => {
       const res = await db.bulkDocs([...teams.map((team) => team.toDto())]);
       return null;
@@ -20,7 +28,30 @@ const useTeamService = () => {
     []
   );
 
-  const updateTeam = useCallback(async (team: Team) => {}, []);
+  const addNewLeaderBoardTeam = useCallback(
+    async (leaderboardTeam: LeaderboardTeam) => {
+      try {
+        await db.post(leaderboardTeam.toDto());
+        const team = await getTeam(leaderboardTeam.team._id);
+        const freshLeaderboardTeam = await db.get<LeaderboardTeamDto>(
+          leaderboardTeam._id
+        );
+        return new LeaderboardTeam({ ...freshLeaderboardTeam, team: team });
+      } catch {}
+    },
+    []
+  );
+
+  const updateTeam = useCallback(async (team: Team) => {
+    try {
+      const res = await db.get(team._id);
+      const toUpdate = { ...res, ...omit(team.toDto(), ['_rev', '_id']) };
+      await db.put(toUpdate);
+      return await db.get<TeamDto>(team._id);
+    } catch (e) {
+      console.log(e);
+    }
+  }, []);
   const deleteTeam = useCallback(async (team: Team) => {
     const res = await db.get<Team>(team._id);
     try {
@@ -30,11 +61,7 @@ const useTeamService = () => {
       return false;
     }
   }, []);
-  const getTeam = useCallback(async (teamId: string) => {
-    return await db.get<Team>(teamId, {
-      attachments: true,
-    });
-  }, []);
+
   const getTeams = useCallback(async () => {
     const myMapFunction = (doc: any, emit: any) => {
       if (doc.docType === 'team') {
@@ -59,6 +86,7 @@ const useTeamService = () => {
     getTeam,
     getTeams,
     addNewLeaderBoardTeam,
+    addNewLeaderBoardTeams,
   };
 };
 

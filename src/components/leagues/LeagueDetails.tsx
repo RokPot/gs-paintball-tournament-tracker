@@ -11,10 +11,10 @@ import FlexContainer from 'components/shared/FlexContainer';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
 import TeamsShortList from 'components/teams/TeamShortList';
 import { useFormik } from 'formik';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import useTeamService from 'services/TeamService';
+import useTeamQueries from 'services/queries/TeamQueries';
 import { createNewLeaderboardTeam } from 'store/LeagueStore';
-import useTeamStore from 'store/TeamStore';
 import { League } from 'types/League';
 import { Team } from 'types/Team';
 import { LeagueDetailsSchema } from 'utils/schemes';
@@ -33,15 +33,7 @@ interface IProps {
 
 const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
   const { addNewTeam, getTeams } = useTeamService();
-  const { allTeams, setAllTeams } = useTeamStore();
-
-  useEffect(() => {
-    const getAllTeams = async () => {
-      const teams = await getTeams();
-      setAllTeams(teams);
-    };
-    getAllTeams();
-  }, []);
+  const { teamsList } = useTeamQueries();
 
   const formik = useFormik<AddLeague>({
     initialValues: { name: league?.name || '', teams: league?.teams || [] },
@@ -115,7 +107,7 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
           })) || []
         }
         options={
-          allTeams.map((team) => ({
+          teamsList?.map((team) => ({
             title: team.teamName,
             value: team,
           })) || []
@@ -133,7 +125,7 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
               }}
             >
               <Typography
-                variant="body1"
+                variant="body2"
                 style={{ textTransform: 'uppercase' }}
               >
                 {option.value.teamTag}

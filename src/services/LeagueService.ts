@@ -3,6 +3,7 @@ import usePouchDB, { DocType, pouchDbName } from './pouchDB';
 import { omit } from 'lodash';
 import { useCallback } from 'react';
 import { League } from 'types/League';
+import { LeagueDto } from 'types/dto/LeagueDto';
 import { getLeaguesList } from 'utils/PouchDBUtils';
 
 const useLeagueService = () => {
@@ -15,16 +16,14 @@ const useLeagueService = () => {
     } catch {}
   }, []);
   const updateLeague = useCallback(async (league: League) => {
-    // console.log(omit(league.toDto(), ['_rev']));
-    // const res = await db.put(omit(league.toDto(), ['_rev']), {});
-    const res = await db.get(league._id);
-    console.log(omit(league.toDto(), ['_rev', '_id']));
-    console.log(omit(league.toDto(), ['_id']));
-    const toUpdate = { ...res, ...omit(league.toDto(), ['_rev', '_id']) };
-    const res1 = await db.put(toUpdate);
-    console.log(res1);
-    const res3 = await db.get(league._id);
-    console.log(res3);
+    try {
+      const res = await db.get(league._id);
+
+      const toUpdate = { ...res, ...omit(league.toDto(), ['_rev', '_id']) };
+      await db.put(toUpdate);
+
+      return await db.get<LeagueDto>(league._id);
+    } catch (e) {}
   }, []);
   const deleteLeague = useCallback(async (league: League) => {
     try {

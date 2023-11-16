@@ -10,14 +10,13 @@ import {
   useTheme,
 } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CustomDataTable from 'components/shared/CustomDataTable';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
-import { useEffect, useState } from 'react';
-import useTeamService from 'services/TeamService';
+import { useState } from 'react';
+import useTeamQueries from 'services/queries/TeamQueries';
 import useConfirmationModalStore from 'store/ConfirmationModalStore';
 import { Team } from 'types/Team';
 
@@ -30,22 +29,46 @@ const StyledHeaderContainer = styled('div')(
   `
 );
 const TeamsPage: React.FC = () => {
-  const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const { addNewTeam, getTeams, deleteTeam } = useTeamService();
+  const [isTeamUpsertModalOpen, setIsTeamUpsertModalOpen] = useState(false);
+  const [teamToUpsert, setTeamToUpsert] = useState<Team>();
   const { openModal } = useConfirmationModalStore();
   const theme = useTheme();
-  const queryClient = useQueryClient();
 
-  const { isPending, error, data, isFetching } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => getTeams().then((res) => res),
-  });
+  const {
+    teamsList,
+    isFetchingTeamsList,
+    deleteExistingTeam,
+    addTeam,
+    updateExistingTeam,
+    invalidateTeamsList,
+  } = useTeamQueries();
 
-  useEffect(() => {
-    console.log(data);
-    setTeams(data || []);
-  }, [data]);
+  const addNewTeam = async (team: Team, update?: boolean) => {
+    if (update) {
+      await updateExistingTeam.mutateAsync(team);
+    } else {
+      await addTeam.mutateAsync(team);
+    }
+    await invalidateTeamsList();
+    setIsTeamUpsertModalOpen(false);
+  };
+
+  const removeTeam = async (team: Team) => {
+    openModal({
+      title: 'Are you sure you want to delete this team?',
+      Confirmation:
+        'Team will be deletea and all data regarding this team will be lost.',
+      onConfirm: async () => {
+        await deleteExistingTeam.mutateAsync(team);
+        await invalidateTeamsList();
+      },
+    });
+  };
+
+  const editTeam = async (team: Team) => {
+    setIsTeamUpsertModalOpen(true);
+    setTeamToUpsert(team);
+  };
 
   const columns: GridColDef<Team>[] = [
     {
@@ -105,10 +128,16 @@ const TeamsPage: React.FC = () => {
             justifyContent="center"
             alignItems="center"
           >
-            <IconButton onClick={() => null} style={{ height: '30px' }}>
+            <IconButton
+              onClick={() => editTeam(params?.row)}
+              style={{ height: '30px' }}
+            >
               <FontAwesomeIcon icon={faListDots} width={15} height={15} />
             </IconButton>
-            <IconButton onClick={() => null} style={{ height: '30px' }}>
+            <IconButton
+              onClick={() => removeTeam(params?.row)}
+              style={{ height: '30px' }}
+            >
               <FontAwesomeIcon
                 icon={faRemove}
                 width={15}
@@ -126,7 +155,7 @@ const TeamsPage: React.FC = () => {
     <PageContainer>
       <StyledHeaderContainer>
         <Typography variant="h4">Teams</Typography>
-        <Button onClick={() => setIsTeamAddModalOpen(true)}>
+        <Button onClick={() => setIsTeamUpsertModalOpen(true)}>
           <Typography variant="body1">Create a new team</Typography>
         </Button>
       </StyledHeaderContainer>
@@ -134,24 +163,21 @@ const TeamsPage: React.FC = () => {
       <div style={{ height: '100%' }}>
         <CustomDataTable
           columns={columns}
-          rows={teams}
-          loading={isFetching}
+          rows={teamsList || []}
+          loading={isFetchingTeamsList}
           height="100%"
         />
       </div>
 
       <CustomModal
-        isModalOpen={isTeamAddModalOpen}
-        onClose={() => setIsTeamAddModalOpen(false)}
+        isModalOpen={isTeamUpsertModalOpen}
+        onClose={() => setIsTeamUpsertModalOpen(false)}
         width={600}
       >
         <QuickAddTeam
-          onAccept={(team) => {
-            addNewTeam(team);
-            queryClient.invalidateQueries({ queryKey: ['leagues'] });
-            setIsTeamAddModalOpen(false);
-          }}
-          onCancel={() => setIsTeamAddModalOpen(false)}
+          team={teamToUpsert}
+          onAccept={addNewTeam}
+          onCancel={() => setIsTeamUpsertModalOpen(false)}
         />
       </CustomModal>
     </PageContainer>

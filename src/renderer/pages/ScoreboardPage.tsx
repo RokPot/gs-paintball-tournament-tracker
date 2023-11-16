@@ -71,46 +71,47 @@ const ScoreboardPage: React.FC<{ className?: string }> = ({ className }) => {
           </Card>
           <TeamScoreCard />
         </FlexContainer>
-
-        <Card className="custom-card actions-card">
-          <FlexContainer
-            width="100%"
-            height="100%"
-            justifyContent="center"
-            alignItems="center"
-            margin={8}
-            padding="16px"
-          >
-            <FlexContainer flexDirection="column" margin={8}>
-              <Button variant="contained" fullWidth>
-                <Typography variant="p1Medium">Team 1 Pause</Typography>
-              </Button>
+        <FlexContainer height="100%" alignItems="flex-start">
+          <Card className="custom-card actions-card">
+            <FlexContainer
+              width="100%"
+              height="100%"
+              justifyContent="center"
+              alignItems="center"
+              margin={8}
+              padding="16px"
+            >
+              <FlexContainer flexDirection="column" margin={8}>
+                <Button variant="contained" fullWidth>
+                  <Typography variant="p1Medium">Team 1 Pause</Typography>
+                </Button>
+              </FlexContainer>
+              <FlexContainer flexDirection="column" margin={8}>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  fullWidth
+                  size="large"
+                >
+                  <Typography variant="h3Medium">Finish Match</Typography>
+                </Button>
+                <Button
+                  variant="contained"
+                  size="large"
+                  color="primary"
+                  fullWidth
+                >
+                  <Typography variant="h3Medium">Start Game</Typography>
+                </Button>
+              </FlexContainer>
+              <FlexContainer flexDirection="column" margin={8}>
+                <Button variant="contained">
+                  <Typography variant="p1Medium">Team 2 Pause</Typography>
+                </Button>
+              </FlexContainer>
             </FlexContainer>
-            <FlexContainer flexDirection="column" margin={8}>
-              <Button
-                variant="contained"
-                color="secondary"
-                fullWidth
-                size="large"
-              >
-                <Typography variant="h3Medium">Finish Match</Typography>
-              </Button>
-              <Button
-                variant="contained"
-                size="large"
-                color="primary"
-                fullWidth
-              >
-                <Typography variant="h3Medium">Start Game</Typography>
-              </Button>
-            </FlexContainer>
-            <FlexContainer flexDirection="column" margin={8}>
-              <Button variant="contained">
-                <Typography variant="p1Medium">Team 2 Pause</Typography>
-              </Button>
-            </FlexContainer>
-          </FlexContainer>
-        </Card>
+          </Card>
+        </FlexContainer>
       </FlexContainer>
     </PageContainer>
   );

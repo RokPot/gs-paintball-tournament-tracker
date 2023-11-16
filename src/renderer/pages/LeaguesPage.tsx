@@ -13,7 +13,6 @@ import {
   useTheme,
 } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import LeagueDetails from 'components/leagues/LeagueDetails';
 import CustomDataTable from 'components/shared/CustomDataTable';
 import CustomModal from 'components/shared/CustomModal';
@@ -23,11 +22,11 @@ import LeaderboardList from 'components/teams/LeaderboardList';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
 import AddTournament from 'components/tournament/AddTournament';
 import TournamentShortList from 'components/tournament/TournamentListShort';
-import { useEffect, useState } from 'react';
-import useLeagueService from 'services/LeagueService';
+import { useState } from 'react';
 import useTeamService from 'services/TeamService';
 import useTournamentService from 'services/TournamentService';
-import useLeagueStore from 'store/LeagueStore';
+import useLeagueQueries from 'services/queries/LeagueQueries';
+import useLeagueStore, { createNewLeaderboardTeam } from 'store/LeagueStore';
 import { League } from 'types/League';
 
 const StyledHeaderContainer = styled('div')(
@@ -79,45 +78,47 @@ const StyledActiveBadge = styled('div')(
 );
 
 const LeaguesPage: React.FC = () => {
-  const { setLeagues, allLeagues, setSelectedLeague, selectedLeague } =
-    useLeagueStore();
+  const { setSelectedLeague, selectedLeague } = useLeagueStore();
   const [isLeagueModalOpen, setIsLeagueModalOpen] = useState(false);
   const [selectedRowLeague, setSelectedRowLeague] = useState<League>();
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
   const [isTournamentAddModalOpen, setIsTournamentAddModalOpen] =
     useState(false);
-  const { addNewLeague, getLeagues, updateLeague, deleteLeague } =
-    useLeagueService();
-  const { addNewTeam, addNewLeaderBoardTeam } = useTeamService();
+
+  const { addNewTeam, addNewLeaderBoardTeam, addNewLeaderBoardTeams } =
+    useTeamService();
   const { addNewTournament, getTournaments } = useTournamentService();
   const theme = useTheme();
 
-  const queryClient = useQueryClient();
-  const { isPending, error, data, isFetching } = useQuery({
-    queryKey: ['leagues'],
-    queryFn: () => getLeagues().then((res) => res),
-  });
-
-  useEffect(() => {
-    setLeagues(data);
-  }, [data]);
+  const {
+    leaguesList,
+    addLeague,
+    invalidateLeaguesList,
+    updateExistingLeague,
+    deleteExistingLeague,
+    isFetchingLeaguesList,
+  } = useLeagueQueries();
 
   const confirmLeague = async (league: League, isEdit: boolean) => {
-    await addNewLeaderBoardTeam(league.leaderboard);
-    await addNewLeague(league);
-    queryClient.invalidateQueries({ queryKey: ['leagues'] });
+    await addNewLeaderBoardTeams(league.leaderboard);
+    await addLeague.mutateAsync(league);
+    await invalidateLeaguesList();
     setIsLeagueModalOpen(false);
   };
 
   const onEditClick = (league: League) => {
     console.log(league);
   };
+
   const onRemoveClick = async (league: League) => {
-    await deleteLeague(league);
+    await deleteExistingLeague.mutateAsync(league);
+    await invalidateLeaguesList();
   };
+
   const onToggleActiveClick = (league: League) => {
     setSelectedLeague(selectedLeague?.id === league.id ? undefined : league);
   };
+
   const columns: GridColDef<League>[] = [
     {
       field: 'isLeagueSelected',
@@ -209,9 +210,9 @@ const LeaguesPage: React.FC = () => {
       </StyledHeaderContainer>
 
       <CustomDataTable
-        loading={isFetching}
+        loading={isFetchingLeaguesList}
         columns={columns}
-        rows={allLeagues}
+        rows={leaguesList || []}
         onRowSelect={(league: League) => setSelectedRowLeague(league)}
       />
 
@@ -324,8 +325,23 @@ const LeaguesPage: React.FC = () => {
             if (!selectedRowLeague) {
               return;
             }
-            await addNewTeam(team);
+            const newTeam = await addNewTeam(team);
+            const newLeaderboardTeam = await addNewLeaderBoardTeam(
+              createNewLeaderboardTeam(team)
+            );
+            if (!newTeam || !newLeaderboardTeam) {
+              return;
+            }
+            selectedRowLeague.teams = [...selectedRowLeague.teams, newTeam];
+            selectedRowLeague.leaderboard = [
+              ...selectedRowLeague.leaderboard,
+              newLeaderboardTeam,
+            ];
+            await updateExistingLeague.mutateAsync(selectedRowLeague);
+
             setIsTeamAddModalOpen(false);
+            await invalidateLeaguesList();
+            setSelectedRowLeague(selectedRowLeague);
           }}
           onCancel={() => setIsTeamAddModalOpen(false)}
         />
@@ -349,9 +365,9 @@ const LeaguesPage: React.FC = () => {
               ...selectedRowLeague.tournaments,
               newTournament,
             ];
-            await updateLeague(selectedRowLeague);
-            const tasdsd = await getTournaments();
-            // setIsTournamentAddModalOpen(false);
+            await updateExistingLeague.mutateAsync(selectedRowLeague);
+            await invalidateLeaguesList();
+            setSelectedRowLeague(selectedRowLeague);
           }}
           onCancel={() => setIsTournamentAddModalOpen(false)}
         />

@@ -18,7 +18,8 @@ function randomColor() {
 }
 
 interface IProps {
-  onAccept: (team: Team) => void;
+  team?: Team;
+  onAccept: (team: Team, update?: boolean) => void;
   onCancel: () => void;
 }
 
@@ -28,19 +29,26 @@ interface AddTeam {
   members: TeamMember[];
 }
 
-const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel }) => {
+const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
   const theme = useTheme();
   const formik = useFormik<AddTeam>({
     initialValues: {
-      members: [],
-      teamName: '',
-      teamTag: '',
+      members: team?.members || [],
+      teamName: team?.teamName || '',
+      teamTag: team?.teamTag || '',
     },
     validationSchema: QuickAddTeamSchema,
     onSubmit: (values: AddTeam) => {
       const newId = v4();
       onAccept(
-        new Team({ ...values, _id: newId, id: newId, color: randomColor() })
+        new Team({
+          _id: newId,
+          id: newId,
+          color: randomColor(),
+          ...team,
+          ...values,
+        }),
+        !!team
       );
     },
   });
