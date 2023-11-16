@@ -94,6 +94,7 @@
     "react-router-dom": "^6.11.2",
     "styled-components": "^5.3.11",
     "uuid": "^9.0.1",
+    "worker-timers": "^7.0.77",
     "yup": "^1.3.2",
     "zustand": "^4.4.2"
   },
