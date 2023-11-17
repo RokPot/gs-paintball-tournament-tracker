@@ -7,14 +7,13 @@ interface IProps {
 
 const TimerStoreRenderComponent: React.FC<IProps> = ({ duration }) => {
   const milisecondsToTime = (duration: number) => {
-    var miliseconds = (duration % 1000) / 10,
+    var miliseconds = (duration % 1000) / 100,
       seconds = Math.floor((duration / 1000) % 60),
       minutes = Math.floor((duration / (1000 * 60)) % 60);
 
     const minutesString = minutes < 10 ? '0' + minutes : minutes;
     const secondsString = seconds < 10 ? '0' + seconds : seconds;
-    const milisecondsString =
-      miliseconds < 10 ? '0' + miliseconds : miliseconds;
+    const milisecondsString = miliseconds;
 
     return {
       formatted: minutesString + ':' + secondsString,

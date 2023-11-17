@@ -23,7 +23,7 @@ const useTournamentService = () => {
   const getTournament = useCallback((tournament: TournamentDto) => {
     return db.get(tournament._id);
   }, []);
-  const getTournaments = useCallback(async () => {
+  const getTournaments = useCallback(async (leagueId: string) => {
     const myMapFunction = (doc: any, emit: any) => {
       if (doc.docType === DocType.Tournament) {
         emit(doc, DocType.Tournament);

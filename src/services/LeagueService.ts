@@ -23,7 +23,9 @@ const useLeagueService = () => {
       await db.put(toUpdate);
 
       return await db.get<LeagueDto>(league._id);
-    } catch (e) {}
+    } catch (e) {
+      console.log(e);
+    }
   }, []);
   const deleteLeague = useCallback(async (league: League) => {
     try {
@@ -34,10 +36,38 @@ const useLeagueService = () => {
       return false;
     }
   }, []);
-  const getLeague = useCallback(async (league: League) => {
-    const res = await db.get<League>(league._id);
-
-    return db.get(league._id);
+  const getLeague = useCallback(async (leagueId: string) => {
+    if (!leagueId) {
+      return null;
+    }
+    return new League(await db.get<LeagueDto>(leagueId));
+  }, []);
+  const getActiveLeague = useCallback(async () => {
+    const myMapFunction = (doc: any, emit: any) => {
+      if (doc.docType === DocType.League && doc.isLeagueSelected) {
+        emit(doc, DocType.League);
+        if (doc.teamIds) {
+          doc.teamIds.forEach(function (item: any) {
+            emit(doc._id, { _id: item, type: DocType.Team });
+          });
+        }
+        if (doc.leaderboardTeamIds) {
+          doc.leaderboardTeamIds.forEach(function (item: any) {
+            emit(doc._id, { _id: item, type: DocType.LeaderboardTeam });
+          });
+        }
+        if (doc.tournamentIds) {
+          doc.tournamentIds.forEach(function (item: any) {
+            emit(doc._id, { _id: item, type: DocType.Tournament });
+          });
+        }
+      }
+    };
+    const result = await db.query(myMapFunction, {
+      include_docs: true,
+    });
+    const leagues = getLeaguesList(result);
+    return !!leagues?.length ? leagues[0] : undefined;
   }, []);
   const getLeagues = useCallback(async () => {
     const myMapFunction = (doc: any, emit: any) => {
@@ -67,7 +97,14 @@ const useLeagueService = () => {
     return getLeaguesList(result);
   }, []);
 
-  return { addNewLeague, updateLeague, deleteLeague, getLeague, getLeagues };
+  return {
+    addNewLeague,
+    updateLeague,
+    deleteLeague,
+    getLeague,
+    getLeagues,
+    getActiveLeague,
+  };
 };
 
 export default useLeagueService;

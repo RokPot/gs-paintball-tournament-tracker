@@ -1,50 +1,108 @@
 import { QueryKey } from './QueryKeys';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import useLeagueService from 'services/LeagueService';
 import useTeamService from 'services/TeamService';
 import { League } from 'types/League';
 
 const useLeagueQueries = () => {
-  const { addNewTeam, getTeams, deleteTeam, updateTeam } = useTeamService();
-  const { addNewLeague, getLeagues, updateLeague, deleteLeague } =
-    useLeagueService();
+  const {
+    addNewLeague,
+    getLeagues,
+    updateLeague,
+    deleteLeague,
+    getActiveLeague,
+  } = useLeagueService();
+  const { addNewLeaderBoardTeams } = useTeamService();
+  const [selectedLeagueId, setSelectedLeagueId] = useState('');
   const queryClient = useQueryClient();
 
-  const { data, isFetching: isFetchingLeaguesList } = useQuery({
+  const { data: leaguesList, isFetching: isFetchingLeaguesList } = useQuery({
     queryKey: [QueryKey.LeaguesList],
     queryFn: () => getLeagues().then((res) => res),
   });
+
+  const { data: selectedLeague, isFetching: isFetchingSelectedLeague } =
+    useQuery({
+      queryKey: [QueryKey.SelectedLeague],
+      queryFn: () => getActiveLeague().then((res) => res),
+    });
 
   const invalidateLeaguesList = useCallback(async () => {
     queryClient.invalidateQueries({ queryKey: [QueryKey.LeaguesList] });
   }, []);
 
-  const addLeague = useMutation({
+  const invalidateSelectedLeague = useCallback(async () => {
+    queryClient.invalidateQueries({ queryKey: [QueryKey.SelectedLeague] });
+  }, []);
+
+  const { mutateAsync: addLeagueMutate } = useMutation({
     mutationFn: (league: League) => {
       return addNewLeague(league);
     },
   });
 
-  const deleteExistingLeague = useMutation({
+  const { mutateAsync: deleteExistingLeagueMutate } = useMutation({
     mutationFn: (league: League) => {
       return deleteLeague(league);
     },
   });
 
-  const updateExistingLeague = useMutation({
+  const { mutateAsync: updateExistingLeague } = useMutation({
     mutationFn: (league: League) => {
       return updateLeague(league);
     },
   });
+  const setSelectedLeague = async (
+    newActiveLeague: League,
+    currentActiveLeague?: League | null
+  ) => {
+    if (currentActiveLeague) {
+      currentActiveLeague.isLeagueSelected = false;
+      await updateExistingLeague(currentActiveLeague);
+    }
+    newActiveLeague.isLeagueSelected = true;
+    await updateExistingLeague(newActiveLeague);
+
+    await invalidateSelectedLeague();
+    await invalidateLeaguesList();
+  };
+
+  const addLeague = async (
+    league: League,
+    shouldUpdateExistingLeague?: boolean
+  ) => {
+    if (shouldUpdateExistingLeague) {
+      console.log(
+        league.leaderboard.filter((leaderboardTeam) => !leaderboardTeam._rev)
+      );
+      await addNewLeaderBoardTeams(
+        league.leaderboard.filter((leaderboardTeam) => !leaderboardTeam._rev)
+      );
+      await updateExistingLeague(league);
+    } else {
+      await addNewLeaderBoardTeams(league.leaderboard);
+      await addLeagueMutate(league);
+    }
+
+    await invalidateLeaguesList();
+  };
+
+  const deleteExistingLeague = async (league: League) => {
+    await deleteExistingLeagueMutate(league);
+    await invalidateLeaguesList();
+  };
 
   return {
-    leaguesList: data,
+    leaguesList,
+    selectedLeague,
     isFetchingLeaguesList,
+    isLoading: isFetchingLeaguesList || isFetchingSelectedLeague,
     invalidateLeaguesList,
     addLeague,
     deleteExistingLeague,
     updateExistingLeague,
+    setSelectedLeague,
   };
 };
 

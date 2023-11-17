@@ -13,11 +13,12 @@ const StyledRootContainer = styled('div')(
 interface IProps {
   children: React.ReactNode;
   padding?: string;
+  flexWrap?: 'nowrap' | 'wrap';
 }
-const PageContainer: React.FC<IProps> = ({ children, padding }) => {
+const PageContainer: React.FC<IProps> = ({ children, padding, flexWrap }) => {
   return (
     <Container maxWidth={false} style={{ overflow: 'auto', padding: '0px' }}>
-      <StyledRootContainer style={{ padding: padding }}>
+      <StyledRootContainer style={{ padding: padding, flexWrap: flexWrap }}>
         {children}
       </StyledRootContainer>
     </Container>

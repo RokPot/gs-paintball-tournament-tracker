@@ -26,6 +26,7 @@ export class League extends IPouchDB {
     this.teams = props.teams || [];
     this.tournaments = props.tournaments || [];
     this.leaderboard = props.leaderboard || [];
+    this.isLeagueSelected = props.isLeagueSelected;
   }
 
   public addLeaderboardTeam = (leaderboardTeam: LeaderboardTeam) => {
@@ -46,6 +47,7 @@ export class League extends IPouchDB {
       teamIds: this.teams.map((team) => team._id),
       tournamentIds: this.tournaments.map((tournament) => tournament.id),
       leaderboardTeamIds: this.leaderboard.map((tournament) => tournament._id),
+      isLeagueSelected: this.isLeagueSelected,
     };
   };
 }

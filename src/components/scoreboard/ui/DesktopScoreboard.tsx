@@ -2,7 +2,10 @@ import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
 import GameTimerStoreRenderComponent from '../GameTimerStoreRenderComponent';
 import TeamScoreCard from '../TeamScoreCard';
 import { Button, Card, Typography, alpha, styled } from '@mui/material';
+import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
+import QuickAddTeam from 'components/teams/QuickAddTeam';
+import { useState } from 'react';
 import { Game } from 'types/Game';
 
 interface IProps {
@@ -16,6 +19,8 @@ const DesktopScoreboard: React.FC<IProps> = ({
   startStopMatch,
   game,
 }) => {
+  const [isTeamUpsertModalOpen, setIsTeamUpsertModalOpen] = useState(false);
+
   return (
     <FlexContainer
       justifyContent="center"
@@ -102,6 +107,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
                 color="secondary"
                 fullWidth
                 size="large"
+                onClick={() => setIsTeamUpsertModalOpen(true)}
               >
                 <Typography variant="h3Medium">Finish Match</Typography>
               </Button>
@@ -123,6 +129,17 @@ const DesktopScoreboard: React.FC<IProps> = ({
           </FlexContainer>
         </Card>
       </FlexContainer>
+      <CustomModal
+        isModalOpen={isTeamUpsertModalOpen}
+        onClose={() => setIsTeamUpsertModalOpen(false)}
+        width={600}
+      >
+        <QuickAddTeam
+          team={undefined}
+          onAccept={() => {}}
+          onCancel={() => setIsTeamUpsertModalOpen(false)}
+        />
+      </CustomModal>
     </FlexContainer>
   );
 };

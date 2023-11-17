@@ -27,7 +27,7 @@ interface AddLeague {
 
 interface IProps {
   league?: League;
-  onConfirm: (league: League) => void;
+  onConfirm: (league: League, isEdit: boolean) => void;
   onClose: () => void;
 }
 
@@ -39,18 +39,28 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
     initialValues: { name: league?.name || '', teams: league?.teams || [] },
     validationSchema: LeagueDetailsSchema,
     onSubmit: (values: AddLeague) => {
-      const teamId = v4();
+      const teamId = league?._id || v4();
+      const newTeams = values.teams.filter(
+        (team) =>
+          !league?.leaderboard.some(
+            (leaderboardTeam) => leaderboardTeam.team.id === team.id
+          )
+      );
       onConfirm(
         new League({
           id: teamId,
           _id: teamId,
-          leaderboard: values.teams.map((team) => {
-            return createNewLeaderboardTeam(team);
-          }),
+          leaderboard: [
+            ...(league?.leaderboard || []),
+            ...newTeams.map((team) => {
+              return createNewLeaderboardTeam(team);
+            }),
+          ],
           name: values.name,
           teams: values.teams,
           tournaments: [],
-        })
+        }),
+        !!league
       );
     },
   });
