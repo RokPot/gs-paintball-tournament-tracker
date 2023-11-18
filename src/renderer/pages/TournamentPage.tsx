@@ -1,31 +1,54 @@
 import { Button, Typography } from '@mui/material';
+import SelectLeague from 'components/leagues/SelectLeague';
 import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
 import TournamentDetailsInfo from 'components/tournament/TournamentDetailsInfo';
+import useLeagueQueries from 'services/queries/LeagueQueries';
 import useTournamentStore from 'store/TournamentStore';
 
 const TournamentPage: React.FC = () => {
+  const { selectedLeague, setSelectedLeague } = useLeagueQueries();
   const { selectedTournament, setSelectedTournament } = useTournamentStore();
   return (
     <PageContainer>
       <FlexContainer width="100%" justifyContent="space-between">
         <Typography variant="h4">
-          Tournament - Turnir 2022 Gluhi Svizci
+          {selectedLeague
+            ? `League - ${selectedLeague.name}`
+            : 'No league selected'}
         </Typography>
         <Button onClick={() => {}}>
           <Typography variant="body1">Create a new tournament</Typography>
         </Button>
       </FlexContainer>
-      {selectedTournament && (
+      {!selectedLeague && (
+        <FlexContainer
+          width="100%"
+          flexDirection="column"
+          justifyContent="flex-start"
+          alignItems="flex-start"
+          margin={8}
+        >
+          <Typography
+            variant="subtitle1"
+            color={(theme) => theme.palette.text.secondary}
+          >
+            No leage is currently selected, please create a new league or select
+            an existing one.
+          </Typography>
+          <SelectLeague />
+        </FlexContainer>
+      )}
+      {!selectedTournament && (
         <Typography
           variant="subtitle1"
           color={(theme) => theme.palette.text.secondary}
         >
-          No tournament selected, please create a new tournament or select
-          existing one
+          No tournament is currently selected, please create a new tournament or
+          select existing one.
         </Typography>
       )}
-      {!selectedTournament && (
+      {selectedTournament && (
         <>
           <Typography variant="h5">Tournament details</Typography>
           <FlexContainer width="100%" justifyContent="flex-start" margin={16}>

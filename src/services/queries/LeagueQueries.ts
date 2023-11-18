@@ -57,11 +57,18 @@ const useLeagueQueries = () => {
     newActiveLeague: League,
     currentActiveLeague?: League | null
   ) => {
-    if (currentActiveLeague) {
+    const isCurrentLeagueSameAsNewLeague =
+      newActiveLeague.id === currentActiveLeague?.id;
+
+    const isLeagueAlreadyActiveAndIsNotNewLeague =
+      currentActiveLeague && !isCurrentLeagueSameAsNewLeague;
+
+    if (isLeagueAlreadyActiveAndIsNotNewLeague) {
       currentActiveLeague.isLeagueSelected = false;
       await updateExistingLeague(currentActiveLeague);
     }
-    newActiveLeague.isLeagueSelected = true;
+
+    newActiveLeague.isLeagueSelected = !isCurrentLeagueSameAsNewLeague;
     await updateExistingLeague(newActiveLeague);
 
     await invalidateSelectedLeague();

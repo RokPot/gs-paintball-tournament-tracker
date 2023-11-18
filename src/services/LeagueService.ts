@@ -67,7 +67,7 @@ const useLeagueService = () => {
       include_docs: true,
     });
     const leagues = getLeaguesList(result);
-    return !!leagues?.length ? leagues[0] : undefined;
+    return !!leagues?.length ? leagues[0] : null;
   }, []);
   const getLeagues = useCallback(async () => {
     const myMapFunction = (doc: any, emit: any) => {
