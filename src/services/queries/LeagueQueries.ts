@@ -54,11 +54,11 @@ const useLeagueQueries = () => {
     },
   });
   const setSelectedLeague = async (
-    newActiveLeague: League,
+    newActiveLeague?: League | null,
     currentActiveLeague?: League | null
   ) => {
     const isCurrentLeagueSameAsNewLeague =
-      newActiveLeague.id === currentActiveLeague?.id;
+      newActiveLeague?.id === currentActiveLeague?.id;
 
     const isLeagueAlreadyActiveAndIsNotNewLeague =
       currentActiveLeague && !isCurrentLeagueSameAsNewLeague;
@@ -68,8 +68,10 @@ const useLeagueQueries = () => {
       await updateExistingLeague(currentActiveLeague);
     }
 
-    newActiveLeague.isLeagueSelected = !isCurrentLeagueSameAsNewLeague;
-    await updateExistingLeague(newActiveLeague);
+    if (newActiveLeague) {
+      newActiveLeague.isLeagueSelected = !isCurrentLeagueSameAsNewLeague;
+      await updateExistingLeague(newActiveLeague);
+    }
 
     await invalidateSelectedLeague();
     await invalidateLeaguesList();

@@ -3,13 +3,13 @@ import { create } from 'zustand';
 
 interface TournamentStoreState {
   selectedTournament?: Tournament;
-  setSelectedTournament: (league: Tournament) => void;
+  setSelectedTournament: (tournament?: Tournament) => void;
 }
 
 const useTournamentStore = create<TournamentStoreState>((set, get) => ({
   selectedTournament: undefined,
 
-  setSelectedTournament: (tournament: Tournament) =>
+  setSelectedTournament: (tournament?: Tournament) =>
     set(() => ({ selectedTournament: tournament })),
 }));
 
