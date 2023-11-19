@@ -17,9 +17,16 @@ const TournamentPage: React.FC = () => {
     <PageContainer>
       <FlexContainer width="100%" justifyContent="space-between">
         <Typography variant="h4">
-          {selectedLeague
-            ? `League - ${selectedLeague.name}`
-            : 'No league selected'}
+          {selectedLeague ? (
+            <>
+              League -
+              <Typography variant="h4Medium" display="inline-block">
+                {selectedLeague.name}
+              </Typography>
+            </>
+          ) : (
+            'No league selected'
+          )}
           {selectedLeague && (
             <IconButton
               style={{ width: '20px', height: '20px', marginLeft: 'auto' }}
@@ -59,9 +66,16 @@ const TournamentPage: React.FC = () => {
       {selectedLeague && (
         <>
           <Typography variant="h5">
-            {selectedTournament
-              ? `Tournament - ${selectedTournament.name}`
-              : 'No tournament selected'}
+            {selectedTournament ? (
+              <>
+                Tournament -
+                <Typography variant="h5Medium" display="inline-block">
+                  {selectedTournament.name}
+                </Typography>
+              </>
+            ) : (
+              'No tournament selected'
+            )}
             {selectedTournament && (
               <IconButton
                 style={{ width: '20px', height: '20px', marginLeft: 'auto' }}
@@ -107,7 +121,14 @@ const TournamentPage: React.FC = () => {
                   alignItems="flex-start"
                   highlightRowOnHover
                 >
-                  <TournamentDetailsInfo title="Status" value={'In Progress'} />
+                  <TournamentDetailsInfo
+                    title="Status"
+                    value={
+                      selectedTournament.state.isGameInProgress
+                        ? 'In progress'
+                        : 'Inactive'
+                    }
+                  />
                   <TournamentDetailsInfo
                     title="Type"
                     value={'Round-Robin with groups'}

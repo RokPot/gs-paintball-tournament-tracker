@@ -1,13 +1,8 @@
-import {
-  Autocomplete,
-  Avatar,
-  Button,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import CustomTextField from 'components/shared/CustomTextField';
 import FlexContainer from 'components/shared/FlexContainer';
+import TeamMultiSelect from 'components/shared/multiselect/TeamMultiSelect';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
 import TeamsShortList from 'components/teams/TeamShortList';
 import { useFormik } from 'formik';
@@ -107,76 +102,11 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
         Add teams which will participate in the league (you can also add them
         later)
       </Typography>
-      <Autocomplete
-        multiple
-        fullWidth
-        value={
-          formik?.values?.teams?.map((team) => ({
-            title: team.teamName,
-            value: team,
-          })) || []
-        }
-        options={
-          teamsList?.map((team) => ({
-            title: team.teamName,
-            value: team,
-          })) || []
-        }
-        getOptionLabel={(option) => option.title.toString()}
-        renderOption={(props, option) => (
-          <Typography {...props}>
-            <Avatar
-              variant="rounded"
-              style={{
-                backgroundColor: option.value.color,
-                height: '25px',
-                width: '25px',
-                marginRight: '8px',
-              }}
-            >
-              <Typography
-                variant="body2"
-                style={{ textTransform: 'uppercase' }}
-              >
-                {option.value.teamTag}
-              </Typography>
-            </Avatar>
-            {option.value.teamName}
-          </Typography>
-        )}
-        disableCloseOnSelect
-        filterSelectedOptions
-        onChange={(_, value) =>
-          formik.setFieldValue(
-            'teams',
-            value.map((val) => val.value)
-          )
-        }
-        isOptionEqualToValue={(option, value) => {
-          return option.value.id === value.value.id;
-        }}
-        limitTags={-1}
-        renderTags={() => (
-          <Typography
-            variant="body1"
-            color={(theme) => theme.palette.text.secondary}
-          >
-            {formik.values?.teams?.length >= 1 && formik.values?.teams.length}{' '}
-            {formik.values?.teams?.length > 0
-              ? formik.values?.teams.length === 1
-                ? 'team'
-                : 'teams'
-              : ''}{' '}
-            {formik.values?.teams?.length >= 1 && 'selected'}
-          </Typography>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Participating teams"
-            placeholder="Select teams"
-          />
-        )}
+
+      <TeamMultiSelect
+        selectedTeams={formik?.values?.teams}
+        onTeamsChanged={(teams) => formik.setFieldValue('teams', teams)}
+        options={teamsList}
       />
 
       <TeamsShortList

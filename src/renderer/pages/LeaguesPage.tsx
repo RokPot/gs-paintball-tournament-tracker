@@ -137,6 +137,7 @@ const LeaguesPage: React.FC = () => {
     await updateExistingLeague(selectedRowLeague);
     await invalidateLeaguesList();
     setSelectedRowLeague(selectedRowLeague);
+    setIsTournamentAddModalOpen(false);
   };
 
   const addNewTeamInternal = async (team: Team) => {

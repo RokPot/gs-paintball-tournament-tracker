@@ -201,7 +201,9 @@ const themeOptions: ThemeOptions = {
           font-style: normal;
           font-weight: 100 1000;
           src: url(${SwitzerVariableTtf}) format('truetype');
-        }`,
+        }
+       
+        `,
     },
     MuiButton: {
       styleOverrides: {
