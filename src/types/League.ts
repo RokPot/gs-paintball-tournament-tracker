@@ -19,6 +19,8 @@ export class League extends IPouchDB {
 
   isLeagueSelected?: boolean;
 
+  activeTournament?: Tournament;
+
   constructor(props: ILeague) {
     super(props._id, props._rev, props.docType || DocType.League);
     this.id = props.id;
@@ -45,9 +47,10 @@ export class League extends IPouchDB {
       id: this.id,
       name: this.name,
       teamIds: this.teams.map((team) => team._id),
-      tournamentIds: this.tournaments.map((tournament) => tournament.id),
+      tournamentIds: this.tournaments.map((tournament) => tournament._id),
       leaderboardTeamIds: this.leaderboard.map((tournament) => tournament._id),
       isLeagueSelected: this.isLeagueSelected,
+      activeTournamentId: this.activeTournament?._id,
     };
   };
 }

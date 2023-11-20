@@ -10,6 +10,7 @@ export interface TournamentSettings {
   numberOfGroups: number;
   type: TournamentType;
   secondStageType?: TournamentType;
+  numberOfTeamSize: number;
 }
 
 export const DefaultTournamentSettings: TournamentSettings = {
@@ -21,4 +22,5 @@ export const DefaultTournamentSettings: TournamentSettings = {
   numberOfGroups: 1,
   type: TournamentType.roundRobin,
   secondStageType: TournamentType.singleElimination,
+  numberOfTeamSize: 3,
 };

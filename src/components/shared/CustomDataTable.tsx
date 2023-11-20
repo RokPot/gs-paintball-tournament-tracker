@@ -63,5 +63,8 @@ export default styled(CustomDataTable)(
     .MuiDataGrid-row:last-child div {
       border-bottom: none;
     }
+    .MuiDataGrid-cell:focus {
+      outline: none;
+    }
   `
 );

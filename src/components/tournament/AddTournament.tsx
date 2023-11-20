@@ -118,7 +118,7 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
             id: v4(),
             isGameInProgress: false,
             isTournamentFinished: false,
-            stage: TournamentStage.startStage,
+            stage: TournamentStage.created,
           }),
           teams: values.teams,
         })
@@ -225,6 +225,25 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
             debounceTime={200}
             disableError
           />
+          <FormControl fullWidth>
+            <InputLabel>Team size</InputLabel>
+            <Select
+              value={formik?.values?.settings.numberOfTeamSize}
+              label="Team size"
+              onChange={(e) =>
+                formik.setFieldValue('settings', {
+                  ...formik.values.settings,
+                  numberOfTeamSize: Number(e.target.value),
+                } as TournamentSettings)
+              }
+            >
+              {[1, 2, 3, 4, 5, 6]?.map((teamSize, index) => (
+                <MenuItem key={index} value={teamSize}>
+                  {teamSize}-man
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <FormControl fullWidth>
             <InputLabel>Type</InputLabel>
             <Select

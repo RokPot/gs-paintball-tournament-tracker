@@ -6,15 +6,15 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import useLeagueQueries from 'services/queries/LeagueQueries';
-import useTournamentStore from 'store/TournamentStore';
 import { Tournament } from 'types/Tournament';
 
-interface IProps {}
+interface IProps {
+  onTournamentSelected: (tournament: Tournament) => void;
+}
 
-const SelectTournament: React.FC<IProps> = ({}) => {
-  const { selectedLeague, setSelectedLeague, leaguesList } = useLeagueQueries();
-  const { selectedTournament, setSelectedTournament } = useTournamentStore();
-
+const SelectTournament: React.FC<IProps> = ({ onTournamentSelected }) => {
+  const { selectedLeague } = useLeagueQueries();
+  const selectedTournament = selectedLeague?.activeTournament;
   const leagueTournaments = selectedLeague?.tournaments;
 
   const setSelectedTournamentInternal = async (
@@ -26,7 +26,7 @@ const SelectTournament: React.FC<IProps> = ({}) => {
     if (!newSelectedTournament) {
       return;
     }
-    await setSelectedTournament(newSelectedTournament);
+    onTournamentSelected(newSelectedTournament);
   };
 
   return (

@@ -13,7 +13,7 @@ const TournamentDetailsInfo: React.FC<IProps> = ({ title, value, date }) => {
       <Typography variant="p2" minWidth="100px">
         {title}:
       </Typography>
-      <Typography variant="p2Bold">
+      <Typography variant="p2Bold" paddingLeft={1}>
         {' '}
         {date && date.toLocaleString()}
         {value}

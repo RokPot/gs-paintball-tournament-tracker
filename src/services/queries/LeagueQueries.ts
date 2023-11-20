@@ -108,6 +108,7 @@ const useLeagueQueries = () => {
     isFetchingLeaguesList,
     isLoading: isFetchingLeaguesList || isFetchingSelectedLeague,
     invalidateLeaguesList,
+    invalidateSelectedLeague,
     addLeague,
     deleteExistingLeague,
     updateExistingLeague,

@@ -15,4 +15,6 @@ export interface ILeague extends PouchDBDto {
   leaderboard?: LeaderboardTeam[];
 
   isLeagueSelected?: boolean;
+
+  activeTournament?: Tournament;
 }

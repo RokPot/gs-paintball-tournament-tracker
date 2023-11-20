@@ -151,6 +151,11 @@ export const getLeaguesList = <T>(result: PouchDB.Query.Response<any>) => {
     newLeague.teams = teams;
     newLeague.leaderboard = leaderboardTeams;
     newLeague.tournaments = tournaments;
+    if (rootLeague?.activeTournamentId) {
+      newLeague.activeTournament = tournaments.find(
+        (tournament) => tournament._id === rootLeague?.activeTournamentId
+      );
+    }
     leagues.push(newLeague);
   }
   return leagues;

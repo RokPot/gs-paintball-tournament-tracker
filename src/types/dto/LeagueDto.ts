@@ -21,4 +21,6 @@ export interface LeagueDto extends PouchDBDto {
   leaderboardTeamIds: string[];
 
   isLeagueSelected?: boolean;
+
+  activeTournamentId?: string;
 }
