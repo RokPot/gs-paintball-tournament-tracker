@@ -4,6 +4,7 @@ import { Button, IconButton, Typography, useTheme } from '@mui/material';
 import SelectLeague from 'components/leagues/SelectLeague';
 import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
+import LeaderboardList from 'components/teams/LeaderboardList';
 import TeamsShortList from 'components/teams/TeamShortList';
 import SelectTournament from 'components/tournament/SelectTournament';
 import TournamentDetailsList from 'components/tournament/TournamentDetailsList';
@@ -173,6 +174,7 @@ const TournamentPage: React.FC = () => {
               <TournamentDetailsList tournament={selectedTournament} />
               <Typography variant="h5">Participating teams</Typography>
               <TeamsShortList teams={selectedTournament.teams} />
+              <LeaderboardList teams={selectedLeague?.leaderboard} />
             </>
           )}
         </>

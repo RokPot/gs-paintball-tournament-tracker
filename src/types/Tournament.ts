@@ -1,4 +1,5 @@
 import { DefaultGameSettings, GameSettings } from './GameSettings';
+import { LeaderboardTeam } from './LeadeboardTeam';
 import { Team } from './Team';
 import { TournamentGroup } from './TournamentGroup';
 import {
@@ -31,6 +32,8 @@ export class Tournament extends IPouchDB {
 
   gameSettings: GameSettings;
 
+  leaderboard: LeaderboardTeam[];
+
   constructor(props: ITournament) {
     super(props._id, props._rev, props.docType || DocType.Tournament);
     this.id = props.id;
@@ -42,6 +45,7 @@ export class Tournament extends IPouchDB {
     this.endDate = dayjs(props.endDate);
     this.settings = props.settings || DefaultTournamentSettings;
     this.gameSettings = props.gameSettings || DefaultGameSettings;
+    this.leaderboard = props.leaderboard;
   }
 
   public toDto = (): TournamentDto => {
@@ -58,6 +62,7 @@ export class Tournament extends IPouchDB {
       teamIds: this.teams.map((team) => team._id),
       endDate: this.endDate?.toISOString(),
       startDate: this.startDate?.toISOString(),
+      leaderboardTeamIds: this.leaderboard.map((team) => team._id),
     };
   };
 }

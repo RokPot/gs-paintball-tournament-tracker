@@ -27,7 +27,7 @@ const TournamentShortList: React.FC<IProps> = ({ tournaments }) => {
             width="100%"
             highlightRowOnHover
           >
-            <Typography variant="p1Medium">{index}.</Typography>
+            <Typography variant="p1Medium">{index + 1}.</Typography>
 
             <Typography>{tournament?.name}</Typography>
             <Typography
@@ -38,15 +38,28 @@ const TournamentShortList: React.FC<IProps> = ({ tournaments }) => {
                 <>{`${tournament.teams.length} teams`}</>
               )}
             </Typography>
-            <Typography
-              variant="subtitle2"
-              color={(theme) => theme.palette.text.disabled}
-            >
+            <Typography variant="p1">
               {tournament?.startDate && (
-                <>Started: {tournament.startDate.toISOString()}</>
+                <>
+                  Started:{' '}
+                  <Typography
+                    variant="p2Medium"
+                    color={(theme) => theme.palette.text.disabled}
+                  >
+                    {tournament.startDate.format('DD/MM/YYYY')}
+                  </Typography>
+                </>
               )}{' '}
               {tournament?.endDate && (
-                <>Finished: {tournament.endDate.toISOString()}</>
+                <>
+                  Finished:{' '}
+                  <Typography
+                    variant="p2"
+                    color={(theme) => theme.palette.text.disabled}
+                  >
+                    {tournament.endDate.format('DD/MM/YYYY')}
+                  </Typography>
+                </>
               )}
             </Typography>
           </FlexContainer>
