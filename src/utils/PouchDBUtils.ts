@@ -73,8 +73,10 @@ export const mapTournamentsFromResponse = (
     if (!teamInResult) {
       continue;
     }
+    // todo rokpot fix this leaderboard [], get from response
     const newTournament = new Tournament({
       ...teamInResult,
+      leaderboard: [],
     });
     tournaments.push(newTournament);
   }
@@ -99,7 +101,7 @@ export const getTournamentsList = <T>(result: PouchDB.Query.Response<any>) => {
   for (const key of Object.keys(groupedResults)) {
     const { rootDoc, otherDocs } = getRootElementAndLinkedDocs<TournamentDto>(
       groupedResults[key],
-      DocType.League
+      DocType.Tournament
     );
 
     if (!rootDoc) {

@@ -31,7 +31,7 @@ const TeamsShortList: React.FC<IProps> = ({
           width="100%"
           highlightRowOnHover
         >
-          <Typography variant="p1Medium">{index}.</Typography>
+          <Typography variant="p1Medium">{index + 1}.</Typography>
           <Avatar variant="rounded" style={{ backgroundColor: team.color }}>
             <Typography
               variant="p1Medium"

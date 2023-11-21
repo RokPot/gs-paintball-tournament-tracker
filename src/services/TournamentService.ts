@@ -20,8 +20,30 @@ const useTournamentService = () => {
     // await db.remove(tournament._id);
     return null;
   }, []);
-  const getTournament = useCallback((tournament: TournamentDto) => {
-    return db.get(tournament._id);
+  const getTournament = useCallback(async (tournamentId: string) => {
+    const myMapFunction = (doc: any, emit: any) => {
+      if (doc.docType === DocType.Tournament) {
+        if (tournamentId === doc._id) {
+          emit(doc, DocType.Tournament);
+          if (doc.teamIds) {
+            doc.teamIds.forEach(function (item: any) {
+              emit(doc._id, { _id: item, type: DocType.Team });
+            });
+          }
+          if (doc.leaderboardTeamIds) {
+            doc.leaderboardTeamIds.forEach(function (item: any) {
+              emit(doc._id, { _id: item, type: DocType.LeaderboardTeam });
+            });
+          }
+        }
+      }
+    };
+    const result = await db.query<TournamentDto[]>(myMapFunction, {
+      include_docs: true,
+    });
+    const tournamentsList = getTournamentsList(result);
+    const activeLeague = !!tournamentsList?.length ? tournamentsList[0] : null;
+    return activeLeague;
   }, []);
   const getTournaments = useCallback(async (leagueId: string) => {
     const myMapFunction = (doc: any, emit: any) => {

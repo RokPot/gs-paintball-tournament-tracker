@@ -25,5 +25,5 @@ export interface ITournament extends PouchDBDto {
 
   gameSettings?: GameSettings;
 
-  leaderboard: LeaderboardTeam[];
+  leaderboard?: LeaderboardTeam[];
 }

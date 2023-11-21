@@ -69,7 +69,9 @@ const TournamentPage: React.FC = () => {
       }
     }
     setFirstLoad(false);
-  }, [selectedLeague]);
+  }, []);
+  var test = '';
+  console.log(selectedTournament?.teams, selectedTournament?.leaderboard);
 
   return (
     <PageContainer>
@@ -174,7 +176,9 @@ const TournamentPage: React.FC = () => {
               <TournamentDetailsList tournament={selectedTournament} />
               <Typography variant="h5">Participating teams</Typography>
               <TeamsShortList teams={selectedTournament.teams} />
-              <LeaderboardList teams={selectedLeague?.leaderboard} />
+              <Typography variant="h5">Tournament leaderboard</Typography>
+
+              <LeaderboardList teams={selectedTournament.leaderboard} />
             </>
           )}
         </>

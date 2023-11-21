@@ -1,4 +1,5 @@
 import useTeamService from './TeamService';
+import useTournamentService from './TournamentService';
 import usePouchDB, { DocType, pouchDbName } from './pouchDB';
 import { omit } from 'lodash';
 import { useCallback } from 'react';
@@ -9,6 +10,7 @@ import { getLeaguesList } from 'utils/PouchDBUtils';
 const useLeagueService = () => {
   const db = usePouchDB(pouchDbName);
   const { getTeam } = useTeamService();
+  const { getTournament } = useTournamentService();
 
   const addNewLeague = useCallback(async (league: League) => {
     try {
@@ -67,7 +69,18 @@ const useLeagueService = () => {
       include_docs: true,
     });
     const leagues = getLeaguesList(result);
-    return !!leagues?.length ? leagues[0] : null;
+    const activeLeague = !!leagues?.length ? leagues[0] : null;
+    if (!activeLeague || !activeLeague.activeTournament) {
+      return null;
+    }
+    if (!activeLeague?.activeTournament) {
+      return activeLeague;
+    }
+    const activeTournament = await getTournament(
+      activeLeague.activeTournament._id
+    );
+    activeLeague.activeTournament = activeTournament || undefined;
+    return activeLeague;
   }, []);
   const getLeagues = useCallback(async () => {
     const myMapFunction = (doc: any, emit: any) => {

@@ -32,7 +32,7 @@ export class Tournament extends IPouchDB {
 
   gameSettings: GameSettings;
 
-  leaderboard: LeaderboardTeam[];
+  leaderboard?: LeaderboardTeam[];
 
   constructor(props: ITournament) {
     super(props._id, props._rev, props.docType || DocType.Tournament);
@@ -62,7 +62,7 @@ export class Tournament extends IPouchDB {
       teamIds: this.teams.map((team) => team._id),
       endDate: this.endDate?.toISOString(),
       startDate: this.startDate?.toISOString(),
-      leaderboardTeamIds: this.leaderboard.map((team) => team._id),
+      leaderboardTeamIds: this.leaderboard?.map((team) => team._id) || [],
     };
   };
 }
