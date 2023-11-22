@@ -1,9 +1,9 @@
-import { QueryKey } from './QueryKeys';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useState } from 'react';
 import useLeagueService from 'services/LeagueService';
 import useTeamService from 'services/TeamService';
 import { League } from 'types/League';
+import { useCallback } from 'react';
+import { QueryKey } from './QueryKeys';
 
 const useLeagueQueries = () => {
   const {
@@ -14,7 +14,6 @@ const useLeagueQueries = () => {
     getActiveLeague,
   } = useLeagueService();
   const { addNewLeaderBoardTeams } = useTeamService();
-  const [selectedLeagueId, setSelectedLeagueId] = useState('');
   const queryClient = useQueryClient();
 
   const { data: leaguesList, isFetching: isFetchingLeaguesList } = useQuery({
@@ -55,7 +54,7 @@ const useLeagueQueries = () => {
   });
   const setSelectedLeague = async (
     newActiveLeague?: League | null,
-    currentActiveLeague?: League | null
+    currentActiveLeague?: League | null,
   ) => {
     const isCurrentLeagueSameAsNewLeague =
       newActiveLeague?.id === currentActiveLeague?.id;
@@ -79,14 +78,14 @@ const useLeagueQueries = () => {
 
   const addLeague = async (
     league: League,
-    shouldUpdateExistingLeague?: boolean
+    shouldUpdateExistingLeague?: boolean,
   ) => {
     if (shouldUpdateExistingLeague) {
       console.log(
-        league.leaderboard.filter((leaderboardTeam) => !leaderboardTeam._rev)
+        league.leaderboard.filter((leaderboardTeam) => !leaderboardTeam._rev),
       );
       await addNewLeaderBoardTeams(
-        league.leaderboard.filter((leaderboardTeam) => !leaderboardTeam._rev)
+        league.leaderboard.filter((leaderboardTeam) => !leaderboardTeam._rev),
       );
       await updateExistingLeague(league);
     } else {

@@ -26,8 +26,8 @@ interface IProps {
   onClose: () => void;
 }
 
-const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
-  const { addNewTeam, getTeams } = useTeamService();
+function LeagueDetails({ league, onClose, onConfirm }: IProps) {
+  const { addNewTeam } = useTeamService();
   const { teamsList } = useTeamQueries();
 
   const formik = useFormik<AddLeague>({
@@ -38,8 +38,8 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
       const newTeams = values.teams.filter(
         (team) =>
           !league?.leaderboard.some(
-            (leaderboardTeam) => leaderboardTeam.team.id === team.id
-          )
+            (leaderboardTeam) => leaderboardTeam.team.id === team.id,
+          ),
       );
       onConfirm(
         new League({
@@ -55,7 +55,7 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
           teams: values.teams,
           tournaments: [],
         }),
-        !!league
+        !!league,
       );
     },
   });
@@ -149,6 +149,6 @@ const LeagueDetails: React.FC<IProps> = ({ league, onClose, onConfirm }) => {
       </FlexContainer>
     </FlexContainer>
   );
-};
+}
 
 export default LeagueDetails;

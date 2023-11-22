@@ -1,6 +1,6 @@
-import SwitzerVariableTtf from '../../assets/fonts/switzer/Switzer-Variable.ttf';
 import { ThemeOptions, createTheme } from '@mui/material';
 import { TypographyStyleOptions } from '@mui/material/styles/createTypography';
+import SwitzerVariableTtf from '../../assets/fonts/switzer/Switzer-Variable.ttf';
 
 const h1: TypographyStyleOptions = {
   fontSize: '26px',
@@ -63,9 +63,9 @@ const p3: TypographyStyleOptions = {
   fontSize: '10px',
   lineHeight: '18px',
 };
-export const regular = 400,
-  medium = 600,
-  bold = 700;
+export const regular = 400;
+export const medium = 600;
+export const bold = 700;
 const themeOptions: ThemeOptions = {
   palette: {
     mode: 'light',
@@ -202,7 +202,7 @@ const themeOptions: ThemeOptions = {
           font-weight: 100 1000;
           src: url(${SwitzerVariableTtf}) format('truetype');
         }
-       
+
         `,
     },
     MuiButton: {

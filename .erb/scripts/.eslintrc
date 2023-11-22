@@ -3,13 +3,6 @@
     "no-console": "off",
     "global-require": "off",
     "import/no-dynamic-require": "off",
-    "import/no-extraneous-dependencies": "off",
-    "sort-imports": ["warning", {
-      "ignoreCase": true,
-      "ignoreDeclarationSort": true,
-      "ignoreMemberSort": true,
-      "memberSyntaxSortOrder": ["none", "all", "multiple", "single"],
-      "allowSeparatedGroups": true
-  }]
+    "import/no-extraneous-dependencies": "off"
   }
 }

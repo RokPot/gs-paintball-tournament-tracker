@@ -18,60 +18,60 @@ interface PouchDBResponse<T> {
 
 export const mapTeamsFromResponse = <T>(
   teamIds: string[],
-  response: PouchDBResponse<T>[]
+  response: PouchDBResponse<T>[],
 ) => {
   const teamsList: Team[] = [];
-  for (const teamId of teamIds || []) {
+  teamIds.forEach((teamId) => {
     const teamInResult = response.find((res) => res?.doc?._id === teamId)
       ?.doc as unknown as TeamDto;
     if (!teamInResult) {
-      continue;
+      return;
     }
     const teammm = new Team(teamInResult);
     teamsList.push(teammm);
-  }
+  });
   return teamsList;
 };
 
 export const mapLeaderboardTeamsFromResponse = <T>(
   leaderboardTeamIds: string[],
   teams: Team[],
-  response: PouchDBResponse<T>[]
+  response: PouchDBResponse<T>[],
 ) => {
   const teamsList: LeaderboardTeam[] = [];
-  for (const teamId of leaderboardTeamIds || []) {
+  leaderboardTeamIds.forEach((teamId) => {
     const teamInResult = response.find((res) => res?.doc?._id === teamId)
       ?.doc as unknown as LeaderboardTeamDto;
     if (!teamInResult) {
-      continue;
+      return;
     }
     const leaderboardTeamEntity = teams.find(
-      (team) => team._id === teamInResult.teamId
+      (team) => team._id === teamInResult.teamId,
     );
 
     if (!leaderboardTeamEntity) {
-      continue;
+      return;
     }
     const leaderboardTeam = new LeaderboardTeam({
       ...teamInResult,
       team: leaderboardTeamEntity,
     });
     teamsList.push(leaderboardTeam);
-  }
+  });
   return teamsList;
 };
 
 export const mapTournamentsFromResponse = (
   leaderboardTeamIds: string[],
   teams: Team[],
-  response: PouchDBResponse<unknown>[]
+  response: PouchDBResponse<unknown>[],
 ) => {
   const tournaments: Tournament[] = [];
-  for (const teamId of leaderboardTeamIds || []) {
+  leaderboardTeamIds.forEach((teamId) => {
     const teamInResult = response.find((res) => res?.doc?._id === teamId)
       ?.doc as unknown as TournamentDto;
     if (!teamInResult) {
-      continue;
+      return;
     }
     // todo rokpot fix this leaderboard [], get from response
     const newTournament = new Tournament({
@@ -79,13 +79,14 @@ export const mapTournamentsFromResponse = (
       leaderboard: [],
     });
     tournaments.push(newTournament);
-  }
+  });
+
   return tournaments;
 };
 
 export const getRootElementAndLinkedDocs = <T>(
   docs: PouchDBResponse<unknown>[],
-  wantedDocType: DocType
+  wantedDocType: DocType,
 ): { rootDoc?: T; otherDocs: PouchDBResponse<unknown>[] } => {
   const rootDoc = docs.find((res) => res.value === wantedDocType)?.doc as T;
   if (!rootDoc) {
@@ -95,13 +96,13 @@ export const getRootElementAndLinkedDocs = <T>(
   return { rootDoc, otherDocs };
 };
 
-export const getTournamentsList = <T>(result: PouchDB.Query.Response<any>) => {
+export const getTournamentsList = (result: PouchDB.Query.Response<any>) => {
   const leagues: Tournament[] = [];
-  const groupedResults = groupBy(result.rows, (row) => row.id);
-  for (const key of Object.keys(groupedResults)) {
+  const groupedResults = groupBy(result.rows, (row: any) => row.id);
+  Object.keys(groupedResults).forEach((key) => {
     const { rootDoc, otherDocs } = getRootElementAndLinkedDocs<TournamentDto>(
       groupedResults[key],
-      DocType.Tournament
+      DocType.Tournament,
     );
 
     if (!rootDoc) {
@@ -111,23 +112,23 @@ export const getTournamentsList = <T>(result: PouchDB.Query.Response<any>) => {
 
     const teams = mapTeamsFromResponse(
       rootDoc?.teamIds,
-      otherDocs.filter((val) => val.value.type === DocType.Team)
+      otherDocs.filter((val) => val.value.type === DocType.Team),
     );
 
     newTournament.teams = teams;
 
     leagues.push(newTournament);
-  }
+  });
   return leagues;
 };
 
-export const getLeaguesList = <T>(result: PouchDB.Query.Response<any>) => {
+export const getLeaguesList = (result: PouchDB.Query.Response<any>) => {
   const leagues: League[] = [];
-  const groupedResults = groupBy(result.rows, (row) => row.id);
-  for (const key of Object.keys(groupedResults)) {
+  const groupedResults = groupBy(result.rows, (row: any) => row.id);
+  Object.keys(groupedResults).forEach((key) => {
     const { rootDoc, otherDocs } = getRootElementAndLinkedDocs<LeagueDto>(
       groupedResults[key],
-      DocType.League
+      DocType.League,
     );
 
     const rootLeague = rootDoc;
@@ -138,27 +139,27 @@ export const getLeaguesList = <T>(result: PouchDB.Query.Response<any>) => {
 
     const teams = mapTeamsFromResponse(
       rootLeague?.teamIds,
-      otherDocs.filter((val) => val.value.type === DocType.Team)
+      otherDocs.filter((val) => val.value.type === DocType.Team),
     );
     const leaderboardTeams = mapLeaderboardTeamsFromResponse(
       rootLeague?.leaderboardTeamIds,
       teams,
-      otherDocs.filter((val) => val.value.type === DocType.LeaderboardTeam)
+      otherDocs.filter((val) => val.value.type === DocType.LeaderboardTeam),
     );
     const tournaments = mapTournamentsFromResponse(
       rootLeague?.tournamentIds,
       teams,
-      otherDocs.filter((val) => val.value.type === DocType.Tournament)
+      otherDocs.filter((val) => val.value.type === DocType.Tournament),
     );
     newLeague.teams = teams;
     newLeague.leaderboard = leaderboardTeams;
     newLeague.tournaments = tournaments;
     if (rootLeague?.activeTournamentId) {
       newLeague.activeTournament = tournaments.find(
-        (tournament) => tournament._id === rootLeague?.activeTournamentId
+        (tournament) => tournament._id === rootLeague?.activeTournamentId,
       );
     }
     leagues.push(newLeague);
-  }
+  });
   return leagues;
 };

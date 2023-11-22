@@ -13,7 +13,7 @@ import useLeagueQueries from 'services/queries/LeagueQueries';
 import { Tournament } from 'types/Tournament';
 import { TournamentStage } from 'types/TournamentStage';
 
-const TournamentPage: React.FC = () => {
+function TournamentPage() {
   const {
     selectedLeague,
     setSelectedLeague,
@@ -29,7 +29,7 @@ const TournamentPage: React.FC = () => {
       return;
     }
     const updatedLeague = selectedLeague;
-    updatedLeague.activeTournament = tournament ? tournament : undefined;
+    updatedLeague.activeTournament = tournament || undefined;
     await updateExistingLeague(updatedLeague);
 
     await invalidateSelectedLeague();
@@ -44,25 +44,25 @@ const TournamentPage: React.FC = () => {
     }
 
     const unfinishedLeagueTournaments = selectedLeague.tournaments.filter(
-      (tournament) => tournament.state.stage !== TournamentStage.finished
+      (tournament) => tournament.state.stage !== TournamentStage.finished,
     );
 
     if (unfinishedLeagueTournaments?.length > 0) {
       const inProgressTournament = selectedLeague.tournaments.find(
-        (tournament) => tournament.state.stage === TournamentStage.inProgress
+        (tournament) => tournament.state.stage === TournamentStage.inProgress,
       );
       if (inProgressTournament) {
         setSelectedTournament(inProgressTournament);
       }
 
       const initializedTournament = selectedLeague.tournaments.find(
-        (tournament) => tournament.state.stage === TournamentStage.initialized
+        (tournament) => tournament.state.stage === TournamentStage.initialized,
       );
       if (initializedTournament) {
         setSelectedTournament(initializedTournament);
       }
       const createdTournament = selectedLeague.tournaments.find(
-        (tournament) => tournament.state.stage === TournamentStage.created
+        (tournament) => tournament.state.stage === TournamentStage.created,
       );
       if (createdTournament) {
         setSelectedTournament(createdTournament);
@@ -70,8 +70,6 @@ const TournamentPage: React.FC = () => {
     }
     setFirstLoad(false);
   }, []);
-  var test = '';
-  console.log(selectedTournament?.teams, selectedTournament?.leaderboard);
 
   return (
     <PageContainer>
@@ -115,10 +113,7 @@ const TournamentPage: React.FC = () => {
           alignItems="flex-start"
           margin={8}
         >
-          <Typography
-            variant="subtitle1"
-            color={(theme) => theme.palette.text.secondary}
-          >
+          <Typography variant="subtitle1" color={theme.palette.text.secondary}>
             No league is currently selected, please create a new league or
             select an existing one.
           </Typography>
@@ -162,7 +157,7 @@ const TournamentPage: React.FC = () => {
             >
               <Typography
                 variant="subtitle1"
-                color={(theme) => theme.palette.text.secondary}
+                color={theme.palette.text.secondary}
               >
                 No tournament is currently selected, please create a new
                 tournament or select existing one.
@@ -185,6 +180,6 @@ const TournamentPage: React.FC = () => {
       )}
     </PageContainer>
   );
-};
+}
 
 export default TournamentPage;
