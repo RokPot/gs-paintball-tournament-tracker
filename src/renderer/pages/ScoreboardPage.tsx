@@ -5,10 +5,9 @@ import { useIsResponsive } from 'hooks/ui/useIsResponsive';
 import { useCallback, useState } from 'react';
 import useTimerStore from 'store/ScoreboardStore';
 
-const ScoreboardPage: React.FC<{ className?: string }> = ({ className }) => {
+function ScoreboardPage() {
   const startTimer = useTimerStore((state) => state.startTimer);
   const stopTimer = useTimerStore((state) => state.stopTimer);
-  const [isCountdownInProgress, setIsCountdownInProgress] = useState(false);
   const [isMatchInProgress, setIsMatchInProgress] = useState(false);
 
   const startStopMatch = useCallback(() => {
@@ -36,6 +35,6 @@ const ScoreboardPage: React.FC<{ className?: string }> = ({ className }) => {
       <DesktopScoreboard startStopMatch={startStopMatch} />
     </PageContainer>
   );
-};
+}
 
 export default ScoreboardPage;

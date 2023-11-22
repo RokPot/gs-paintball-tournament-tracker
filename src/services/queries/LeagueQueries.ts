@@ -3,7 +3,7 @@ import useLeagueService from 'services/LeagueService';
 import useTeamService from 'services/TeamService';
 import { League } from 'types/League';
 import { useCallback } from 'react';
-import { QueryKey } from './QueryKeys';
+import QueryKey from './QueryKeys';
 
 const useLeagueQueries = () => {
   const {

@@ -18,6 +18,7 @@ module.exports = {
     'no-underscore-dangle': 'off',
     'no-continue': 'off',
     'react/require-default-props': 'off',
+    'react/no-array-index-key': 'off',
   },
   parserOptions: {
     ecmaVersion: 2022,

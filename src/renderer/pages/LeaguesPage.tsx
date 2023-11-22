@@ -20,12 +20,12 @@ import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
-import AddTournament from 'components/tournament/AddTournament';
+import AddOrEditTournament from 'components/tournament/AddTournament';
 import TournamentShortList from 'components/tournament/TournamentListShort';
 import { useState } from 'react';
 import useTeamService from 'services/TeamService';
-import useTournamentService from 'services/TournamentService';
 import useLeagueQueries from 'services/queries/LeagueQueries';
+import useTournamentQueries from 'services/queries/TournamentQueries';
 import { createNewLeaderboardTeam } from 'store/LeagueStore';
 import { League } from 'types/League';
 import { Team } from 'types/Team';
@@ -37,15 +37,7 @@ const StyledHeaderContainer = styled('div')(
     width: 100%;
     flex-direction: row;
     justify-content: space-between;
-  `
-);
-
-const StyledDivider = styled('div')(
-  (props) => css`
-    width: 1px;
-    height: 100%;
-    background-color: ${props.theme.palette.grey[200]};
-  `
+  `,
 );
 
 const StyledActiveBadge = styled('div')(
@@ -76,10 +68,10 @@ const StyledActiveBadge = styled('div')(
         background-color: transparent;
       }
     }
-  `
+  `,
 );
 
-const LeaguesPage: React.FC = () => {
+function LeaguesPage() {
   const [isLeagueModalOpen, setIsLeagueModalOpen] = useState(false);
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
   const [isTournamentAddModalOpen, setIsTournamentAddModalOpen] =
@@ -87,9 +79,7 @@ const LeaguesPage: React.FC = () => {
 
   const [selectedRowLeague, setSelectedRowLeague] = useState<League>();
   const [editRowLeague, setEditRowLeague] = useState<League>();
-  const { addNewTeam, addNewLeaderBoardTeam, addNewLeaderBoardTeams } =
-    useTeamService();
-  const { addNewTournament } = useTournamentService();
+  const { addNewTeam, addNewLeaderBoardTeam } = useTeamService();
   const theme = useTheme();
 
   const {
@@ -102,6 +92,8 @@ const LeaguesPage: React.FC = () => {
     setSelectedLeague,
     selectedLeague,
   } = useLeagueQueries();
+
+  const { addNewTournamentToLeague } = useTournamentQueries();
 
   const confirmLeague = async (league: League, isEdit: boolean) => {
     await addLeague(league, isEdit);
@@ -123,20 +115,12 @@ const LeaguesPage: React.FC = () => {
   };
 
   const addNewTournamentInternal = async (tournament: Tournament) => {
-    if (!selectedRowLeague) {
-      return;
-    }
-    const newTournament = await addNewTournament(tournament.toDto());
-    if (!newTournament) {
-      return;
-    }
-    selectedRowLeague.tournaments = [
-      ...selectedRowLeague.tournaments,
-      newTournament,
-    ];
-    await updateExistingLeague(selectedRowLeague);
-    await invalidateLeaguesList();
-    setSelectedRowLeague(selectedRowLeague);
+    const updatedLeague = await addNewTournamentToLeague(
+      tournament,
+      selectedRowLeague,
+    );
+
+    setSelectedRowLeague(updatedLeague);
     setIsTournamentAddModalOpen(false);
   };
 
@@ -146,7 +130,7 @@ const LeaguesPage: React.FC = () => {
     }
     const newTeam = await addNewTeam(team);
     const newLeaderboardTeam = await addNewLeaderBoardTeam(
-      createNewLeaderboardTeam(team)
+      createNewLeaderboardTeam(team),
     );
     if (!newTeam || !newLeaderboardTeam) {
       return;
@@ -261,14 +245,9 @@ const LeaguesPage: React.FC = () => {
       />
 
       {!selectedRowLeague && (
-        <>
-          <Typography
-            variant="body2"
-            color={(theme) => theme.palette.text.disabled}
-          >
-            No league is selected. Please select one before procceeding
-          </Typography>
-        </>
+        <Typography variant="body2" color={theme.palette.text.disabled}>
+          No league is selected. Please select one before procceeding
+        </Typography>
       )}
       {selectedRowLeague && (
         <>
@@ -352,41 +331,39 @@ const LeaguesPage: React.FC = () => {
         </>
       )}
       <CustomModal
-        isModalOpen={isLeagueModalOpen}
+        isModalOpen={
+          isLeagueModalOpen || isTeamAddModalOpen || isTournamentAddModalOpen
+        }
         onClose={() => {
           setIsLeagueModalOpen(false);
+          setIsTeamAddModalOpen(false);
+          setIsTournamentAddModalOpen(false);
         }}
         width={700}
       >
-        <LeagueDetails
-          league={editRowLeague}
-          onConfirm={confirmLeague}
-          onClose={() => setIsLeagueModalOpen(false)}
-        />
-      </CustomModal>
-      <CustomModal
-        isModalOpen={isTeamAddModalOpen}
-        onClose={() => setIsTeamAddModalOpen(false)}
-        width={600}
-      >
-        <QuickAddTeam
-          onAccept={addNewTeamInternal}
-          onCancel={() => setIsTeamAddModalOpen(false)}
-        />
-      </CustomModal>
-      <CustomModal
-        isModalOpen={isTournamentAddModalOpen}
-        onClose={() => setIsTournamentAddModalOpen(false)}
-        width={600}
-      >
-        <AddTournament
-          league={selectedRowLeague}
-          onAccept={addNewTournamentInternal}
-          onCancel={() => setIsTournamentAddModalOpen(false)}
-        />
+        {isLeagueModalOpen && (
+          <LeagueDetails
+            league={editRowLeague}
+            onConfirm={confirmLeague}
+            onClose={() => setIsLeagueModalOpen(false)}
+          />
+        )}
+        {isTeamAddModalOpen && (
+          <QuickAddTeam
+            onAccept={addNewTeamInternal}
+            onCancel={() => setIsTeamAddModalOpen(false)}
+          />
+        )}
+        {isTournamentAddModalOpen && (
+          <AddOrEditTournament
+            league={selectedRowLeague}
+            onAccept={addNewTournamentInternal}
+            onCancel={() => setIsTournamentAddModalOpen(false)}
+          />
+        )}
       </CustomModal>
     </PageContainer>
   );
-};
+}
 
 export default LeaguesPage;

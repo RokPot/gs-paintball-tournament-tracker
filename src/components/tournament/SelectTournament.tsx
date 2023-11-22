@@ -12,22 +12,26 @@ interface IProps {
   onTournamentSelected: (tournament: Tournament) => void;
 }
 
-const SelectTournament: React.FC<IProps> = ({ onTournamentSelected }) => {
+function SelectTournament({ onTournamentSelected }: IProps) {
   const { selectedLeague } = useLeagueQueries();
   const selectedTournament = selectedLeague?.activeTournament;
   const leagueTournaments = selectedLeague?.tournaments;
 
   const setSelectedTournamentInternal = async (
-    e: SelectChangeEvent<Tournament>
+    e: SelectChangeEvent<Tournament>,
   ) => {
     const newSelectedTournament = leagueTournaments?.find(
-      (tournament) => tournament.id === e.target.value
+      (tournament) => tournament.id === e.target.value,
     );
     if (!newSelectedTournament) {
       return;
     }
     onTournamentSelected(newSelectedTournament);
   };
+
+  if (!leagueTournaments?.length) {
+    return null;
+  }
 
   return (
     <FormControl fullWidth>
@@ -45,6 +49,6 @@ const SelectTournament: React.FC<IProps> = ({ onTournamentSelected }) => {
       </Select>
     </FormControl>
   );
-};
+}
 
 export default SelectTournament;

@@ -1,21 +1,21 @@
-import useTeamService from './TeamService';
-import useTournamentService from './TournamentService';
-import usePouchDB, { DocType, pouchDbName } from './pouchDB';
 import { omit } from 'lodash';
 import { useCallback } from 'react';
 import { League } from 'types/League';
 import { LeagueDto } from 'types/dto/LeagueDto';
 import { getLeaguesList } from 'utils/PouchDBUtils';
+import usePouchDB, { DocType, pouchDbName } from './pouchDB';
+import useTournamentService from './TournamentService';
 
 const useLeagueService = () => {
   const db = usePouchDB(pouchDbName);
-  const { getTeam } = useTeamService();
   const { getTournament } = useTournamentService();
 
   const addNewLeague = useCallback(async (league: League) => {
     try {
-      const res = await db.post(league.toDto());
-    } catch {}
+      await db.post(league.toDto());
+    } catch (e) {
+      console.log(e);
+    }
   }, []);
   const updateLeague = useCallback(async (league: League) => {
     try {
@@ -28,6 +28,7 @@ const useLeagueService = () => {
     } catch (e) {
       console.log(e);
     }
+    return null;
   }, []);
   const deleteLeague = useCallback(async (league: League) => {
     try {
@@ -69,15 +70,15 @@ const useLeagueService = () => {
       include_docs: true,
     });
     const leagues = getLeaguesList(result);
-    const activeLeague = !!leagues?.length ? leagues[0] : null;
-    if (!activeLeague || !activeLeague.activeTournament) {
+    const activeLeague = leagues?.length > 0 ? leagues[0] : null;
+    if (!activeLeague) {
       return null;
     }
     if (!activeLeague?.activeTournament) {
       return activeLeague;
     }
     const activeTournament = await getTournament(
-      activeLeague.activeTournament._id
+      activeLeague.activeTournament._id,
     );
     activeLeague.activeTournament = activeTournament || undefined;
     return activeLeague;

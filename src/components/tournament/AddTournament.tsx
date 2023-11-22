@@ -5,7 +5,6 @@ import {
   MenuItem,
   Select,
   Typography,
-  useTheme,
 } from '@mui/material';
 import {
   DesktopDatePicker,
@@ -38,6 +37,7 @@ interface IProps {
   onAccept: (tournament: Tournament) => void;
   onCancel: () => void;
   league?: League;
+  tournament?: Tournament;
 }
 
 interface AddGameSettings {
@@ -69,8 +69,12 @@ const fromDayjsToSeconds = (time: Dayjs) => {
   return (time.minute() || 1) * (time.second() || 60);
 };
 
-const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
-  const theme = useTheme();
+function AddOrEditTournament({
+  onAccept,
+  onCancel,
+  league,
+  tournament,
+}: IProps) {
   const formik = useFormik<AddTournament>({
     initialValues: {
       name: '',
@@ -79,13 +83,13 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
       endDate: dayjs().add(1, 'day'),
       gameSettings: {
         longBreakTimeInSeconds: convertFromSecondsDayjs(
-          DefaultGameSettings.longBreakTimeInSeconds
+          DefaultGameSettings.longBreakTimeInSeconds,
         ),
         shortBreakTimeInSeconds: convertFromSecondsDayjs(
-          DefaultGameSettings.shortBreakTimeInSeconds
+          DefaultGameSettings.shortBreakTimeInSeconds,
         ),
         gameTimeInSeconds: convertFromSecondsDayjs(
-          DefaultGameSettings.gameTimeInSeconds
+          DefaultGameSettings.gameTimeInSeconds,
         ),
       },
       settings: DefaultTournamentSettings,
@@ -98,13 +102,13 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
           gameSettings: {
             id: v4(),
             longBreakTimeInSeconds: fromDayjsToSeconds(
-              values.gameSettings.longBreakTimeInSeconds
+              values.gameSettings.longBreakTimeInSeconds,
             ),
             shortBreakTimeInSeconds: fromDayjsToSeconds(
-              values.gameSettings.shortBreakTimeInSeconds
+              values.gameSettings.shortBreakTimeInSeconds,
             ),
             gameTimeInSeconds: fromDayjsToSeconds(
-              values.gameSettings.gameTimeInSeconds
+              values.gameSettings.gameTimeInSeconds,
             ),
           },
           settings: values.settings,
@@ -121,7 +125,7 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
             stage: TournamentStage.created,
           }),
           teams: values.teams,
-        })
+        }),
       );
     },
   });
@@ -135,7 +139,9 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
       flex="auto"
     >
       <FlexContainer>
-        <Typography variant="h1">Create tournament</Typography>
+        <Typography variant="h1">
+          {tournament ? 'Edit' : 'Create'} tournament
+        </Typography>
       </FlexContainer>
 
       <FlexContainer
@@ -198,13 +204,13 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
           <TeamsShortList
             teams={formik?.values?.teams}
             showRemoveButton
-            onRemoveTeam={(team, index) => {
+            onRemoveTeam={(team) => {
               const selectedTeams = formik.values.teams;
               selectedTeams?.splice(
                 selectedTeams.findIndex(
-                  (selectedTeam) => selectedTeam.id === team.id
+                  (selectedTeam) => selectedTeam.id === team.id,
                 ),
-                1
+                1,
               );
               formik.setFieldValue('teams', selectedTeams);
             }}
@@ -397,6 +403,6 @@ const AddTournament: React.FC<IProps> = ({ onAccept, onCancel, league }) => {
       </FlexContainer>
     </FlexContainer>
   );
-};
+}
 
-export default AddTournament;
+export default AddOrEditTournament;

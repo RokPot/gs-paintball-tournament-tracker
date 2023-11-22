@@ -1,7 +1,10 @@
-import FlexContainer from './FlexContainer';
+/* eslint-disable react/no-unused-prop-types */
 import { CircularProgress, Theme } from '@mui/material';
 import { experimentalStyled as styled } from '@mui/material/styles';
-import { FunctionComponent } from 'react';
+
+const StyledLoadingIndicatorContainer = styled('div')`
+  display: flex;
+`;
 
 export interface LoadingIndicatorProps {
   className?: string;
@@ -13,15 +16,15 @@ export interface LoadingIndicatorProps {
   padding?: string;
 }
 
-const LoadingIndicator: FunctionComponent<LoadingIndicatorProps> = (props) => {
+function LoadingIndicator(props: LoadingIndicatorProps) {
   const { className, size } = props;
 
   return (
-    <FlexContainer className={className}>
+    <StyledLoadingIndicatorContainer className={className}>
       <CircularProgress size={size} />
-    </FlexContainer>
+    </StyledLoadingIndicatorContainer>
   );
-};
+}
 
 LoadingIndicator.defaultProps = {
   size: 40,
@@ -41,5 +44,5 @@ export default styled(LoadingIndicator)(
   align-items: ${props.alignItems};
   width: ${typeof props.width === 'number' ? `${props.width}px` : props.width};
   padding: ${props.padding};
-`
+`,
 );

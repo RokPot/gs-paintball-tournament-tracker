@@ -8,19 +8,23 @@ import {
 import useLeagueQueries from 'services/queries/LeagueQueries';
 import { League } from 'types/League';
 
-interface IProps {}
+interface IProps {
+  onLeagueSelected: (league?: League) => void;
+}
 
-const SelectLeague: React.FC<IProps> = ({}) => {
+function SelectLeague({ onLeagueSelected }: IProps) {
   const { selectedLeague, setSelectedLeague, leaguesList } = useLeagueQueries();
 
   const setSelectedLeagueInternal = async (e: SelectChangeEvent<League>) => {
     const newSelectedLeague = leaguesList?.find(
-      (league) => league.id === e.target.value
+      (league) => league.id === e.target.value,
     );
     if (!newSelectedLeague) {
       return;
     }
+
     await setSelectedLeague(newSelectedLeague, selectedLeague);
+    onLeagueSelected(newSelectedLeague);
   };
 
   return (
@@ -39,6 +43,6 @@ const SelectLeague: React.FC<IProps> = ({}) => {
       </Select>
     </FormControl>
   );
-};
+}
 
 export default SelectLeague;

@@ -1,8 +1,8 @@
-import { QueryKey } from './QueryKeys';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import useTeamService from 'services/TeamService';
 import { Team } from 'types/Team';
+import QueryKey from './QueryKeys';
 
 const useTeamQueries = () => {
   const { addNewTeam, getTeams, deleteTeam, updateTeam } = useTeamService();
