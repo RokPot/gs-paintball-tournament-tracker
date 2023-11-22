@@ -1,16 +1,16 @@
-import TournamentDetailsInfo from './TournamentDetailsInfo';
 import FlexContainer from 'components/shared/FlexContainer';
-import { Game } from 'types/Game';
+import Game from 'types/Game';
 import { GameState } from 'types/GameState';
-import { Tournament } from 'types/Tournament';
+import Tournament from 'types/Tournament';
 import { TournamentStageLabels } from 'types/TournamentStage';
 import { TournamentTypeLabels } from 'types/TournamentType';
+import TournamentDetailsInfo from './TournamentDetailsInfo';
 
 interface IProps {
   tournament: Tournament;
 }
 
-const TournamentDetailsList: React.FC<IProps> = ({ tournament }) => {
+function TournamentDetailsList({ tournament }: IProps) {
   const getTotalGames = (totalGamesType: 'finished' | 'unfinished' | 'all') => {
     const checkForGameState = (game: Game) => {
       switch (totalGamesType) {
@@ -28,7 +28,7 @@ const TournamentDetailsList: React.FC<IProps> = ({ tournament }) => {
       tournament?.groups.reduce(
         (prev, curr) =>
           curr.games.filter((game) => checkForGameState(game)).length,
-        0
+        0,
       ) || 0;
     return totalGames <= 0 ? 'Tournament has not started yet' : totalGames;
   };
@@ -120,6 +120,6 @@ const TournamentDetailsList: React.FC<IProps> = ({ tournament }) => {
       </FlexContainer>
     </FlexContainer>
   );
-};
+}
 
 export default TournamentDetailsList;

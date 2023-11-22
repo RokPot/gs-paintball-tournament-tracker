@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import useTournamentService from 'services/TournamentService';
-import { League } from 'types/League';
-import { Tournament } from 'types/Tournament';
+import League from 'types/League';
+import Tournament from 'types/Tournament';
 import useLeagueQueries from './LeagueQueries';
 
 const useTournamentQueries = () => {

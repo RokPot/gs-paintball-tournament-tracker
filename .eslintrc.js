@@ -19,6 +19,7 @@ module.exports = {
     'no-continue': 'off',
     'react/require-default-props': 'off',
     'react/no-array-index-key': 'off',
+    'react/jsx-props-no-spreading': 'off',
   },
   parserOptions: {
     ecmaVersion: 2022,

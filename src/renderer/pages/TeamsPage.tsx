@@ -18,7 +18,7 @@ import QuickAddTeam from 'components/teams/QuickAddTeam';
 import { useState } from 'react';
 import useTeamQueries from 'services/queries/TeamQueries';
 import useConfirmationModalStore from 'store/ConfirmationModalStore';
-import { Team } from 'types/Team';
+import Team from 'types/Team';
 
 const StyledHeaderContainer = styled('div')(
   () => css`
@@ -26,9 +26,9 @@ const StyledHeaderContainer = styled('div')(
     width: 100%;
     flex-direction: row;
     justify-content: space-between;
-  `
+  `,
 );
-const TeamsPage: React.FC = () => {
+function TeamsPage() {
   const [isTeamUpsertModalOpen, setIsTeamUpsertModalOpen] = useState(false);
   const [teamToUpsert, setTeamToUpsert] = useState<Team>();
   const { openModal } = useConfirmationModalStore();
@@ -113,8 +113,8 @@ const TeamsPage: React.FC = () => {
     {
       field: 'empty',
       headerName: '',
-      renderCell: () => <div></div>,
-      renderHeader: () => <div></div>,
+      renderCell: () => <div />,
+      renderHeader: () => <div />,
       hideSortIcons: true,
       flex: 1,
     },
@@ -182,6 +182,6 @@ const TeamsPage: React.FC = () => {
       </CustomModal>
     </PageContainer>
   );
-};
+}
 
 export default TeamsPage;

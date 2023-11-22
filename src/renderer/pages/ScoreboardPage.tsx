@@ -3,7 +3,7 @@ import MobileScoreboard from 'components/scoreboard/ui/MobileScoreboard';
 import PageContainer from 'components/shared/PageContainer';
 import { useIsResponsive } from 'hooks/ui/useIsResponsive';
 import { useCallback, useState } from 'react';
-import useTimerStore from 'store/ScoreboardStore';
+import useTimerStore from 'store/TimerStore';
 
 function ScoreboardPage() {
   const startTimer = useTimerStore((state) => state.startTimer);

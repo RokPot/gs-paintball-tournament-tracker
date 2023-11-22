@@ -1,6 +1,6 @@
 import { Autocomplete, Avatar, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
-import { Team } from 'types/Team';
+import Team from 'types/Team';
 
 interface IProps {
   selectedTeams: Team[];
@@ -8,13 +8,20 @@ interface IProps {
   onTeamsChanged: (teams: Team[]) => void;
 }
 
-const TeamMultiSelect: React.FC<IProps> = ({
-  selectedTeams,
-  options,
-  onTeamsChanged,
-}) => {
+function TeamMultiSelect({ selectedTeams, options, onTeamsChanged }: IProps) {
   const [selectedTeamsInternal, setSelectedTeamsInternal] =
     useState(selectedTeams);
+
+  const getTeamSelectedCopy = () => {
+    if (!selectedTeamsInternal?.length) {
+      return '';
+    }
+
+    if (selectedTeamsInternal?.length === 1) {
+      return `1 team selected`;
+    }
+    return `${selectedTeamsInternal} teams selected`;
+  };
 
   return (
     <Autocomplete
@@ -66,13 +73,7 @@ const TeamMultiSelect: React.FC<IProps> = ({
           variant="body1"
           color={(theme) => theme.palette.text.secondary}
         >
-          {selectedTeamsInternal?.length >= 1 && selectedTeamsInternal?.length}{' '}
-          {selectedTeamsInternal?.length > 0
-            ? selectedTeamsInternal?.length === 1
-              ? 'team'
-              : 'teams'
-            : ''}{' '}
-          {selectedTeamsInternal?.length >= 1 && 'selected'}
+          {getTeamSelectedCopy()}
         </Typography>
       )}
       renderInput={(params) => (
@@ -84,6 +85,6 @@ const TeamMultiSelect: React.FC<IProps> = ({
       )}
     />
   );
-};
+}
 
 export default TeamMultiSelect;

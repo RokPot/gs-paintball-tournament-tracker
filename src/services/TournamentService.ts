@@ -1,6 +1,6 @@
 import usePouchDB, { DocType, pouchDbName } from './pouchDB';
 import { useCallback } from 'react';
-import { Tournament } from 'types/Tournament';
+import Tournament from 'types/Tournament';
 import { TournamentDto } from 'types/dto/TournamentDto';
 import { getTournamentsList } from 'utils/PouchDBUtils';
 

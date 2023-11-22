@@ -1,6 +1,6 @@
 import { omit } from 'lodash';
 import { useCallback } from 'react';
-import { League } from 'types/League';
+import League from 'types/League';
 import { LeagueDto } from 'types/dto/LeagueDto';
 import { getLeaguesList } from 'utils/PouchDBUtils';
 import usePouchDB, { DocType, pouchDbName } from './pouchDB';

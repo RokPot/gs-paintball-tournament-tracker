@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import useLeagueService from 'services/LeagueService';
 import useTeamService from 'services/TeamService';
-import { League } from 'types/League';
+import League from 'types/League';
 import { useCallback } from 'react';
 import QueryKey from './QueryKeys';
 

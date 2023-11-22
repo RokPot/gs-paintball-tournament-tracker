@@ -1,9 +1,9 @@
 import { groupBy } from 'lodash';
 import { DocType } from 'services/pouchDB';
-import { LeaderboardTeam } from 'types/LeadeboardTeam';
-import { League } from 'types/League';
-import { Team } from 'types/Team';
-import { Tournament } from 'types/Tournament';
+import LeaderboardTeam from 'types/LeadeboardTeam';
+import League from 'types/League';
+import Team from 'types/Team';
+import Tournament from 'types/Tournament';
 import { LeaderboardTeamDto } from 'types/dto/LeaderboardTeamDto';
 import { LeagueDto } from 'types/dto/LeagueDto';
 import { TeamDto } from 'types/dto/TeamDto';

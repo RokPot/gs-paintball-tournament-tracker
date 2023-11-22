@@ -21,9 +21,9 @@ import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/sl';
 import { useFormik } from 'formik';
 import { DefaultGameSettings } from 'types/GameSettings';
-import { League } from 'types/League';
-import { Team } from 'types/Team';
-import { Tournament } from 'types/Tournament';
+import League from 'types/League';
+import Team from 'types/Team';
+import Tournament from 'types/Tournament';
 import {
   DefaultTournamentSettings,
   TournamentSettings,

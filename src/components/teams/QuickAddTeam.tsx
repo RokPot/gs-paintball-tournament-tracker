@@ -4,15 +4,15 @@ import { Badge, Button, IconButton, Typography, useTheme } from '@mui/material';
 import CustomTextField from 'components/shared/CustomTextField';
 import FlexContainer from 'components/shared/FlexContainer';
 import { useFormik } from 'formik';
-import { Team } from 'types/Team';
+import Team from 'types/Team';
 import { TeamMember } from 'types/TeamMember';
 import { TeamRole } from 'types/TeamRole';
 import { QuickAddTeamSchema } from 'utils/schemes';
 import { v4 } from 'uuid';
 
 function randomColor() {
-  let hex = Math.floor(Math.random() * 0xffffff);
-  let color = '#' + hex.toString(16);
+  const hex = Math.floor(Math.random() * 0xffffff);
+  const color = `#${hex.toString(16)}`;
 
   return color;
 }
@@ -29,7 +29,7 @@ interface AddTeam {
   members: TeamMember[];
 }
 
-const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
+function QuickAddTeam({ onAccept, onCancel, team }: IProps) {
   const theme = useTheme();
   const formik = useFormik<AddTeam>({
     initialValues: {
@@ -48,7 +48,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
           ...team,
           ...values,
         }),
-        !!team
+        !!team,
       );
     },
   });
@@ -145,7 +145,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
               placeholder="First name"
               variant="outlined"
               style={{ width: '100%' }}
-              error={(formik?.errors?.members?.[index] as any)?.['name']}
+              error={(formik?.errors?.members?.[index] as any)?.name}
               disableError
               size="small"
               debounceTime={200}
@@ -167,7 +167,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
               variant="outlined"
               style={{ width: '100%' }}
               size="small"
-              error={(formik?.errors?.members?.[index] as any)?.['lastName']}
+              error={(formik?.errors?.members?.[index] as any)?.lastName}
               disableError
               debounceTime={200}
             />
@@ -192,6 +192,6 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
       </FlexContainer>
     </FlexContainer>
   );
-};
+}
 
 export default QuickAddTeam;

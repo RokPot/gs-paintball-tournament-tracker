@@ -1,18 +1,29 @@
+import { DocType } from 'services/pouchDB';
+import dayjs, { Dayjs } from 'dayjs';
 import { TeamMember } from './TeamMember';
 import { TeamDto } from './dto/TeamDto';
 import { IPouchDB } from './interfaces/IPouchDB';
 import { ITeam } from './interfaces/ITeam';
-import { DocType } from 'services/pouchDB';
 
-export class Team extends IPouchDB {
+export default class Team extends IPouchDB {
   id: string;
+
   teamName: string;
+
   teamTag: string;
+
   wins: number;
+
   loses: number;
+
   draw: number;
+
   members: TeamMember[];
+
   color?: string;
+
+  dateCreated: Dayjs;
+
   constructor(props: ITeam) {
     super(props._id, props._rev, props.docType || DocType.Team);
     this.id = props.id;
@@ -23,6 +34,7 @@ export class Team extends IPouchDB {
     this.draw = props.draw || 0;
     this.members = props.members || [];
     this.color = props.color || '#ffbbff';
+    this.dateCreated = props.dateCreated || dayjs();
   }
 
   public toDto = (): TeamDto => {

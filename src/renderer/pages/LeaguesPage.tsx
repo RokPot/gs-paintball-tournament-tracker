@@ -20,16 +20,16 @@ import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
-import AddOrEditTournament from 'components/tournament/AddTournament';
+import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
 import TournamentShortList from 'components/tournament/TournamentListShort';
 import { useState } from 'react';
 import useTeamService from 'services/TeamService';
 import useLeagueQueries from 'services/queries/LeagueQueries';
+import { createNewLeaderboardTeam } from 'services/queries/TeamQueries';
 import useTournamentQueries from 'services/queries/TournamentQueries';
-import { createNewLeaderboardTeam } from 'store/LeagueStore';
-import { League } from 'types/League';
-import { Team } from 'types/Team';
-import { Tournament } from 'types/Tournament';
+import League from 'types/League';
+import Team from 'types/Team';
+import Tournament from 'types/Tournament';
 
 const StyledHeaderContainer = styled('div')(
   () => css`

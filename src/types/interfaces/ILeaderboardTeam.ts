@@ -1,4 +1,4 @@
-import { Team } from 'types/Team';
+import Team from 'types/Team';
 import { PouchDBDto } from 'types/dto/PouchDBDto';
 
 export interface ILeaderboardTeam extends PouchDBDto {

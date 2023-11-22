@@ -1,8 +1,5 @@
-import { Game } from './Game';
-import { GameState } from './GameState';
-import { Match } from './Match';
-import { Team } from './Team';
-import { TeamMember } from './TeamMember';
+import Game from './Game';
+import Team from './Team';
 
 export interface TournamentGroup {
   id: string;
@@ -10,5 +7,6 @@ export interface TournamentGroup {
   groupIndex: number;
 
   teams: Team[];
+
   games: Game[];
 }

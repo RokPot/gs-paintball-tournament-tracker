@@ -6,7 +6,7 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import useLeagueQueries from 'services/queries/LeagueQueries';
-import { League } from 'types/League';
+import League from 'types/League';
 
 interface IProps {
   onLeagueSelected: (league?: League) => void;

@@ -1,6 +1,6 @@
 import { GameSettings } from 'types/GameSettings';
-import { LeaderboardTeam } from 'types/LeadeboardTeam';
-import { Team } from 'types/Team';
+import LeaderboardTeam from 'types/LeadeboardTeam';
+import Team from 'types/Team';
 import { TournamentGroup } from 'types/TournamentGroup';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentState } from 'types/TournamentState';

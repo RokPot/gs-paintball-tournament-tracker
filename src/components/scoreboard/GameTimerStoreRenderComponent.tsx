@@ -1,6 +1,6 @@
-import TimerStoreRenderComponent from './TimerStoreRenderComponent';
 import { memo } from 'react';
-import useTimerStore from 'store/ScoreboardStore';
+import useTimerStore from 'store/TimerStore';
+import TimerStoreRenderComponent from './TimerStoreRenderComponent';
 
 const GameTimerStoreRenderComponent: React.FC = () => {
   const { duration } = useTimerStore();

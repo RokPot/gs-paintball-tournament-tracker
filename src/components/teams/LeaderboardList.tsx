@@ -4,25 +4,14 @@ import { Avatar, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
 import CustomDataTable from 'components/shared/CustomDataTable';
 import FlexContainer from 'components/shared/FlexContainer';
-import { LeaderboardTeam } from 'types/LeadeboardTeam';
-import { Team } from 'types/Team';
+import LeaderboardTeam from 'types/LeadeboardTeam';
 
 interface IProps {
   teams?: LeaderboardTeam[];
   className?: string;
-  showRemoveButton?: boolean;
-  showEditButton?: boolean;
-  onEditTeam?: (team: Team, index: number) => void;
-  onRemoveTeam?: (team: Team, index: number) => void;
 }
 
-const LeaderboardList: React.FC<IProps> = ({
-  teams,
-  showRemoveButton,
-  showEditButton,
-  className,
-  onRemoveTeam,
-}) => {
+function LeaderboardList({ teams, className }: IProps) {
   const getColor = (index: number) => {
     switch (index) {
       case 0:
@@ -31,6 +20,8 @@ const LeaderboardList: React.FC<IProps> = ({
         return '#c0c0c0';
       case 2:
         return '#CD7F32';
+      default:
+        return '#172032';
     }
   };
 
@@ -49,7 +40,7 @@ const LeaderboardList: React.FC<IProps> = ({
                 fontSize={20}
               />
             ) : (
-              params?.row?.rank + '.'
+              `${params?.row?.rank}.`
             )}
           </Typography>
         );
@@ -128,6 +119,6 @@ const LeaderboardList: React.FC<IProps> = ({
       )}
     </FlexContainer>
   );
-};
+}
 
 export default LeaderboardList;

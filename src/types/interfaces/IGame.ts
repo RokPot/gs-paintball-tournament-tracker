@@ -1,7 +1,6 @@
 import { GameState } from 'types/GameState';
 import { Match } from 'types/Match';
-import { Team } from 'types/Team';
-import { TournamentGroup } from 'types/TournamentGroup';
+import Team from 'types/Team';
 
 export interface IGame {
   id: string;
@@ -14,6 +13,4 @@ export interface IGame {
 
   team1Wins?: number;
   team2Wins?: number;
-
-  group: TournamentGroup;
 }

@@ -21,13 +21,13 @@ import LoadingIndicator from 'components/shared/LoadingIndicator';
 import PageContainer from 'components/shared/PageContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import TeamsShortList from 'components/teams/TeamShortList';
-import AddOrEditTournament from 'components/tournament/AddTournament';
+import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
 import SelectTournament from 'components/tournament/SelectTournament';
 import TournamentDetailsList from 'components/tournament/TournamentDetailsList';
 import { useCallback, useEffect, useState } from 'react';
 import useLeagueQueries from 'services/queries/LeagueQueries';
 import useTournamentQueries from 'services/queries/TournamentQueries';
-import { Tournament } from 'types/Tournament';
+import Tournament from 'types/Tournament';
 import { TournamentStage } from 'types/TournamentStage';
 
 const StyledLoadingContainer = styled('div')(

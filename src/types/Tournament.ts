@@ -1,6 +1,8 @@
+import dayjs, { Dayjs } from 'dayjs';
+import { DocType } from 'services/pouchDB';
 import { DefaultGameSettings, GameSettings } from './GameSettings';
-import { LeaderboardTeam } from './LeadeboardTeam';
-import { Team } from './Team';
+import LeaderboardTeam from './LeadeboardTeam';
+import Team from './Team';
 import { TournamentGroup } from './TournamentGroup';
 import {
   DefaultTournamentSettings,
@@ -10,10 +12,8 @@ import { TournamentState } from './TournamentState';
 import { TournamentDto } from './dto/TournamentDto';
 import { IPouchDB } from './interfaces/IPouchDB';
 import { ITournament } from './interfaces/ITournament';
-import dayjs, { Dayjs } from 'dayjs';
-import { DocType } from 'services/pouchDB';
 
-export class Tournament extends IPouchDB {
+export default class Tournament extends IPouchDB {
   id: string;
 
   teams: Team[];

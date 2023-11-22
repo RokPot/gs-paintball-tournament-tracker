@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
-import { Tournament } from 'types/Tournament';
+import Tournament from 'types/Tournament';
 
 interface IProps {
   tournaments: Tournament[];

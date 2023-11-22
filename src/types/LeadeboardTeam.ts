@@ -1,16 +1,22 @@
-import { Team } from './Team';
+import { DocType } from 'services/pouchDB';
+import Team from './Team';
 import { LeaderboardTeamDto } from './dto/LeaderboardTeamDto';
 import { ILeaderboardTeam } from './interfaces/ILeaderboardTeam';
 import { IPouchDB } from './interfaces/IPouchDB';
-import { DocType } from 'services/pouchDB';
 
-export class LeaderboardTeam extends IPouchDB {
+export default class LeaderboardTeam extends IPouchDB {
   id: string;
+
   totalWins: number;
+
   totalLosses: number;
+
   totalPoints: number;
+
   rank: number;
+
   previousRank?: number;
+
   team: Team;
 
   constructor(props: ILeaderboardTeam) {

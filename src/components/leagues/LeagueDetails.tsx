@@ -8,10 +8,11 @@ import TeamsShortList from 'components/teams/TeamShortList';
 import { useFormik } from 'formik';
 import { useState } from 'react';
 import useTeamService from 'services/TeamService';
-import useTeamQueries from 'services/queries/TeamQueries';
-import { createNewLeaderboardTeam } from 'store/LeagueStore';
-import { League } from 'types/League';
-import { Team } from 'types/Team';
+import useTeamQueries, {
+  createNewLeaderboardTeam,
+} from 'services/queries/TeamQueries';
+import League from 'types/League';
+import Team from 'types/Team';
 import { LeagueDetailsSchema } from 'utils/schemes';
 import { v4 } from 'uuid';
 

@@ -1,5 +1,5 @@
+import Team from 'types/Team';
 import { PouchDBDto } from './PouchDBDto';
-import { Team } from 'types/Team';
 
 export interface LeaderboardTeamDto extends PouchDBDto {
   id: string;

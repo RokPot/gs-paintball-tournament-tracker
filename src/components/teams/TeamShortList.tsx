@@ -2,24 +2,15 @@ import { faRemove } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Avatar, IconButton, Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
-import { Team } from 'types/Team';
+import Team from 'types/Team';
 
 interface IProps {
   teams?: Team[];
-  className?: string;
   showRemoveButton?: boolean;
-  showEditButton?: boolean;
-  onEditTeam?: (team: Team, index: number) => void;
   onRemoveTeam?: (team: Team, index: number) => void;
 }
 
-const TeamsShortList: React.FC<IProps> = ({
-  teams,
-  showRemoveButton,
-  showEditButton,
-  className,
-  onRemoveTeam,
-}) => {
+function TeamsShortList({ teams, showRemoveButton, onRemoveTeam }: IProps) {
   return (
     <FlexContainer width="100%" flexDirection="column">
       {teams?.map((team: Team, index: number) => (
@@ -63,6 +54,6 @@ const TeamsShortList: React.FC<IProps> = ({
       ))}
     </FlexContainer>
   );
-};
+}
 
 export default TeamsShortList;

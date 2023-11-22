@@ -6,7 +6,7 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import useLeagueQueries from 'services/queries/LeagueQueries';
-import { Tournament } from 'types/Tournament';
+import Tournament from 'types/Tournament';
 
 interface IProps {
   onTournamentSelected: (tournament: Tournament) => void;

@@ -1,12 +1,12 @@
-import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
-import GameTimerStoreRenderComponent from '../GameTimerStoreRenderComponent';
-import TeamScoreCard from '../TeamScoreCard';
 import { Button, Card, Typography, alpha, styled } from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
 import { useState } from 'react';
-import { Game } from 'types/Game';
+import Game from 'types/Game';
+import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
+import GameTimerStoreRenderComponent from '../GameTimerStoreRenderComponent';
+import TeamScoreCard from '../TeamScoreCard';
 
 interface IProps {
   className?: string;
@@ -14,13 +14,9 @@ interface IProps {
   game?: Game;
 }
 
-const DesktopScoreboard: React.FC<IProps> = ({
-  className,
-  startStopMatch,
-  game,
-}) => {
+function DesktopScoreboard({ className, startStopMatch, game }: IProps) {
   const [isTeamUpsertModalOpen, setIsTeamUpsertModalOpen] = useState(false);
-
+  console.log(game);
   return (
     <FlexContainer
       justifyContent="center"
@@ -142,7 +138,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
       </CustomModal>
     </FlexContainer>
   );
-};
+}
 
 export default styled(DesktopScoreboard)(
   (props) => `
@@ -181,5 +177,5 @@ export default styled(DesktopScoreboard)(
       height: 150px;
     }
 
-    `
+    `,
 );

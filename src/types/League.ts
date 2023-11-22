@@ -1,12 +1,12 @@
-import { LeaderboardTeam } from './LeadeboardTeam';
-import { Team } from './Team';
-import { Tournament } from './Tournament';
+import { DocType } from 'services/pouchDB';
+import LeaderboardTeam from './LeadeboardTeam';
+import Team from './Team';
+import Tournament from './Tournament';
 import { LeagueDto } from './dto/LeagueDto';
 import { ILeague } from './interfaces/ILeague';
 import { IPouchDB } from './interfaces/IPouchDB';
-import { DocType } from 'services/pouchDB';
 
-export class League extends IPouchDB {
+export default class League extends IPouchDB {
   id: string;
 
   name: string;
