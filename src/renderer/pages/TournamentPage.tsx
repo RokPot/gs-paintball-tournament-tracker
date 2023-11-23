@@ -1,11 +1,14 @@
 import {
   faEdit,
   faEllipsisVertical,
+  faLeftLong,
   faPlus,
   faRemove,
+  faRightLong,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  Button,
   IconButton,
   Typography,
   alpha,
@@ -110,22 +113,7 @@ function TournamentPage() {
       const inProgressTournament = selectedLeague.tournaments.find(
         (tournament) => tournament.state.stage === TournamentStage.inProgress,
       );
-      if (inProgressTournament) {
-        setSelectedTournament(inProgressTournament);
-      }
-
-      const initializedTournament = selectedLeague.tournaments.find(
-        (tournament) => tournament.state.stage === TournamentStage.initialized,
-      );
-      if (initializedTournament) {
-        setSelectedTournament(initializedTournament);
-      }
-      const createdTournament = selectedLeague.tournaments.find(
-        (tournament) => tournament.state.stage === TournamentStage.created,
-      );
-      if (createdTournament) {
-        setSelectedTournament(createdTournament);
-      }
+      setSelectedTournament(inProgressTournament);
     }
     setAllowAutomaticTournamentAssignment(false);
   }, [
@@ -133,6 +121,10 @@ function TournamentPage() {
     selectedLeague,
     setSelectedTournament,
   ]);
+
+  const generateTournament = useCallback(() => {
+    console.log('Generate routnament');
+  }, []);
 
   return (
     <PageContainer>
@@ -159,28 +151,43 @@ function TournamentPage() {
               />
             </IconButton>
           </Typography>
-          <CustomDropdownMenu
-            icon={faEllipsisVertical}
-            actions={[
-              {
-                label: 'Edit tournament',
-                icon: faEdit,
-                onClick: () =>
-                  setAddOrEditTournamentModalProps({
-                    isOpen: false,
-                    tournament: selectedTournament,
-                  }),
-                visible: !!selectedTournament,
-              },
-              {
-                label: 'Add new tournament',
-                icon: faPlus,
-                onClick: () =>
-                  setAddOrEditTournamentModalProps({ isOpen: false }),
-                visible: true,
-              },
-            ]}
-          />
+          <FlexContainer margin={8}>
+            {!!selectedTournament &&
+              [TournamentStage.created].includes(
+                selectedTournament.state.stage,
+              ) && (
+                <Button variant="contained" onClick={generateTournament}>
+                  <Typography variant="p1">
+                    <FontAwesomeIcon icon={faRightLong} />
+                    Begin Tournament
+                    <FontAwesomeIcon icon={faLeftLong} />
+                  </Typography>
+                </Button>
+              )}
+
+            <CustomDropdownMenu
+              icon={faEllipsisVertical}
+              actions={[
+                {
+                  label: 'Edit tournament',
+                  icon: faEdit,
+                  onClick: () =>
+                    setAddOrEditTournamentModalProps({
+                      isOpen: true,
+                      tournament: selectedTournament,
+                    }),
+                  visible: !!selectedTournament,
+                },
+                {
+                  label: 'Add new tournament',
+                  icon: faPlus,
+                  onClick: () =>
+                    setAddOrEditTournamentModalProps({ isOpen: true }),
+                  visible: true,
+                },
+              ]}
+            />
+          </FlexContainer>
         </FlexContainer>
       ) : (
         <Typography variant="h4">No league selected</Typography>
@@ -252,12 +259,31 @@ function TournamentPage() {
           {selectedTournament && (
             <>
               <Typography variant="h5">Tournament details</Typography>
-              <TournamentDetailsList tournament={selectedTournament} />
-              <Typography variant="h5">Participating teams</Typography>
-              <TeamsShortList teams={selectedTournament.teams} />
-              <Typography variant="h5">Tournament leaderboard</Typography>
 
-              <LeaderboardList teams={selectedTournament.leaderboard} />
+              <TournamentDetailsList tournament={selectedTournament} />
+              <FlexContainer flexDirection="row">
+                <FlexContainer
+                  flexDirection="column"
+                  width="100%"
+                  alignItems="flex-start"
+                  justifyContent="flex-start"
+                  height="100%"
+                >
+                  <Typography variant="h5">Participating teams</Typography>
+                  <TeamsShortList teams={selectedTournament.teams} />
+                </FlexContainer>
+                <FlexContainer
+                  flexDirection="column"
+                  width="100%"
+                  alignItems="flex-start"
+                  justifyContent="flex-start"
+                  height="100%"
+                >
+                  <Typography variant="h5">Tournament leaderboard</Typography>
+
+                  <LeaderboardList teams={selectedTournament.leaderboard} />
+                </FlexContainer>
+              </FlexContainer>
             </>
           )}
         </>
