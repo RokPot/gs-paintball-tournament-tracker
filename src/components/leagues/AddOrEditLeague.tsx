@@ -27,7 +27,7 @@ interface IProps {
   onClose: () => void;
 }
 
-function LeagueDetails({ league, onClose, onConfirm }: IProps) {
+function AddOrEditLeague({ league, onClose, onConfirm }: IProps) {
   const { addNewTeam } = useTeamService();
   const { teamsList } = useTeamQueries();
 
@@ -152,4 +152,4 @@ function LeagueDetails({ league, onClose, onConfirm }: IProps) {
   );
 }
 
-export default LeagueDetails;
+export default AddOrEditLeague;

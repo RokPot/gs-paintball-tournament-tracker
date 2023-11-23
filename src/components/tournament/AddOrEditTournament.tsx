@@ -34,7 +34,7 @@ import { TournamentType, TournamentTypeLabels } from 'types/TournamentType';
 import { v4 } from 'uuid';
 
 interface IProps {
-  onAccept: (tournament: Tournament) => void;
+  onAccept: (tournament: Tournament, isEdit: boolean) => void;
   onCancel: () => void;
   league?: League;
   tournament?: Tournament;
@@ -77,30 +77,36 @@ function AddOrEditTournament({
 }: IProps) {
   const formik = useFormik<AddTournament>({
     initialValues: {
-      name: '',
-      teams: [],
-      startDate: dayjs(),
-      endDate: dayjs().add(1, 'day'),
+      name: tournament?.name || '',
+      teams: tournament?.teams || [],
+      startDate: tournament?.startDate || dayjs(),
+      endDate: tournament?.endDate || dayjs().add(1, 'day'),
       gameSettings: {
         longBreakTimeInSeconds: convertFromSecondsDayjs(
-          DefaultGameSettings.longBreakTimeInSeconds,
+          tournament?.gameSettings?.longBreakTimeInSeconds ||
+            DefaultGameSettings.longBreakTimeInSeconds,
         ),
         shortBreakTimeInSeconds: convertFromSecondsDayjs(
-          DefaultGameSettings.shortBreakTimeInSeconds,
+          tournament?.gameSettings?.shortBreakTimeInSeconds ||
+            DefaultGameSettings.shortBreakTimeInSeconds,
         ),
         gameTimeInSeconds: convertFromSecondsDayjs(
-          DefaultGameSettings.gameTimeInSeconds,
+          tournament?.gameSettings?.gameTimeInSeconds ||
+            DefaultGameSettings.gameTimeInSeconds,
         ),
       },
-      settings: DefaultTournamentSettings,
+      settings: tournament?.settings || DefaultTournamentSettings,
     },
     onSubmit: (values: AddTournament) => {
-      const newId = v4();
+      const tournamentId = tournament?._id || v4();
+
       onAccept(
         new Tournament({
+          id: tournamentId,
+          _id: tournamentId,
           name: values.name,
           gameSettings: {
-            id: v4(),
+            id: tournament?.gameSettings?.id || v4(),
             longBreakTimeInSeconds: fromDayjsToSeconds(
               values.gameSettings.longBreakTimeInSeconds,
             ),
@@ -115,17 +121,19 @@ function AddOrEditTournament({
           endDate: values.endDate.toISOString(),
           startDate: values.startDate.toISOString(),
 
-          groups: [],
-          id: newId,
-          _id: newId,
+          groups: tournament?.groups || [],
+
           state: new TournamentState({
-            id: v4(),
-            isGameInProgress: false,
-            isTournamentFinished: false,
-            stage: TournamentStage.created,
+            id: tournament?.state?.id || v4(),
+            isGameInProgress: tournament?.state?.isGameInProgress || false,
+            isTournamentFinished:
+              tournament?.state?.isTournamentFinished || false,
+            stage: tournament?.state?.stage || TournamentStage.created,
           }),
           teams: values.teams,
+          leaderboard: tournament?.leaderboard || [],
         }),
+        !!tournament,
       );
     },
   });

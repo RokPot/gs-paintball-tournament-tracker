@@ -20,8 +20,20 @@ const useTeamService = () => {
 
   const addNewTeam = useCallback(
     async (team: Team) => {
-      await db.post(team.toDto());
-      return new Team(await db.get<TeamDto>(team._id));
+      try {
+        const res = await db.upsert<TeamDto>(team._id, (doc: any) => {
+          if (!doc?.teamName) {
+            return omit(team.toDto(), ['_id']);
+          }
+          return doc;
+        });
+        console.log(res);
+        // await db.post(team.toDto());
+        // return new Team(await db.get<TeamDto>(team._id));
+      } catch (e) {
+        console.log(e);
+      }
+      return null;
     },
     [db],
   );
@@ -54,6 +66,12 @@ const useTeamService = () => {
   const updateTeam = useCallback(
     async (team: Team) => {
       try {
+        db.upsert<TeamDto>(team._id, (doc: any) => {
+          if (!doc?.teamName) {
+            return omit(team.toDto(), ['_id']);
+          }
+          return doc;
+        });
         const res = await db.get(team._id);
         const toUpdate = { ...res, ...omit(team.toDto(), ['_rev', '_id']) };
         await db.put(toUpdate);

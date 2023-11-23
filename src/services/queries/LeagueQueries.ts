@@ -76,14 +76,11 @@ const useLeagueQueries = () => {
     await invalidateLeaguesList();
   };
 
-  const addLeague = async (
+  const addOrEditLeague = async (
     league: League,
     shouldUpdateExistingLeague?: boolean,
   ) => {
     if (shouldUpdateExistingLeague) {
-      console.log(
-        league.leaderboard.filter((leaderboardTeam) => !leaderboardTeam._rev),
-      );
       await addNewLeaderBoardTeams(
         league.leaderboard.filter((leaderboardTeam) => !leaderboardTeam._rev),
       );
@@ -108,7 +105,7 @@ const useLeagueQueries = () => {
     isLoading: isFetchingLeaguesList || isFetchingSelectedLeague,
     invalidateLeaguesList,
     invalidateSelectedLeague,
-    addLeague,
+    addOrEditLeague,
     deleteExistingLeague,
     updateExistingLeague,
     setSelectedLeague,

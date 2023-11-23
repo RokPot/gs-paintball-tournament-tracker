@@ -1,14 +1,14 @@
 import { CssBaseline, GlobalStyles, ThemeProvider, alpha } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, MemoryRouter as Router, Routes } from 'react-router-dom';
+import ConfirmationModal from '../components/shared/ConfirmationModal';
+import { theme } from '../theme/theme';
 import Layout from './layout/Layout';
 import HomePage from './pages/HomePage';
 import LeaguesPage from './pages/LeaguesPage';
 import ScoreboardPage from './pages/ScoreboardPage';
 import TeamsPage from './pages/TeamsPage';
 import TournamentPage from './pages/TournamentPage';
-import ConfirmationModal from '../components/shared/ConfirmationModal';
-import { theme } from '../theme/theme';
 
 export default function App() {
   const queryClient = new QueryClient();
@@ -23,14 +23,15 @@ export default function App() {
         styles={{
           '*::-webkit-scrollbar': {
             width: '0.4em',
+            height: '0.4em',
           },
 
           '*::-webkit-scrollbar-thumb': {
-            backgroundColor: alpha(theme.palette.primary.main, 0.4),
+            backgroundColor: alpha(theme.palette.primary.main, 0.6),
             borderRadius: '20px',
           },
           '*::-webkit-scrollbar-track': {
-            backgroundColor: 'transparent',
+            backgroundColor: alpha(theme.palette.primary.main, 0.15),
           },
         }}
       />

@@ -1,4 +1,6 @@
-import PouchDb from 'pouchdb-browser';
+import * as PouchDB from 'pouchdb-browser';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import plugin from 'pouchdb-upsert';
 
 export const pouchDbName = 'dbVersion1';
 export enum DocType {
@@ -7,9 +9,10 @@ export enum DocType {
   LeaderboardTeam = 'leaderboardTeam',
   League = 'league',
 }
-
+PouchDB.default.plugin(plugin);
 const usePouchDB = (dbName: string) => {
-  const db = new PouchDb(dbName);
+  const APouchDB = PouchDB.default.defaults({});
+  const db = new APouchDB(dbName);
 
   return db;
 };

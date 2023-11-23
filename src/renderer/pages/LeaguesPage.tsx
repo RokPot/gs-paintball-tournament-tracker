@@ -13,7 +13,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
-import LeagueDetails from 'components/leagues/LeagueDetails';
+import AddOrEditLeague from 'components/leagues/AddOrEditLeague';
 import CustomDataTable from 'components/shared/CustomDataTable';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
@@ -84,7 +84,7 @@ function LeaguesPage() {
 
   const {
     leaguesList,
-    addLeague,
+    addOrEditLeague,
     invalidateLeaguesList,
     updateExistingLeague,
     deleteExistingLeague,
@@ -96,7 +96,7 @@ function LeaguesPage() {
   const { addNewTournamentToLeague } = useTournamentQueries();
 
   const confirmLeague = async (league: League, isEdit: boolean) => {
-    await addLeague(league, isEdit);
+    await addOrEditLeague(league, isEdit);
     setIsLeagueModalOpen(false);
   };
 
@@ -114,7 +114,10 @@ function LeaguesPage() {
     await setSelectedLeague(league, selectedLeague);
   };
 
-  const addNewTournamentInternal = async (tournament: Tournament) => {
+  const addNewTournamentInternal = async (
+    tournament: Tournament,
+    isEdit: boolean,
+  ) => {
     const updatedLeague = await addNewTournamentToLeague(
       tournament,
       selectedRowLeague,
@@ -342,7 +345,7 @@ function LeaguesPage() {
         width={700}
       >
         {isLeagueModalOpen && (
-          <LeagueDetails
+          <AddOrEditLeague
             league={editRowLeague}
             onConfirm={confirmLeague}
             onClose={() => setIsLeagueModalOpen(false)}
