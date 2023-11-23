@@ -116,7 +116,7 @@
     "electron-updater": "^6.1.4",
     "formik": "^2.4.5",
     "lodash": "^4.17.21",
-    "pouchdb": "^8.0.1",
+    "notistack": "^3.0.1",
     "pouchdb-browser": "^8.0.1",
     "pouchdb-upsert": "^2.2.0",
     "react": "^18.2.0",

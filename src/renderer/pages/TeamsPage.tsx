@@ -33,7 +33,6 @@ function TeamsPage() {
   const [teamToUpsert, setTeamToUpsert] = useState<Team>();
   const { openModal } = useConfirmationModalStore();
   const theme = useTheme();
-
   const {
     teamsList,
     isFetchingTeamsList,
