@@ -11,7 +11,7 @@ import ScoreboardPage from './pages/ScoreboardPage';
 import TeamsPage from './pages/TeamsPage';
 import TournamentPage from './pages/TournamentPage';
 
-export default function App() {
+const App = () => {
   const queryClient = new QueryClient();
   // backgroundColor: alpha(theme.palette.primary.main, 0.5),
   // borderRadius: 5,
@@ -38,7 +38,7 @@ export default function App() {
       />
       <SnackbarProvider
         maxSnack={5}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
         <QueryClientProvider client={queryClient}>
           <Router>
@@ -58,4 +58,5 @@ export default function App() {
       </SnackbarProvider>
     </ThemeProvider>
   );
-}
+};
+export default App;

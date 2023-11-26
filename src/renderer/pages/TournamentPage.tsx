@@ -25,6 +25,7 @@ import PageContainer from 'components/shared/PageContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import TeamsShortList from 'components/teams/TeamShortList';
 import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
+import InitializeTournament from 'components/tournament/InitializeTournament';
 import SelectTournament from 'components/tournament/SelectTournament';
 import TournamentDetailsList from 'components/tournament/TournamentDetailsList';
 import { useCallback, useEffect, useState } from 'react';
@@ -52,44 +53,46 @@ const StyledLoadingContainer = styled('div')(
   `,
 );
 
-function TournamentPage() {
+const TournamentPage = () => {
   const {
     isLoading,
     selectedLeague,
     setSelectedLeague,
-    updateExistingLeague,
-    invalidateSelectedLeague,
+    setSelectedLeagueTournament,
   } = useLeagueQueries();
-  const { addNewTournamentToLeague } = useTournamentQueries();
+  const { addNewTournamentToLeague, updateExistingTournament } =
+    useTournamentQueries();
   const [
     allowAutomaticTournamentAssignment,
     setAllowAutomaticTournamentAssignment,
   ] = useState(true);
   const [addOrEditTournamentModalProps, setAddOrEditTournamentModalProps] =
     useState<{ isOpen: boolean; tournament?: Tournament }>({ isOpen: false });
+  const [isInitializeTournamentModalOpen, setIsInitializeTournamentModalOpen] =
+    useState(false);
 
   const theme = useTheme();
   const selectedTournament = selectedLeague?.activeTournament;
   const setSelectedTournament = useCallback(
     async (tournament?: Tournament) => {
-      if (!selectedLeague) {
-        return;
-      }
-      const updatedLeague = selectedLeague;
-      updatedLeague.activeTournament = tournament || undefined;
-      await updateExistingLeague(updatedLeague);
-
-      await invalidateSelectedLeague();
+      await setSelectedLeagueTournament(tournament);
     },
-    [invalidateSelectedLeague, selectedLeague, updateExistingLeague],
+    [setSelectedLeagueTournament],
   );
 
-  const addNewTournamentInternal = async (tournament: Tournament) => {
+  const addNewTournamentInternal = async (
+    tournament: Tournament,
+    isEdit: boolean,
+  ) => {
     if (!selectedLeague) {
       return;
     }
-    await addNewTournamentToLeague(tournament, selectedLeague);
-    setAllowAutomaticTournamentAssignment(true);
+    if (!isEdit) {
+      await addNewTournamentToLeague(tournament, selectedLeague);
+      setAllowAutomaticTournamentAssignment(true);
+    } else {
+      await updateExistingTournament(tournament);
+    }
     setAddOrEditTournamentModalProps({ isOpen: false });
   };
 
@@ -123,7 +126,7 @@ function TournamentPage() {
   ]);
 
   const generateTournament = useCallback(() => {
-    console.log('Generate routnament');
+    setIsInitializeTournamentModalOpen(true);
   }, []);
 
   return (
@@ -137,7 +140,11 @@ function TournamentPage() {
         <FlexContainer width="100%" justifyContent="space-between">
           <Typography variant="h4">
             League -
-            <Typography variant="h4Medium" display="inline-block">
+            <Typography
+              variant="h4Medium"
+              display="inline-block"
+              variantMapping={{ h4Medium: 'span' }}
+            >
               {selectedLeague.name}
             </Typography>
             <IconButton
@@ -217,7 +224,11 @@ function TournamentPage() {
             {selectedTournament ? (
               <>
                 Tournament -
-                <Typography variant="h5Medium" display="inline-block">
+                <Typography
+                  variant="h5Medium"
+                  display="inline-block"
+                  variantMapping={{ h5Medium: 'span' }}
+                >
                   {selectedTournament?.name}
                 </Typography>
               </>
@@ -303,8 +314,15 @@ function TournamentPage() {
           onCancel={() => setAddOrEditTournamentModalProps({ isOpen: false })}
         />
       </CustomModal>
+      <CustomModal
+        isModalOpen={isInitializeTournamentModalOpen}
+        fullScreen
+        onClose={() => setIsInitializeTournamentModalOpen(false)}
+      >
+        <InitializeTournament tournament={selectedTournament!} />
+      </CustomModal>
     </PageContainer>
   );
-}
+};
 
 export default TournamentPage;

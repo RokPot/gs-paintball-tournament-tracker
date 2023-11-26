@@ -12,9 +12,9 @@ interface IProps {
   onLeagueSelected: (league?: League) => void;
 }
 
-function SelectLeague({ onLeagueSelected }: IProps) {
+const SelectLeague = ({ onLeagueSelected }: IProps) => {
   const { selectedLeague, setSelectedLeague, leaguesList } = useLeagueQueries();
-
+  console.log(leaguesList);
   const setSelectedLeagueInternal = async (e: SelectChangeEvent<League>) => {
     const newSelectedLeague = leaguesList?.find(
       (league) => league.id === e.target.value,
@@ -43,6 +43,6 @@ function SelectLeague({ onLeagueSelected }: IProps) {
       </Select>
     </FormControl>
   );
-}
+};
 
 export default SelectLeague;

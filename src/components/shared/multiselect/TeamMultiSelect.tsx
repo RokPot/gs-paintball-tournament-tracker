@@ -4,11 +4,15 @@ import Team from 'types/Team';
 
 interface IProps {
   selectedTeams: Team[];
-  options?: Team[];
+  options?: Team[] | null;
   onTeamsChanged: (teams: Team[]) => void;
 }
 
-function TeamMultiSelect({ selectedTeams, options, onTeamsChanged }: IProps) {
+const TeamMultiSelect = ({
+  selectedTeams,
+  options,
+  onTeamsChanged,
+}: IProps) => {
   const [selectedTeamsInternal, setSelectedTeamsInternal] =
     useState(selectedTeams);
 
@@ -20,7 +24,7 @@ function TeamMultiSelect({ selectedTeams, options, onTeamsChanged }: IProps) {
     if (selectedTeamsInternal?.length === 1) {
       return `1 team selected`;
     }
-    return `${selectedTeamsInternal} teams selected`;
+    return `${selectedTeamsInternal.length} teams selected`;
   };
 
   return (
@@ -85,6 +89,6 @@ function TeamMultiSelect({ selectedTeams, options, onTeamsChanged }: IProps) {
       )}
     />
   );
-}
+};
 
 export default TeamMultiSelect;

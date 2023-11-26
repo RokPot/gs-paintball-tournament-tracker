@@ -1,18 +1,13 @@
-import { Box, Modal, css, styled } from '@mui/material';
+import { faClose } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Box, Button, Modal, css, styled } from '@mui/material';
 
-const StyledModalContainerRoot = styled('div')(
-  () => css`
-    position: relative;
-    width: 100%;
-    height: 100%;
-  `
-);
 const StyledModalContainer = styled('div')(
   (props) => css`
     background-color: ${props.theme.palette.background.default};
     max-height: 700px;
     overflow-y: auto;
-  `
+  `,
 );
 
 interface IProps {
@@ -20,7 +15,7 @@ interface IProps {
   onClose: () => void;
   children: React.ReactNode;
   width?: number;
-  maxHeight?: number;
+  fullScreen?: boolean;
 }
 const style = {
   position: 'absolute' as 'absolute',
@@ -28,17 +23,37 @@ const style = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
 };
-const CustomModal: React.FC<IProps> = ({
+const fullScreenStyle = {
+  width: '100%',
+  height: '100%',
+};
+const CustomModal = ({
   isModalOpen,
   onClose,
   children,
   width = 400,
-  maxHeight = 700,
-}) => {
+  fullScreen,
+}: IProps) => {
   return (
     <Modal open={isModalOpen} onClose={onClose}>
-      <Box style={style}>
-        <StyledModalContainer style={{ width: width }}>
+      <Box style={fullScreen ? fullScreenStyle : style}>
+        <StyledModalContainer
+          style={{
+            width: fullScreen ? '100%' : width,
+            height: fullScreen ? '100%' : 'auto',
+            maxHeight: fullScreen ? '100%' : 'inherit',
+          }}
+        >
+          <Button
+            onClick={onClose}
+            style={{
+              position: 'absolute',
+              top: '5px',
+              right: '5px',
+            }}
+          >
+            <FontAwesomeIcon icon={faClose} />
+          </Button>
           {children}
         </StyledModalContainer>
       </Box>

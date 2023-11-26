@@ -27,12 +27,15 @@ interface IProps {
   onClose: () => void;
 }
 
-function AddOrEditLeague({ league, onClose, onConfirm }: IProps) {
+const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
   const { addNewTeam } = useTeamService();
   const { teamsList } = useTeamQueries();
 
   const formik = useFormik<AddLeague>({
-    initialValues: { name: league?.name || '', teams: league?.teams || [] },
+    initialValues: {
+      name: league?.name || '',
+      teams: [...(league?.teams || [])],
+    },
     validationSchema: LeagueDetailsSchema,
     onSubmit: (values: AddLeague) => {
       const teamId = league?._id || v4();
@@ -60,7 +63,7 @@ function AddOrEditLeague({ league, onClose, onConfirm }: IProps) {
       );
     },
   });
-
+  console.log(!formik.isValid || !formik.dirty, !formik.isValid, !formik.dirty);
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
   return (
     <FlexContainer
@@ -113,9 +116,11 @@ function AddOrEditLeague({ league, onClose, onConfirm }: IProps) {
       <TeamsShortList
         showRemoveButton
         onRemoveTeam={(_, index) => {
-          const teams = formik?.values?.teams;
+          const teams = [...(formik?.values?.teams || [])];
           teams?.splice(index, 1);
           formik.setFieldValue('teams', [...(teams || [])]);
+          formik.setFieldValue('name', `${formik.values.name}`);
+          formik.validateForm();
         }}
         teams={formik?.values?.teams}
       />
@@ -150,6 +155,6 @@ function AddOrEditLeague({ league, onClose, onConfirm }: IProps) {
       </FlexContainer>
     </FlexContainer>
   );
-}
+};
 
 export default AddOrEditLeague;

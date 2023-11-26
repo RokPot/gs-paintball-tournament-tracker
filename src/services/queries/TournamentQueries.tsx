@@ -12,10 +12,10 @@ const useTournamentQueries = () => {
     updateTournament,
   } = useTournamentService();
   const {
+    selectedLeague,
+    updateExistingLeagueMutate,
     invalidateLeaguesList,
     invalidateSelectedLeague,
-    selectedLeague,
-    updateExistingLeague,
   } = useLeagueQueries();
 
   const { mutateAsync: addTournament } = useMutation({
@@ -48,7 +48,7 @@ const useTournamentQueries = () => {
       return undefined;
     }
     league.tournaments = [...league.tournaments, newTournament];
-    await updateExistingLeague(league);
+    await updateExistingLeagueMutate(league);
     await invalidateLeaguesList();
     if (league.id === selectedLeague?.id) {
       await invalidateSelectedLeague();

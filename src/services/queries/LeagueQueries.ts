@@ -3,6 +3,13 @@ import useLeagueService from 'services/LeagueService';
 import useTeamService from 'services/TeamService';
 import League from 'types/League';
 import { useCallback } from 'react';
+import Tournament from 'types/Tournament';
+import { useSnackbar } from 'notistack';
+import {
+  snackbarErrorOptions,
+  snackbarSuccessOptions,
+} from 'utils/snackbarUtils';
+import { processError } from 'utils/requestsUtils';
 import QueryKey from './QueryKeys';
 
 const useLeagueQueries = () => {
@@ -15,6 +22,7 @@ const useLeagueQueries = () => {
   } = useLeagueService();
   const { addNewLeaderBoardTeams } = useTeamService();
   const queryClient = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
 
   const { data: leaguesList, isFetching: isFetchingLeaguesList } = useQuery({
     queryKey: [QueryKey.LeaguesList],
@@ -29,11 +37,11 @@ const useLeagueQueries = () => {
 
   const invalidateLeaguesList = useCallback(async () => {
     queryClient.invalidateQueries({ queryKey: [QueryKey.LeaguesList] });
-  }, []);
+  }, [queryClient]);
 
   const invalidateSelectedLeague = useCallback(async () => {
     queryClient.invalidateQueries({ queryKey: [QueryKey.SelectedLeague] });
-  }, []);
+  }, [queryClient]);
 
   const { mutateAsync: addLeagueMutate } = useMutation({
     mutationFn: (league: League) => {
@@ -47,55 +55,93 @@ const useLeagueQueries = () => {
     },
   });
 
-  const { mutateAsync: updateExistingLeague } = useMutation({
+  const { mutateAsync: updateExistingLeagueMutate } = useMutation({
     mutationFn: (league: League) => {
       return updateLeague(league);
     },
   });
+
+  const setSelectedLeagueTournament = async (tournament?: Tournament) => {
+    try {
+      if (!selectedLeague) {
+        return;
+      }
+      const updatedLeague = selectedLeague;
+      updatedLeague.activeTournament = tournament || undefined;
+
+      await updateExistingLeagueMutate(updatedLeague);
+      enqueueSnackbar('Tournament selected', snackbarSuccessOptions);
+      await invalidateSelectedLeague();
+    } catch (e) {
+      processError(e);
+      enqueueSnackbar('Something went wrong', snackbarErrorOptions);
+    }
+  };
+
   const setSelectedLeague = async (
     newActiveLeague?: League | null,
     currentActiveLeague?: League | null,
   ) => {
-    const isCurrentLeagueSameAsNewLeague =
-      newActiveLeague?.id === currentActiveLeague?.id;
+    try {
+      const isCurrentLeagueSameAsNewLeague =
+        newActiveLeague?.id === currentActiveLeague?.id;
 
-    const isLeagueAlreadyActiveAndIsNotNewLeague =
-      currentActiveLeague && !isCurrentLeagueSameAsNewLeague;
+      const isLeagueAlreadyActiveAndIsNotNewLeague =
+        currentActiveLeague && !isCurrentLeagueSameAsNewLeague;
 
-    if (isLeagueAlreadyActiveAndIsNotNewLeague) {
-      currentActiveLeague.isLeagueSelected = false;
-      await updateExistingLeague(currentActiveLeague);
+      if (isLeagueAlreadyActiveAndIsNotNewLeague) {
+        currentActiveLeague.isLeagueSelected = false;
+        await updateExistingLeagueMutate(currentActiveLeague);
+      }
+
+      if (newActiveLeague) {
+        newActiveLeague.isLeagueSelected = !isCurrentLeagueSameAsNewLeague;
+        await updateExistingLeagueMutate(newActiveLeague);
+        enqueueSnackbar('League selected', snackbarSuccessOptions);
+      }
+
+      await invalidateSelectedLeague();
+      await invalidateLeaguesList();
+    } catch (e) {
+      processError(e);
+      enqueueSnackbar('Something went wrong', snackbarErrorOptions);
     }
-
-    if (newActiveLeague) {
-      newActiveLeague.isLeagueSelected = !isCurrentLeagueSameAsNewLeague;
-      await updateExistingLeague(newActiveLeague);
-    }
-
-    await invalidateSelectedLeague();
-    await invalidateLeaguesList();
   };
 
   const addOrEditLeague = async (
     league: League,
     shouldUpdateExistingLeague?: boolean,
   ) => {
-    if (shouldUpdateExistingLeague) {
-      await addNewLeaderBoardTeams(
-        league.leaderboard.filter((leaderboardTeam) => !leaderboardTeam._rev),
+    try {
+      if (shouldUpdateExistingLeague) {
+        await addNewLeaderBoardTeams(
+          league.leaderboard.filter((leaderboardTeam) => !leaderboardTeam._rev),
+        );
+        await updateExistingLeagueMutate(league);
+      } else {
+        await addNewLeaderBoardTeams(league.leaderboard);
+        await addLeagueMutate(league);
+      }
+      enqueueSnackbar(
+        shouldUpdateExistingLeague ? 'League updated' : 'League created',
+        snackbarSuccessOptions,
       );
-      await updateExistingLeague(league);
-    } else {
-      await addNewLeaderBoardTeams(league.leaderboard);
-      await addLeagueMutate(league);
+      await invalidateLeaguesList();
+    } catch (e) {
+      processError(e);
+      enqueueSnackbar('Something went wrong', snackbarErrorOptions);
     }
-
-    await invalidateLeaguesList();
   };
 
   const deleteExistingLeague = async (league: League) => {
-    await deleteExistingLeagueMutate(league);
-    await invalidateLeaguesList();
+    try {
+      await deleteExistingLeagueMutate(league);
+      enqueueSnackbar('League deleted', snackbarSuccessOptions);
+      await invalidateLeaguesList();
+    } catch (e) {
+      processError(e);
+      enqueueSnackbar('Something went wrong', snackbarErrorOptions);
+    }
   };
 
   return {
@@ -103,12 +149,14 @@ const useLeagueQueries = () => {
     selectedLeague,
     isFetchingLeaguesList,
     isLoading: isFetchingLeaguesList || isFetchingSelectedLeague,
-    invalidateLeaguesList,
-    invalidateSelectedLeague,
     addOrEditLeague,
     deleteExistingLeague,
-    updateExistingLeague,
     setSelectedLeague,
+    setSelectedLeagueTournament,
+
+    updateExistingLeagueMutate,
+    invalidateLeaguesList,
+    invalidateSelectedLeague,
   };
 };
 

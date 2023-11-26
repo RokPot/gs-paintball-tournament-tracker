@@ -22,6 +22,7 @@ import LeaderboardList from 'components/teams/LeaderboardList';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
 import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
 import TournamentShortList from 'components/tournament/TournamentListShort';
+import { useSnackbar } from 'notistack';
 import { useState } from 'react';
 import useTeamService from 'services/TeamService';
 import useLeagueQueries from 'services/queries/LeagueQueries';
@@ -71,12 +72,13 @@ const StyledActiveBadge = styled('div')(
   `,
 );
 
-function LeaguesPage() {
+const LeaguesPage = () => {
   const [isLeagueModalOpen, setIsLeagueModalOpen] = useState(false);
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
   const [isTournamentAddModalOpen, setIsTournamentAddModalOpen] =
     useState(false);
 
+  const { enqueueSnackbar } = useSnackbar();
   const [selectedRowLeague, setSelectedRowLeague] = useState<League>();
   const [editRowLeague, setEditRowLeague] = useState<League>();
   const { addNewTeam, addNewLeaderBoardTeam } = useTeamService();
@@ -85,18 +87,18 @@ function LeaguesPage() {
   const {
     leaguesList,
     addOrEditLeague,
-    invalidateLeaguesList,
-    updateExistingLeague,
     deleteExistingLeague,
     isFetchingLeaguesList,
     setSelectedLeague,
     selectedLeague,
   } = useLeagueQueries();
 
-  const { addNewTournamentToLeague } = useTournamentQueries();
+  const { addNewTournamentToLeague, updateExistingTournament } =
+    useTournamentQueries();
 
   const confirmLeague = async (league: League, isEdit: boolean) => {
     await addOrEditLeague(league, isEdit);
+    enqueueSnackbar('success');
     setIsLeagueModalOpen(false);
   };
 
@@ -107,7 +109,6 @@ function LeaguesPage() {
 
   const onRemoveClick = async (league: League) => {
     await deleteExistingLeague(league);
-    await invalidateLeaguesList();
   };
 
   const onToggleActiveClick = async (league: League) => {
@@ -118,12 +119,12 @@ function LeaguesPage() {
     tournament: Tournament,
     isEdit: boolean,
   ) => {
-    const updatedLeague = await addNewTournamentToLeague(
-      tournament,
-      selectedRowLeague,
-    );
+    if (isEdit) {
+      await updateExistingTournament(tournament);
+    } else {
+      await addNewTournamentToLeague(tournament, selectedRowLeague);
+    }
 
-    setSelectedRowLeague(updatedLeague);
     setIsTournamentAddModalOpen(false);
   };
 
@@ -143,10 +144,9 @@ function LeaguesPage() {
       ...selectedRowLeague.leaderboard,
       newLeaderboardTeam,
     ];
-    await updateExistingLeague(selectedRowLeague);
+    await addOrEditLeague(selectedRowLeague, true);
 
     setIsTeamAddModalOpen(false);
-    await invalidateLeaguesList();
     setSelectedRowLeague(selectedRowLeague);
   };
 
@@ -367,6 +367,6 @@ function LeaguesPage() {
       </CustomModal>
     </PageContainer>
   );
-}
+};
 
 export default LeaguesPage;
