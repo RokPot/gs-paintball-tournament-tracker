@@ -22,7 +22,6 @@ import LeaderboardList from 'components/teams/LeaderboardList';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
 import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
 import TournamentShortList from 'components/tournament/TournamentListShort';
-import { useSnackbar } from 'notistack';
 import { useState } from 'react';
 import useTeamService from 'services/TeamService';
 import useLeagueQueries from 'services/queries/LeagueQueries';
@@ -78,7 +77,6 @@ const LeaguesPage = () => {
   const [isTournamentAddModalOpen, setIsTournamentAddModalOpen] =
     useState(false);
 
-  const { enqueueSnackbar } = useSnackbar();
   const [selectedRowLeague, setSelectedRowLeague] = useState<League>();
   const [editRowLeague, setEditRowLeague] = useState<League>();
   const { addNewTeam, addNewLeaderBoardTeam } = useTeamService();
@@ -98,7 +96,6 @@ const LeaguesPage = () => {
 
   const confirmLeague = async (league: League, isEdit: boolean) => {
     await addOrEditLeague(league, isEdit);
-    enqueueSnackbar('success');
     setIsLeagueModalOpen(false);
   };
 

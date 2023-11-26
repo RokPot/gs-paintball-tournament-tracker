@@ -30,7 +30,7 @@ const useTournamentQueries = () => {
     },
   });
 
-  const { mutateAsync: updateExistingTournament } = useMutation({
+  const { mutateAsync: updateExistingTournamentMutate } = useMutation({
     mutationFn: (tournament: Tournament) => {
       return updateTournament(tournament.toDto());
     },
@@ -54,6 +54,18 @@ const useTournamentQueries = () => {
       await invalidateSelectedLeague();
     }
     return league;
+  };
+
+  const updateExistingTournament = async (
+    tournament: Tournament,
+    league?: League,
+  ): Promise<Tournament | undefined> => {
+    await updateExistingTournamentMutate(tournament);
+
+    if (league?.id === selectedLeague?.id) {
+      await invalidateSelectedLeague();
+    }
+    return tournament;
   };
 
   return {

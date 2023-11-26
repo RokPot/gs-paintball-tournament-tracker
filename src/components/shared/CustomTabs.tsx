@@ -1,0 +1,71 @@
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import { styled } from '@mui/material/styles';
+import * as React from 'react';
+
+interface StyledTabProps {
+  label: string;
+}
+
+interface StyledTabsProps {
+  children?: React.ReactNode;
+  value: number;
+  onChange: (event: React.SyntheticEvent, newValue: number) => void;
+}
+
+const StyledTabs = styled((props: StyledTabsProps) => (
+  <Tabs
+    {...props}
+    TabIndicatorProps={{ children: <span className="MuiTabs-indicatorSpan" /> }}
+  />
+))(({ theme }) => ({
+  '& .MuiTabs-indicator': {
+    display: 'flex',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  '& .MuiTabs-indicatorSpan': {
+    maxWidth: 80,
+    width: '100%',
+    backgroundColor: theme.palette.primary.light,
+  },
+}));
+
+const StyledTab = styled((props: StyledTabProps) => (
+  <Tab disableRipple {...props} />
+))(({ theme }) => ({
+  textTransform: 'none',
+  fontWeight: theme.typography.fontWeightRegular,
+  fontSize: theme.typography.pxToRem(15),
+  fontFamily: theme.typography.p1.fontFamily,
+  marginRight: theme.spacing(1),
+  color: theme.palette.text.primary,
+  '&.Mui-selected': {
+    color: theme.palette.primary.main,
+  },
+  '&.Mui-focusVisible': {
+    backgroundColor: 'rgba(100, 95, 228, 0.32)',
+  },
+}));
+
+const CustomTabs = () => {
+  const [value, setValue] = React.useState(0);
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
+
+  return (
+    <StyledTabs
+      value={value}
+      onChange={handleChange}
+      aria-label="styled tabs example"
+    >
+      <StyledTab label="Tournament details" />
+      <StyledTab label="Teams" />
+      <StyledTab label="Schedule" />
+      <StyledTab label="Activity" />
+    </StyledTabs>
+  );
+};
+export default CustomTabs;

@@ -19,6 +19,7 @@ import {
 import SelectLeague from 'components/leagues/SelectLeague';
 import CustomDropdownMenu from 'components/shared/CustomDropdownMenu';
 import CustomModal from 'components/shared/CustomModal';
+import CustomTabs from 'components/shared/CustomTabs';
 import FlexContainer from 'components/shared/FlexContainer';
 import LoadingIndicator from 'components/shared/LoadingIndicator';
 import PageContainer from 'components/shared/PageContainer';
@@ -91,7 +92,7 @@ const TournamentPage = () => {
       await addNewTournamentToLeague(tournament, selectedLeague);
       setAllowAutomaticTournamentAssignment(true);
     } else {
-      await updateExistingTournament(tournament);
+      await updateExistingTournament(tournament, selectedLeague);
     }
     setAddOrEditTournamentModalProps({ isOpen: false });
   };
@@ -116,7 +117,10 @@ const TournamentPage = () => {
       const inProgressTournament = selectedLeague.tournaments.find(
         (tournament) => tournament.state.stage === TournamentStage.inProgress,
       );
-      setSelectedTournament(inProgressTournament);
+
+      if (inProgressTournament) {
+        setSelectedTournament(inProgressTournament);
+      }
     }
     setAllowAutomaticTournamentAssignment(false);
   }, [
@@ -269,6 +273,7 @@ const TournamentPage = () => {
           )}
           {selectedTournament && (
             <>
+              <CustomTabs />
               <Typography variant="h5">Tournament details</Typography>
 
               <TournamentDetailsList tournament={selectedTournament} />

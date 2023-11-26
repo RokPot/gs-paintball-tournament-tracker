@@ -9,7 +9,7 @@ interface IProps {
   tournament: Tournament;
 }
 
-const InitializeTournament: React.FC<IProps> = ({ tournament }) => {
+const InitializeTournament = ({ tournament }: IProps) => {
   const [groups, setGroups] = useState(tournament.groups);
   const shuffleArray = (array: any[]) => {
     const newArray = [...array];
@@ -69,7 +69,5 @@ const InitializeTournament: React.FC<IProps> = ({ tournament }) => {
     </FlexContainer>
   );
 };
-InitializeTournament.propTypes = {
-  tournament: undefined,
-};
+
 export default InitializeTournament;

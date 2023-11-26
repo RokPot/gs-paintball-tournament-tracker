@@ -23,7 +23,7 @@ interface IProps {
   icon?: IconDefinition;
 }
 
-function CustomDropdownMenu({ actions, label, icon }: IProps) {
+const CustomDropdownMenu = ({ actions, label, icon }: IProps) => {
   const [anchorEl, setAnchorEl] = useState<(EventTarget & HTMLElement) | null>(
     null,
   );
@@ -67,7 +67,13 @@ function CustomDropdownMenu({ actions, label, icon }: IProps) {
         {actions
           .filter((action) => action.visible)
           .map((action, index) => (
-            <MenuItem key={index} onClick={action.onClick}>
+            <MenuItem
+              key={index}
+              onClick={() => {
+                action.onClick();
+                handleClose();
+              }}
+            >
               {action.icon && (
                 <ListItemIcon>
                   <FontAwesomeIcon icon={action.icon} />
@@ -79,6 +85,6 @@ function CustomDropdownMenu({ actions, label, icon }: IProps) {
       </Menu>
     </div>
   );
-}
+};
 
 export default CustomDropdownMenu;
