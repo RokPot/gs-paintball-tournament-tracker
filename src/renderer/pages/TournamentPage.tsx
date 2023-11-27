@@ -33,7 +33,7 @@ import useLeagueQueries from 'hooks/league/useLeagueQueries';
 import useTournamentQueries from 'hooks/tournament/useTournamentQueries';
 import { useCallback, useEffect, useState } from 'react';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
-import useUpdateTournament from 'services/queries/tournament/useUpdateTournament';
+import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
 import Tournament from 'types/Tournament';
 import { TournamentStage } from 'types/TournamentStage';
 
@@ -58,9 +58,8 @@ const StyledLoadingContainer = styled('div')(
 const TournamentPage = () => {
   const { setSelectedLeague, setSelectedLeagueTournament } = useLeagueQueries();
   const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
-  const { addNewTournamentToLeague } = useTournamentQueries();
-  const { updateTournament } = useUpdateTournament();
-
+  const { addOrEditTournament } = useTournamentQueries();
+  const { invalidateSelectedLeague } = useLeagueInvalidations();
   const [
     allowAutomaticTournamentAssignment,
     setAllowAutomaticTournamentAssignment,
@@ -74,24 +73,26 @@ const TournamentPage = () => {
   const selectedTournament = activeLeague?.activeTournament;
   const setSelectedTournament = useCallback(
     async (tournament?: Tournament) => {
-      await setSelectedLeagueTournament(tournament);
+      await setSelectedLeagueTournament(tournament, activeLeague);
     },
-    [setSelectedLeagueTournament],
+    [activeLeague, setSelectedLeagueTournament],
   );
 
   const addNewTournamentInternal = async (
     tournament: Tournament,
     isEdit: boolean,
   ) => {
-    if (!activeLeague) {
-      return;
-    }
-    if (!isEdit) {
-      await addNewTournamentToLeague(tournament, activeLeague);
-      setAllowAutomaticTournamentAssignment(true);
-    } else {
-      await updateTournament(tournament);
-    }
+    await addOrEditTournament(tournament, activeLeague, isEdit);
+    await invalidateSelectedLeague();
+    // if (!activeLeague) {
+    //   return;
+    // }
+    // if (!isEdit) {
+    //   await addNewTournamentToLeague(tournament, activeLeague);
+    //   setAllowAutomaticTournamentAssignment(true);
+    // } else {
+    //   await updateTournament(tournament);
+    // }
     setAddOrEditTournamentModalProps({ isOpen: false });
   };
 

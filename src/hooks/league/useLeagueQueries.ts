@@ -23,7 +23,7 @@ const useLeagueQueries = () => {
   const { deleteExistingLeagueMutate } = useDeleteLeague();
 
   const setSelectedLeagueTournament = useCallback(
-    async (tournament?: Tournament, selectedLeague?: League) => {
+    async (tournament?: Tournament, selectedLeague?: League | null) => {
       try {
         if (!selectedLeague) {
           return;

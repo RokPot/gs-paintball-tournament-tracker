@@ -69,12 +69,12 @@ const fromDayjsToSeconds = (time: Dayjs) => {
   return (time.minute() || 1) * (time.second() || 60);
 };
 
-function AddOrEditTournament({
+const AddOrEditTournament = ({
   onAccept,
   onCancel,
   league,
   tournament,
-}: IProps) {
+}: IProps) => {
   const formik = useFormik<AddTournament>({
     initialValues: {
       name: tournament?.name || '',
@@ -411,6 +411,6 @@ function AddOrEditTournament({
       </FlexContainer>
     </FlexContainer>
   );
-}
+};
 
 export default AddOrEditTournament;

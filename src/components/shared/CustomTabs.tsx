@@ -25,7 +25,7 @@ const StyledTabs = styled((props: StyledTabsProps) => (
     backgroundColor: 'transparent',
   },
   '& .MuiTabs-indicatorSpan': {
-    maxWidth: 80,
+    maxWidth: 70,
     width: '100%',
     backgroundColor: theme.palette.primary.light,
   },
@@ -40,6 +40,8 @@ const StyledTab = styled((props: StyledTabProps) => (
   fontFamily: theme.typography.p1.fontFamily,
   marginRight: theme.spacing(1),
   color: theme.palette.text.primary,
+  paddingLeft: '0px',
+  paddingRight: '0px',
   '&.Mui-selected': {
     color: theme.palette.primary.main,
   },
@@ -62,7 +64,8 @@ const CustomTabs = () => {
       aria-label="styled tabs example"
     >
       <StyledTab label="Tournament details" />
-      <StyledTab label="Teams" />
+      <StyledTab label="Brackets" />
+      <StyledTab label="Groups" />
       <StyledTab label="Schedule" />
       <StyledTab label="Activity" />
     </StyledTabs>
