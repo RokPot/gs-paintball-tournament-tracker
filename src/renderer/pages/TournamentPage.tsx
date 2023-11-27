@@ -23,12 +23,13 @@ import CustomTabs from 'components/shared/CustomTabs';
 import FlexContainer from 'components/shared/FlexContainer';
 import LoadingIndicator from 'components/shared/LoadingIndicator';
 import PageContainer from 'components/shared/PageContainer';
-import LeaderboardList from 'components/teams/LeaderboardList';
-import TeamsShortList from 'components/teams/TeamShortList';
 import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
 import InitializeTournament from 'components/tournament/InitializeTournament';
 import SelectTournament from 'components/tournament/SelectTournament';
-import TournamentDetailsList from 'components/tournament/TournamentDetailsList';
+import TournamentActivity from 'components/tournament/TournamentActivity';
+import TournamentBrackets from 'components/tournament/TournamentBrackets';
+import TournamentDetails from 'components/tournament/TournamentDetails';
+import TournamentGroups from 'components/tournament/TournamentGroups';
 import useLeagueQueries from 'hooks/league/useLeagueQueries';
 import useTournamentQueries from 'hooks/tournament/useTournamentQueries';
 import { useCallback, useEffect, useState } from 'react';
@@ -55,7 +56,24 @@ const StyledLoadingContainer = styled('div')(
     transition: all 0.5s ease-in;
   `,
 );
+
+enum TournamentTabs {
+  tournamentDetails = 'tournamentDetails',
+  brackets = 'brackets',
+  groups = 'groups',
+  schedule = 'schedule',
+  activity = 'activity',
+}
+enum TournamentTabsLabel {
+  tournamentDetails = 'Tournament Details',
+  brackets = 'Brackets',
+  groups = 'Groups',
+  schedule = 'Schedule',
+  activity = 'Activity',
+}
+
 const TournamentPage = () => {
+  const [activeTab, setActiveTab] = useState(TournamentTabs.tournamentDetails);
   const { setSelectedLeague, setSelectedLeagueTournament } = useLeagueQueries();
   const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
   const { addOrEditTournament } = useTournamentQueries();
@@ -84,15 +102,7 @@ const TournamentPage = () => {
   ) => {
     await addOrEditTournament(tournament, activeLeague, isEdit);
     await invalidateSelectedLeague();
-    // if (!activeLeague) {
-    //   return;
-    // }
-    // if (!isEdit) {
-    //   await addNewTournamentToLeague(tournament, activeLeague);
-    //   setAllowAutomaticTournamentAssignment(true);
-    // } else {
-    //   await updateTournament(tournament);
-    // }
+
     setAddOrEditTournamentModalProps({ isOpen: false });
   };
 
@@ -196,10 +206,6 @@ const TournamentPage = () => {
           </FlexContainer>
         </FlexContainer>
       ) : (
-        <Typography variant="h4">No league selected</Typography>
-      )}
-
-      {!activeLeague && (
         <FlexContainer
           width="100%"
           flexDirection="column"
@@ -207,6 +213,7 @@ const TournamentPage = () => {
           alignItems="flex-start"
           margin={8}
         >
+          <Typography variant="h4">No league selected</Typography>
           <Typography variant="subtitle1" color={theme.palette.text.secondary}>
             No league is currently selected, please create a new league or
             select an existing one.
@@ -217,87 +224,74 @@ const TournamentPage = () => {
         </FlexContainer>
       )}
 
-      {activeLeague && (
-        <>
+      {activeLeague && selectedTournament ? (
+        <FlexContainer flexDirection="column" width="100%" alignItems="stretch">
           <Typography variant="h5">
-            {selectedTournament ? (
-              <>
-                Tournament -
-                <Typography
-                  variant="h5Medium"
-                  display="inline-block"
-                  variantMapping={{ h5Medium: 'span' }}
-                >
-                  {selectedTournament?.name}
-                </Typography>
-              </>
-            ) : (
-              'No tournament selected'
-            )}
-            {selectedTournament && (
-              <IconButton
-                style={{ width: '20px', height: '20px', marginLeft: 'auto' }}
-                onClick={() => setSelectedTournament(undefined)}
-              >
-                <FontAwesomeIcon
-                  icon={faRemove}
-                  width={10}
-                  color={theme.palette.primary.main}
-                />
-              </IconButton>
-            )}
-          </Typography>
-          {!selectedTournament && (
-            <FlexContainer
-              width="100%"
-              flexDirection="column"
-              justifyContent="flex-start"
-              alignItems="flex-start"
-              margin={8}
+            Tournament -
+            <Typography
+              variant="h5Medium"
+              display="inline-block"
+              variantMapping={{ h4Medium: 'span' }}
             >
-              <Typography
-                variant="subtitle1"
-                color={theme.palette.text.secondary}
-              >
-                {activeLeague?.tournaments.length > 0
-                  ? 'No tournament is currently selected, please create a new tournament or select existing one.'
-                  : 'There are currently no tournaments. Please create one before proceeding.'}
-              </Typography>
-              <SelectTournament onTournamentSelected={setSelectedTournament} />
-            </FlexContainer>
+              {selectedTournament?.name}
+            </Typography>
+            <IconButton
+              style={{ width: '20px', height: '20px', marginLeft: 'auto' }}
+              onClick={() => setSelectedTournament(undefined)}
+            >
+              <FontAwesomeIcon
+                icon={faRemove}
+                width={10}
+                color={theme.palette.primary.main}
+              />
+            </IconButton>
+          </Typography>
+          <CustomTabs
+            items={Object.values(TournamentTabs).map((key) => ({
+              label: TournamentTabsLabel[key],
+              value: key,
+            }))}
+            onTabChanged={(newTab) => {
+              setActiveTab(TournamentTabs[newTab as TournamentTabs]);
+            }}
+          />
+          {activeTab === TournamentTabs.tournamentDetails && (
+            <TournamentDetails activeLeague={activeLeague} />
           )}
-          {selectedTournament && (
-            <>
-              <CustomTabs />
-              <Typography variant="h5">Tournament details</Typography>
-
-              <TournamentDetailsList tournament={selectedTournament} />
-              <FlexContainer flexDirection="row">
-                <FlexContainer
-                  flexDirection="column"
-                  width="100%"
-                  alignItems="flex-start"
-                  justifyContent="flex-start"
-                  height="100%"
-                >
-                  <Typography variant="h5">Participating teams</Typography>
-                  <TeamsShortList teams={selectedTournament.teams} />
-                </FlexContainer>
-                <FlexContainer
-                  flexDirection="column"
-                  width="100%"
-                  alignItems="flex-start"
-                  justifyContent="flex-start"
-                  height="100%"
-                >
-                  <Typography variant="h5">Tournament leaderboard</Typography>
-
-                  <LeaderboardList teams={selectedTournament.leaderboard} />
-                </FlexContainer>
-              </FlexContainer>
-            </>
+          {activeTab === TournamentTabs.groups && (
+            <TournamentGroups activeLeague={activeLeague} />
           )}
-        </>
+          {activeTab === TournamentTabs.brackets && (
+            <TournamentBrackets activeLeague={activeLeague} />
+          )}
+          {activeTab === TournamentTabs.activity && (
+            <TournamentActivity activeLeague={activeLeague} />
+          )}
+          {activeTab === TournamentTabs.schedule && (
+            <TournamentBrackets activeLeague={activeLeague} />
+          )}
+        </FlexContainer>
+      ) : (
+        activeLeague && (
+          <FlexContainer
+            width="100%"
+            flexDirection="column"
+            justifyContent="flex-start"
+            alignItems="flex-start"
+            margin={8}
+          >
+            <Typography variant="h4">No tournament selected</Typography>
+            <Typography
+              variant="subtitle1"
+              color={theme.palette.text.secondary}
+            >
+              {(activeLeague?.tournaments?.length || 0) > 0
+                ? 'No tournament is currently selected, please create a new tournament or select existing one.'
+                : 'There are currently no tournaments. Please create one before proceeding.'}
+            </Typography>
+            <SelectTournament onTournamentSelected={setSelectedTournament} />
+          </FlexContainer>
+        )
       )}
 
       <CustomModal

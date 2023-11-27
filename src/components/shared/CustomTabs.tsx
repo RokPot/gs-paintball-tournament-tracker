@@ -50,11 +50,17 @@ const StyledTab = styled((props: StyledTabProps) => (
   },
 }));
 
-const CustomTabs = () => {
+interface IProps {
+  items: { label: string; value: string }[];
+  onTabChanged: (activeTab: string) => void;
+}
+
+const CustomTabs = ({ items, onTabChanged }: IProps) => {
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
+    onTabChanged(items[newValue].value);
   };
 
   return (
@@ -63,11 +69,9 @@ const CustomTabs = () => {
       onChange={handleChange}
       aria-label="styled tabs example"
     >
-      <StyledTab label="Tournament details" />
-      <StyledTab label="Brackets" />
-      <StyledTab label="Groups" />
-      <StyledTab label="Schedule" />
-      <StyledTab label="Activity" />
+      {items.map((item, index) => (
+        <StyledTab label={item.label} key={index} />
+      ))}
     </StyledTabs>
   );
 };

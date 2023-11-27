@@ -4,13 +4,13 @@ import { GameState } from 'types/GameState';
 import Tournament from 'types/Tournament';
 import { TournamentStageLabels } from 'types/TournamentStage';
 import { TournamentTypeLabels } from 'types/TournamentType';
-import TournamentDetailsInfo from './TournamentDetailsInfo';
+import TournamentDetailsInfoRow from './TournamentDetailsInfoRow';
 
 interface IProps {
   tournament: Tournament;
 }
 
-function TournamentDetailsList({ tournament }: IProps) {
+const TournamentDetailsList = ({ tournament }: IProps) => {
   const getTotalGames = (totalGamesType: 'finished' | 'unfinished' | 'all') => {
     const checkForGameState = (game: Game) => {
       switch (totalGamesType) {
@@ -45,11 +45,11 @@ function TournamentDetailsList({ tournament }: IProps) {
         alignItems="flex-start"
         highlightRowOnHover
       >
-        <TournamentDetailsInfo
+        <TournamentDetailsInfoRow
           title="Status"
           value={TournamentStageLabels[tournament.state.stage]}
         />
-        <TournamentDetailsInfo
+        <TournamentDetailsInfoRow
           title="Tournament date"
           value={`${tournament?.startDate?.format('DD/MM/YYYY')} ${
             tournament?.endDate
@@ -57,11 +57,11 @@ function TournamentDetailsList({ tournament }: IProps) {
               : ''
           }`}
         />
-        <TournamentDetailsInfo
+        <TournamentDetailsInfoRow
           title="Type"
           value={TournamentTypeLabels[tournament?.settings.type]}
         />
-        <TournamentDetailsInfo
+        <TournamentDetailsInfoRow
           title="Team size"
           value={`${tournament?.settings.numberOfTeamSize}-man`}
         />
@@ -73,19 +73,19 @@ function TournamentDetailsList({ tournament }: IProps) {
         alignItems="flex-start"
         highlightRowOnHover
       >
-        <TournamentDetailsInfo
+        <TournamentDetailsInfoRow
           title="# of total games"
           value={getTotalGames('all')}
         />
-        <TournamentDetailsInfo
+        <TournamentDetailsInfoRow
           title="# of finished games"
           value={getTotalGames('finished')}
         />
-        <TournamentDetailsInfo
+        <TournamentDetailsInfoRow
           title="# of unfinished games"
           value={getTotalGames('unfinished')}
         />
-        <TournamentDetailsInfo
+        <TournamentDetailsInfoRow
           title="Required match wins"
           value={tournament?.settings.numberOfWinsRequired}
         />
@@ -96,19 +96,19 @@ function TournamentDetailsList({ tournament }: IProps) {
         alignItems="flex-start"
         highlightRowOnHover
       >
-        <TournamentDetailsInfo
+        <TournamentDetailsInfoRow
           title="Switch games"
           value={getYesNoFromBoolean(tournament?.settings?.switchGames)}
         />
-        <TournamentDetailsInfo
+        <TournamentDetailsInfoRow
           title="Number of Groups"
           value={tournament?.settings.numberOfGroups}
         />
-        <TournamentDetailsInfo
+        <TournamentDetailsInfoRow
           title="Switch groups"
           value={getYesNoFromBoolean(tournament?.settings?.switchGroups)}
         />
-        <TournamentDetailsInfo
+        <TournamentDetailsInfoRow
           title="Second stage type"
           value={
             tournament?.settings.secondStageType &&
@@ -120,6 +120,6 @@ function TournamentDetailsList({ tournament }: IProps) {
       </FlexContainer>
     </FlexContainer>
   );
-}
+};
 
 export default TournamentDetailsList;

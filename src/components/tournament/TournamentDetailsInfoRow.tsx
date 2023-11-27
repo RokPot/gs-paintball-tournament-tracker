@@ -7,7 +7,7 @@ interface IProps {
   date?: Date;
 }
 
-const TournamentDetailsInfo: React.FC<IProps> = ({ title, value, date }) => {
+const TournamentDetailsInfoRow = ({ title, value, date }: IProps) => {
   return (
     <FlexContainer padding="8px" width="100%">
       <Typography variant="p2" minWidth="100px">
@@ -21,4 +21,4 @@ const TournamentDetailsInfo: React.FC<IProps> = ({ title, value, date }) => {
     </FlexContainer>
   );
 };
-export default TournamentDetailsInfo;
+export default TournamentDetailsInfoRow;
