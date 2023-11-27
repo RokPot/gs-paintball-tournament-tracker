@@ -8,12 +8,11 @@ import TeamsShortList from 'components/teams/TeamShortList';
 import { useFormik } from 'formik';
 import { useState } from 'react';
 import useTeamService from 'services/TeamService';
-import useTeamQueries, {
-  createNewLeaderboardTeam,
-} from 'services/queries/TeamQueries';
+import useTeamsList from 'services/queries/team/useTeamsList';
 import League from 'types/League';
 import Team from 'types/Team';
 import { LeagueDetailsSchema } from 'utils/schemes';
+import { createNewLeaderboardTeam } from 'utils/teamUtils';
 import { v4 } from 'uuid';
 
 interface AddLeague {
@@ -29,7 +28,7 @@ interface IProps {
 
 const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
   const { addNewTeam } = useTeamService();
-  const { teamsList } = useTeamQueries();
+  const { teamsList } = useTeamsList();
 
   const formik = useFormik<AddLeague>({
     initialValues: {

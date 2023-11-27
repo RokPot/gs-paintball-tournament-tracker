@@ -5,17 +5,17 @@ import {
   Select,
   SelectChangeEvent,
 } from '@mui/material';
-import useLeagueQueries from 'services/queries/LeagueQueries';
+import useActiveLeague from 'services/queries/league/useActiveLeague';
 import Tournament from 'types/Tournament';
 
 interface IProps {
   onTournamentSelected: (tournament: Tournament) => void;
 }
 
-function SelectTournament({ onTournamentSelected }: IProps) {
-  const { selectedLeague } = useLeagueQueries();
-  const selectedTournament = selectedLeague?.activeTournament;
-  const leagueTournaments = selectedLeague?.tournaments;
+const SelectTournament = ({ onTournamentSelected }: IProps) => {
+  const { activeLeague } = useActiveLeague();
+  const selectedTournament = activeLeague?.activeTournament;
+  const leagueTournaments = activeLeague?.tournaments;
 
   const setSelectedTournamentInternal = async (
     e: SelectChangeEvent<Tournament>,
@@ -49,6 +49,6 @@ function SelectTournament({ onTournamentSelected }: IProps) {
       </Select>
     </FormControl>
   );
-}
+};
 
 export default SelectTournament;

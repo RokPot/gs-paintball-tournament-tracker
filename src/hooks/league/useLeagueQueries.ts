@@ -1,5 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import useLeagueService from 'services/LeagueService';
 import useTeamService from 'services/TeamService';
 import League from 'types/League';
 import { useCallback } from 'react';
@@ -10,73 +8,39 @@ import {
   snackbarSuccessOptions,
 } from 'utils/snackbarUtils';
 import { processError } from 'utils/requestsUtils';
-import QueryKey from './QueryKeys';
+import useLeagueInvalidations from '../../services/queries/league/useLeagueInvalidations';
+import useUpdateLeague from '../../services/queries/league/useUpdateLeague';
+import useAddLeague from '../../services/queries/league/useAddLeague';
+import useDeleteLeague from '../../services/queries/league/useDeleteLeague';
 
 const useLeagueQueries = () => {
-  const {
-    addNewLeague,
-    getLeagues,
-    updateLeague,
-    deleteLeague,
-    getActiveLeague,
-  } = useLeagueService();
   const { addNewLeaderBoardTeams } = useTeamService();
-  const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const { invalidateSelectedLeague, invalidateLeaguesList } =
+    useLeagueInvalidations();
+  const { updateExistingLeagueMutate } = useUpdateLeague();
+  const { addLeagueMutate } = useAddLeague();
+  const { deleteExistingLeagueMutate } = useDeleteLeague();
 
-  const { data: leaguesList, isFetching: isFetchingLeaguesList } = useQuery({
-    queryKey: [QueryKey.LeaguesList],
-    queryFn: () => getLeagues().then((res) => res),
-  });
+  const setSelectedLeagueTournament = useCallback(
+    async (tournament?: Tournament, selectedLeague?: League) => {
+      try {
+        if (!selectedLeague) {
+          return;
+        }
+        const updatedLeague = selectedLeague;
+        updatedLeague.activeTournament = tournament || undefined;
 
-  const { data: selectedLeague, isFetching: isFetchingSelectedLeague } =
-    useQuery({
-      queryKey: [QueryKey.SelectedLeague],
-      queryFn: () => getActiveLeague().then((res) => res),
-    });
-
-  const invalidateLeaguesList = useCallback(async () => {
-    queryClient.invalidateQueries({ queryKey: [QueryKey.LeaguesList] });
-  }, [queryClient]);
-
-  const invalidateSelectedLeague = useCallback(async () => {
-    queryClient.invalidateQueries({ queryKey: [QueryKey.SelectedLeague] });
-  }, [queryClient]);
-
-  const { mutateAsync: addLeagueMutate } = useMutation({
-    mutationFn: (league: League) => {
-      return addNewLeague(league);
-    },
-  });
-
-  const { mutateAsync: deleteExistingLeagueMutate } = useMutation({
-    mutationFn: (league: League) => {
-      return deleteLeague(league);
-    },
-  });
-
-  const { mutateAsync: updateExistingLeagueMutate } = useMutation({
-    mutationFn: (league: League) => {
-      return updateLeague(league);
-    },
-  });
-
-  const setSelectedLeagueTournament = async (tournament?: Tournament) => {
-    try {
-      if (!selectedLeague) {
-        return;
+        await updateExistingLeagueMutate(updatedLeague);
+        enqueueSnackbar('Tournament selected', snackbarSuccessOptions);
+        await invalidateSelectedLeague();
+      } catch (e) {
+        processError(e);
+        enqueueSnackbar('Something went wrong', snackbarErrorOptions);
       }
-      const updatedLeague = selectedLeague;
-      updatedLeague.activeTournament = tournament || undefined;
-
-      await updateExistingLeagueMutate(updatedLeague);
-      enqueueSnackbar('Tournament selected', snackbarSuccessOptions);
-      await invalidateSelectedLeague();
-    } catch (e) {
-      processError(e);
-      enqueueSnackbar('Something went wrong', snackbarErrorOptions);
-    }
-  };
+    },
+    [enqueueSnackbar, invalidateSelectedLeague, updateExistingLeagueMutate],
+  );
 
   const setSelectedLeague = async (
     newActiveLeague?: League | null,
@@ -145,18 +109,10 @@ const useLeagueQueries = () => {
   };
 
   return {
-    leaguesList,
-    selectedLeague,
-    isFetchingLeaguesList,
-    isLoading: isFetchingLeaguesList || isFetchingSelectedLeague,
     addOrEditLeague,
     deleteExistingLeague,
     setSelectedLeague,
     setSelectedLeagueTournament,
-
-    updateExistingLeagueMutate,
-    invalidateLeaguesList,
-    invalidateSelectedLeague,
   };
 };
 

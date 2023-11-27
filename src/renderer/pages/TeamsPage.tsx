@@ -15,8 +15,11 @@ import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
+import useTeamQueries from 'hooks/team/useTeamQueries';
 import { useState } from 'react';
-import useTeamQueries from 'services/queries/TeamQueries';
+import useDeleteTeam from 'services/queries/team/useDeleteTeam';
+import useTeamInvalidations from 'services/queries/team/useTeamInvalidations';
+import useTeamsList from 'services/queries/team/useTeamsList';
 import useConfirmationModalStore from 'store/ConfirmationModalStore';
 import Team from 'types/Team';
 
@@ -28,27 +31,18 @@ const StyledHeaderContainer = styled('div')(
     justify-content: space-between;
   `,
 );
-function TeamsPage() {
+const TeamsPage = () => {
   const [isTeamUpsertModalOpen, setIsTeamUpsertModalOpen] = useState(false);
   const [teamToUpsert, setTeamToUpsert] = useState<Team>();
   const { openModal } = useConfirmationModalStore();
   const theme = useTheme();
-  const {
-    teamsList,
-    isFetchingTeamsList,
-    deleteExistingTeam,
-    addTeam,
-    updateExistingTeam,
-    invalidateTeamsList,
-  } = useTeamQueries();
+  const { teamsList, isFetchingTeamsList } = useTeamsList();
+  const { addOrEditTeam } = useTeamQueries();
+  const { deleteTeam } = useDeleteTeam();
+  const { invalidateTeamsList } = useTeamInvalidations();
 
   const addNewTeam = async (team: Team, update?: boolean) => {
-    if (update) {
-      await updateExistingTeam.mutateAsync(team);
-    } else {
-      await addTeam.mutateAsync(team);
-    }
-    await invalidateTeamsList();
+    addOrEditTeam(team, update);
     setIsTeamUpsertModalOpen(false);
   };
 
@@ -58,7 +52,7 @@ function TeamsPage() {
       Confirmation:
         'Team will be deletea and all data regarding this team will be lost.',
       onConfirm: async () => {
-        await deleteExistingTeam.mutateAsync(team);
+        await deleteTeam(team);
         await invalidateTeamsList();
       },
     });
@@ -181,6 +175,6 @@ function TeamsPage() {
       </CustomModal>
     </PageContainer>
   );
-}
+};
 
 export default TeamsPage;

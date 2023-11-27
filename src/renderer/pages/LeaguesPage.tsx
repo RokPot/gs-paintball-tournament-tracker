@@ -22,14 +22,16 @@ import LeaderboardList from 'components/teams/LeaderboardList';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
 import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
 import TournamentShortList from 'components/tournament/TournamentListShort';
+import useLeagueQueries from 'hooks/league/useLeagueQueries';
+import useTournamentQueries from 'hooks/tournament/useTournamentQueries';
 import { useState } from 'react';
 import useTeamService from 'services/TeamService';
-import useLeagueQueries from 'services/queries/LeagueQueries';
-import { createNewLeaderboardTeam } from 'services/queries/TeamQueries';
-import useTournamentQueries from 'services/queries/TournamentQueries';
+import useActiveLeague from 'services/queries/league/useActiveLeague';
+import useLeaguesList from 'services/queries/league/useLeaguesList';
 import League from 'types/League';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
+import { createNewLeaderboardTeam } from 'utils/teamUtils';
 
 const StyledHeaderContainer = styled('div')(
   () => css`
@@ -82,17 +84,11 @@ const LeaguesPage = () => {
   const { addNewTeam, addNewLeaderBoardTeam } = useTeamService();
   const theme = useTheme();
 
-  const {
-    leaguesList,
-    addOrEditLeague,
-    deleteExistingLeague,
-    isFetchingLeaguesList,
-    setSelectedLeague,
-    selectedLeague,
-  } = useLeagueQueries();
-
-  const { addNewTournamentToLeague, updateExistingTournament } =
-    useTournamentQueries();
+  const { addOrEditLeague, deleteExistingLeague, setSelectedLeague } =
+    useLeagueQueries();
+  const { leaguesList, isFetchingLeaguesList } = useLeaguesList();
+  const { activeLeague } = useActiveLeague();
+  const { addOrEditTournament } = useTournamentQueries();
 
   const confirmLeague = async (league: League, isEdit: boolean) => {
     await addOrEditLeague(league, isEdit);
@@ -109,18 +105,14 @@ const LeaguesPage = () => {
   };
 
   const onToggleActiveClick = async (league: League) => {
-    await setSelectedLeague(league, selectedLeague);
+    await setSelectedLeague(league, activeLeague);
   };
 
   const addNewTournamentInternal = async (
     tournament: Tournament,
     isEdit: boolean,
   ) => {
-    if (isEdit) {
-      await updateExistingTournament(tournament);
-    } else {
-      await addNewTournamentToLeague(tournament, selectedRowLeague);
-    }
+    await addOrEditTournament(tournament, selectedRowLeague, isEdit);
 
     setIsTournamentAddModalOpen(false);
   };
@@ -261,7 +253,7 @@ const LeaguesPage = () => {
               onClick={() => onToggleActiveClick(selectedRowLeague)}
             >
               <Typography variant="body1">
-                {selectedRowLeague?.id === selectedLeague?.id
+                {selectedRowLeague?.id === activeLeague?.id
                   ? 'Unselect this league'
                   : 'Select this league'}
               </Typography>

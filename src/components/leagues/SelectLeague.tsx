@@ -5,7 +5,9 @@ import {
   Select,
   SelectChangeEvent,
 } from '@mui/material';
-import useLeagueQueries from 'services/queries/LeagueQueries';
+import useLeagueQueries from 'hooks/league/useLeagueQueries';
+import useActiveLeague from 'services/queries/league/useActiveLeague';
+import useLeaguesList from 'services/queries/league/useLeaguesList';
 import League from 'types/League';
 
 interface IProps {
@@ -13,8 +15,9 @@ interface IProps {
 }
 
 const SelectLeague = ({ onLeagueSelected }: IProps) => {
-  const { selectedLeague, setSelectedLeague, leaguesList } = useLeagueQueries();
-  console.log(leaguesList);
+  const { setSelectedLeague } = useLeagueQueries();
+  const { leaguesList } = useLeaguesList();
+  const { activeLeague } = useActiveLeague();
   const setSelectedLeagueInternal = async (e: SelectChangeEvent<League>) => {
     const newSelectedLeague = leaguesList?.find(
       (league) => league.id === e.target.value,
@@ -23,7 +26,7 @@ const SelectLeague = ({ onLeagueSelected }: IProps) => {
       return;
     }
 
-    await setSelectedLeague(newSelectedLeague, selectedLeague);
+    await setSelectedLeague(newSelectedLeague, activeLeague);
     onLeagueSelected(newSelectedLeague);
   };
 
@@ -31,7 +34,7 @@ const SelectLeague = ({ onLeagueSelected }: IProps) => {
     <FormControl fullWidth>
       <InputLabel id="demo-simple-select-label">League</InputLabel>
       <Select
-        value={selectedLeague || ''}
+        value={activeLeague || ''}
         label="League"
         onChange={(e) => setSelectedLeagueInternal(e)}
       >

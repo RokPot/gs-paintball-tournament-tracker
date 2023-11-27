@@ -29,9 +29,11 @@ import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
 import InitializeTournament from 'components/tournament/InitializeTournament';
 import SelectTournament from 'components/tournament/SelectTournament';
 import TournamentDetailsList from 'components/tournament/TournamentDetailsList';
+import useLeagueQueries from 'hooks/league/useLeagueQueries';
+import useTournamentQueries from 'hooks/tournament/useTournamentQueries';
 import { useCallback, useEffect, useState } from 'react';
-import useLeagueQueries from 'services/queries/LeagueQueries';
-import useTournamentQueries from 'services/queries/TournamentQueries';
+import useActiveLeague from 'services/queries/league/useActiveLeague';
+import useUpdateTournament from 'services/queries/tournament/useUpdateTournament';
 import Tournament from 'types/Tournament';
 import { TournamentStage } from 'types/TournamentStage';
 
@@ -53,16 +55,12 @@ const StyledLoadingContainer = styled('div')(
     transition: all 0.5s ease-in;
   `,
 );
-
 const TournamentPage = () => {
-  const {
-    isLoading,
-    selectedLeague,
-    setSelectedLeague,
-    setSelectedLeagueTournament,
-  } = useLeagueQueries();
-  const { addNewTournamentToLeague, updateExistingTournament } =
-    useTournamentQueries();
+  const { setSelectedLeague, setSelectedLeagueTournament } = useLeagueQueries();
+  const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
+  const { addNewTournamentToLeague } = useTournamentQueries();
+  const { updateTournament } = useUpdateTournament();
+
   const [
     allowAutomaticTournamentAssignment,
     setAllowAutomaticTournamentAssignment,
@@ -73,7 +71,7 @@ const TournamentPage = () => {
     useState(false);
 
   const theme = useTheme();
-  const selectedTournament = selectedLeague?.activeTournament;
+  const selectedTournament = activeLeague?.activeTournament;
   const setSelectedTournament = useCallback(
     async (tournament?: Tournament) => {
       await setSelectedLeagueTournament(tournament);
@@ -85,36 +83,36 @@ const TournamentPage = () => {
     tournament: Tournament,
     isEdit: boolean,
   ) => {
-    if (!selectedLeague) {
+    if (!activeLeague) {
       return;
     }
     if (!isEdit) {
-      await addNewTournamentToLeague(tournament, selectedLeague);
+      await addNewTournamentToLeague(tournament, activeLeague);
       setAllowAutomaticTournamentAssignment(true);
     } else {
-      await updateExistingTournament(tournament, selectedLeague);
+      await updateTournament(tournament);
     }
     setAddOrEditTournamentModalProps({ isOpen: false });
   };
 
   useEffect(() => {
     if (
-      !selectedLeague ||
-      selectedLeague.activeTournament ||
+      !activeLeague ||
+      activeLeague?.activeTournament ||
       !allowAutomaticTournamentAssignment
     ) {
-      if (selectedLeague?.activeTournament) {
+      if (activeLeague?.activeTournament) {
         setAllowAutomaticTournamentAssignment(false);
       }
       return;
     }
 
-    const unfinishedLeagueTournaments = selectedLeague.tournaments.filter(
+    const unfinishedLeagueTournaments = activeLeague?.tournaments.filter(
       (tournament) => tournament.state.stage !== TournamentStage.finished,
     );
 
     if (unfinishedLeagueTournaments?.length > 0) {
-      const inProgressTournament = selectedLeague.tournaments.find(
+      const inProgressTournament = activeLeague?.tournaments.find(
         (tournament) => tournament.state.stage === TournamentStage.inProgress,
       );
 
@@ -123,11 +121,7 @@ const TournamentPage = () => {
       }
     }
     setAllowAutomaticTournamentAssignment(false);
-  }, [
-    allowAutomaticTournamentAssignment,
-    selectedLeague,
-    setSelectedTournament,
-  ]);
+  }, [allowAutomaticTournamentAssignment, activeLeague, setSelectedTournament]);
 
   const generateTournament = useCallback(() => {
     setIsInitializeTournamentModalOpen(true);
@@ -135,12 +129,12 @@ const TournamentPage = () => {
 
   return (
     <PageContainer>
-      {isLoading && (
+      {isFetchingActiveLeague && (
         <StyledLoadingContainer>
           <LoadingIndicator height="100%" />
         </StyledLoadingContainer>
       )}
-      {selectedLeague ? (
+      {activeLeague ? (
         <FlexContainer width="100%" justifyContent="space-between">
           <Typography variant="h4">
             League -
@@ -149,11 +143,11 @@ const TournamentPage = () => {
               display="inline-block"
               variantMapping={{ h4Medium: 'span' }}
             >
-              {selectedLeague.name}
+              {activeLeague?.name}
             </Typography>
             <IconButton
               style={{ width: '20px', height: '20px', marginLeft: 'auto' }}
-              onClick={() => setSelectedLeague(null, selectedLeague)}
+              onClick={() => setSelectedLeague(null, activeLeague)}
             >
               <FontAwesomeIcon
                 icon={faRemove}
@@ -204,7 +198,7 @@ const TournamentPage = () => {
         <Typography variant="h4">No league selected</Typography>
       )}
 
-      {!selectedLeague && (
+      {!activeLeague && (
         <FlexContainer
           width="100%"
           flexDirection="column"
@@ -222,7 +216,7 @@ const TournamentPage = () => {
         </FlexContainer>
       )}
 
-      {selectedLeague && (
+      {activeLeague && (
         <>
           <Typography variant="h5">
             {selectedTournament ? (
@@ -264,7 +258,7 @@ const TournamentPage = () => {
                 variant="subtitle1"
                 color={theme.palette.text.secondary}
               >
-                {selectedLeague?.tournaments.length > 0
+                {activeLeague?.tournaments.length > 0
                   ? 'No tournament is currently selected, please create a new tournament or select existing one.'
                   : 'There are currently no tournaments. Please create one before proceeding.'}
               </Typography>
@@ -313,7 +307,7 @@ const TournamentPage = () => {
         width={700}
       >
         <AddOrEditTournament
-          league={selectedLeague!}
+          league={activeLeague!}
           tournament={addOrEditTournamentModalProps.tournament}
           onAccept={addNewTournamentInternal}
           onCancel={() => setAddOrEditTournamentModalProps({ isOpen: false })}
