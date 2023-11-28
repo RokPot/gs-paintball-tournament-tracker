@@ -12,6 +12,7 @@ import { TournamentState } from './TournamentState';
 import { TournamentDto } from './dto/TournamentDto';
 import { IPouchDB } from './interfaces/IPouchDB';
 import { ITournament } from './interfaces/ITournament';
+import { TournamentSchedule } from './TournamentSchedule';
 
 export default class Tournament extends IPouchDB {
   id: string;
@@ -34,6 +35,8 @@ export default class Tournament extends IPouchDB {
 
   leaderboard?: LeaderboardTeam[];
 
+  schedule?: TournamentSchedule[];
+
   constructor(props: ITournament) {
     super(props._id, props._rev, props.docType || DocType.Tournament);
     this.id = props.id;
@@ -46,6 +49,7 @@ export default class Tournament extends IPouchDB {
     this.settings = props.settings || DefaultTournamentSettings;
     this.gameSettings = props.gameSettings || DefaultGameSettings;
     this.leaderboard = props.leaderboard;
+    this.schedule = props.schedule;
   }
 
   public toDto = (): TournamentDto => {
@@ -63,6 +67,7 @@ export default class Tournament extends IPouchDB {
       endDate: this.endDate?.toISOString(),
       startDate: this.startDate?.toISOString(),
       leaderboardTeamIds: this.leaderboard?.map((team) => team._id) || [],
+      schedule: this.schedule?.map((schedule) => schedule.id) || [],
     };
   };
 }
