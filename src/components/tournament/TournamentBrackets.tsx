@@ -1,9 +1,17 @@
-import { Typography } from '@mui/material';
+import { Typography, css, styled } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
-import LeaderboardList from 'components/teams/LeaderboardList';
-import TeamsShortList from 'components/teams/TeamShortList';
 import League from 'types/League';
-import TournamentDetailsList from './TournamentDetailsList';
+
+const StyledTeamNameContainer = styled('div')(
+  (props) => css`
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    border: 1.5px solid ${props.theme.palette.primary.main};
+    padding: 4px;
+    border-radius: 5px 0px 0px 5px;
+  `,
+);
 
 interface IProps {
   activeLeague: League;
@@ -18,30 +26,16 @@ const TournamentBrackets = ({ activeLeague }: IProps) => {
 
   return (
     <FlexContainer flexDirection="column">
-      <TournamentDetailsList tournament={selectedTournament} />
-      <FlexContainer flexDirection="row" width="100%">
-        <FlexContainer
-          flexDirection="column"
-          width="100%"
-          alignItems="flex-start"
-          justifyContent="flex-start"
-          height="100%"
-        >
-          <Typography variant="h5">Participating teams</Typography>
-          <TeamsShortList teams={selectedTournament.teams} />
-        </FlexContainer>
-        <FlexContainer
-          flexDirection="column"
-          width="100%"
-          alignItems="flex-start"
-          justifyContent="flex-start"
-          height="100%"
-        >
-          <Typography variant="h5">Tournament leaderboard</Typography>
-
-          <LeaderboardList teams={selectedTournament.leaderboard} />
-        </FlexContainer>
+      <FlexContainer flexDirection="row">
+        <StyledTeamNameContainer>
+          <Typography variant="p1">Team 1 asd</Typography>
+        </StyledTeamNameContainer>
+        <div>
+          <Typography variant="p1Medium">1</Typography>
+        </div>
       </FlexContainer>
+      <div> second </div>
+      <div> third</div>
     </FlexContainer>
   );
 };
