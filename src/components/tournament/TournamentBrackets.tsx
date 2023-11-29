@@ -1,7 +1,11 @@
 import { Theme, css, styled } from '@mui/material';
 import BracketsGameRow from 'components/brackets/BracketsGameRow';
 import FlexContainer from 'components/shared/FlexContainer';
+import Game from 'types/Game';
+import { GameState } from 'types/GameState';
 import League from 'types/League';
+import Team from 'types/Team';
+import { v4 } from 'uuid';
 
 const teamRowHeight = 40;
 const firstPadding = 40 + Math.ceil(40 / 4);
@@ -55,12 +59,84 @@ const TournamentBrackets = ({ activeLeague }: IProps) => {
     return null;
   }
   const numberOfGames = 16;
+  const games: Game[] = [];
+  let currentLayerGameCounts = 1;
   let numOfLayers = 0;
   while (numberOfGames > 2 ** numOfLayers) {
     numOfLayers += 1;
   }
   numOfLayers += 1;
-
+  for (let i = 0; i < numberOfGames; i += 1) {
+    if (currentLayerGameCounts) {
+      currentLayerGameCounts = 1;
+    }
+    const newGame: Game = {
+      gameState: GameState.created,
+      id: v4(),
+      matches: [],
+      team1: new Team({
+        _id: v4(),
+        id: v4(),
+        teamName: 'Team 1',
+        teamTag: 'T1',
+      }),
+      team1Wins: 0,
+      team2: new Team({
+        _id: v4(),
+        id: v4(),
+        teamName: 'Team 1',
+        teamTag: 'T1',
+      }),
+      team2Wins: 0,
+      bracketProperties: {
+        bye: false,
+        layer: 0,
+        layerGameNumber: i + 1,
+        nextLayerGameNumber: currentLayerGameCounts,
+      },
+    };
+    currentLayerGameCounts += 1;
+    games.push(newGame);
+  }
+  const gameCount = 1;
+  let previousGameCounts = numberOfGames;
+  for (let i = 1; i < numOfLayers; i += 1) {
+    const layer = i;
+    const leftOutGamesCount = previousGameCounts % 2;
+    const inGamesCount = Math.floor(previousGameCounts / 2);
+    for (let j = 0; j < inGamesCount; j += 1) {
+      const newGame: Game = {
+        gameState: GameState.created,
+        id: v4(),
+        matches: [],
+        team1: new Team({
+          _id: v4(),
+          id: v4(),
+          teamName: 'TBD',
+          teamTag: 'TBD',
+        }),
+        team1Wins: 0,
+        team2: new Team({
+          _id: v4(),
+          id: v4(),
+          teamName: 'TBD',
+          teamTag: 'TBD',
+        }),
+        team2Wins: 0,
+        bracketProperties: {
+          bye: false,
+          layer,
+          layerGameNumber: i + 1,
+          nextLayerGameNumber: currentLayerGameCounts,
+          previousLayerGame1Number: j + 1,
+          previousLayerGame2Number: j + 2,
+        },
+      };
+      games.push(newGame);
+    }
+    previousGameCounts /= 2;
+  }
+  console.log(games.map((game) => game.bracketProperties));
   const test = [
     {
       layer: 0,
@@ -112,36 +188,42 @@ const TournamentBrackets = ({ activeLeague }: IProps) => {
     },
     {
       layer: 0,
+      bye: true,
       layerGameNumber: 9,
       nextLayerGameNumber: 5,
       previousLayerGamesNumber: null,
     },
     {
       layer: 0,
+      bye: true,
       layerGameNumber: 10,
       nextLayerGameNumber: 5,
       previousLayerGamesNumber: null,
     },
     {
       layer: 0,
+      bye: true,
       layerGameNumber: 11,
       nextLayerGameNumber: 6,
       previousLayerGamesNumber: null,
     },
     {
       layer: 0,
+      bye: true,
       layerGameNumber: 12,
       nextLayerGameNumber: 6,
       previousLayerGamesNumber: null,
     },
     {
       layer: 0,
+      bye: true,
       layerGameNumber: 13,
       nextLayerGameNumber: 7,
       previousLayerGamesNumber: null,
     },
     {
       layer: 0,
+      bye: true,
       layerGameNumber: 14,
       nextLayerGameNumber: 7,
       previousLayerGamesNumber: null,
@@ -150,14 +232,14 @@ const TournamentBrackets = ({ activeLeague }: IProps) => {
       layer: 0,
       bye: true,
       layerGameNumber: 15,
-      nextLayerGameNumber: 8,
+      nextLayerGameNumber: 7,
       previousLayerGamesNumber: null,
     },
     {
       layer: 0,
       bye: true,
       layerGameNumber: 16,
-      nextLayerGameNumber: 8,
+      nextLayerGameNumber: 7,
       previousLayerGamesNumber: null,
     },
     {
@@ -176,66 +258,87 @@ const TournamentBrackets = ({ activeLeague }: IProps) => {
     },
     {
       layer: 1,
-      bye: true,
+      bye: false,
       layerGameNumber: 3,
       nextLayerGameNumber: 8,
       previousLayerGamesNumber: [5, 6],
     },
     {
       layer: 1,
-      bye: true,
+      bye: false,
       layerGameNumber: 4,
       nextLayerGameNumber: 8,
       previousLayerGamesNumber: [7, 8],
     },
     {
       layer: 1,
-      bye: true,
+      bye: false,
       layerGameNumber: 5,
       nextLayerGameNumber: 8,
       previousLayerGamesNumber: [9, 10],
     },
     {
       layer: 1,
-      bye: true,
+      bye: false,
       layerGameNumber: 6,
       nextLayerGameNumber: 8,
       previousLayerGamesNumber: [11, 12],
     },
     {
       layer: 1,
-      bye: true,
+      bye: false,
       layerGameNumber: 7,
       nextLayerGameNumber: 8,
       previousLayerGamesNumber: [13, 14],
     },
     {
       layer: 1,
-      bye: true,
+      bye: false,
       layerGameNumber: 8,
       nextLayerGameNumber: 8,
       previousLayerGamesNumber: [15, 16],
     },
     {
       layer: 2,
+      layerGameNumber: 1,
+      nextLayerGameNumber: 1,
+      previousLayerGamesNumber: [1, 2],
     },
     {
       layer: 2,
+      layerGameNumber: 2,
+      nextLayerGameNumber: 1,
+      previousLayerGamesNumber: [3, 4],
     },
     {
       layer: 2,
+      layerGameNumber: 3,
+      nextLayerGameNumber: 2,
+      previousLayerGamesNumber: [5, 6],
     },
     {
       layer: 2,
+      layerGameNumber: 4,
+      nextLayerGameNumber: 2,
+      previousLayerGamesNumber: [7, 8],
     },
     {
       layer: 3,
+      layerGameNumber: 1,
+      nextLayerGameNumber: 1,
+      previousLayerGamesNumber: [1, 2],
     },
     {
       layer: 3,
+      layerGameNumber: 2,
+      nextLayerGameNumber: 1,
+      previousLayerGamesNumber: [3, 4],
     },
     {
       layer: 4,
+      layerGameNumber: 1,
+      nextLayerGameNumber: 0,
+      previousLayerGamesNumber: [1, 2],
     },
   ];
   return (
@@ -275,10 +378,8 @@ const TournamentBrackets = ({ activeLeague }: IProps) => {
               padding={`${getContainerPadding(layer)}px 0px 0px 0px`}
             >
               {test
-                .filter((obj) => obj.layer === layer)
-                .map((_) => (
-                  <BracketsGameRow />
-                ))}
+                .filter((obj) => obj.layer === layer && !obj.bye)
+                .map((obj) => !obj.bye && <BracketsGameRow />)}
             </FlexContainer>
             <FlexContainer
               flexDirection="column"
@@ -288,19 +389,39 @@ const TournamentBrackets = ({ activeLeague }: IProps) => {
             >
               {test
                 .filter((obj) => obj.layer === layer + 1)
-                .map((layerdata) => (
-                  <FlexContainer>
-                    <FlexContainer flexDirection="column">
-                      <StyledArrowUpperVertical
-                        height={Math.floor(getArrowsHeight(layer) / 2)}
-                      />
-                      <StyledArrowLowerVertical
-                        height={Math.ceil(getArrowsHeight(layer) / 2)}
-                      />
+                .map((layerdata) => {
+                  if (
+                    layerdata?.layer === 1 &&
+                    (layerdata?.layerGameNumber === 7 ||
+                      layerdata?.layerGameNumber === 8)
+                  ) {
+                    console.log('herea');
+                  }
+                  const previousGames = test
+                    .filter((game) => game.layer === layerdata.layer - 1)
+                    .filter(
+                      (game) =>
+                        layerdata.previousLayerGamesNumber?.includes(
+                          game?.layerGameNumber,
+                        ) && !game.bye,
+                    );
+                  if (!previousGames || !previousGames.length) {
+                    return null;
+                  }
+                  return (
+                    <FlexContainer>
+                      <FlexContainer flexDirection="column">
+                        <StyledArrowUpperVertical
+                          height={Math.floor(getArrowsHeight(layer) / 2)}
+                        />
+                        <StyledArrowLowerVertical
+                          height={Math.ceil(getArrowsHeight(layer) / 2)}
+                        />
+                      </FlexContainer>
+                      <StyledArrowHorizontal />
                     </FlexContainer>
-                    <StyledArrowHorizontal />
-                  </FlexContainer>
-                ))}
+                  );
+                })}
             </FlexContainer>
           </>
         );

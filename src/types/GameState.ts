@@ -1,4 +1,5 @@
 export enum GameState {
+  created = 'created',
   playing = 'playing',
   waiting = 'waiting',
   postponed = 'postponed',
@@ -6,6 +7,7 @@ export enum GameState {
 }
 
 export enum GameStateLabels {
+  created = 'Created',
   playing = 'Playing',
   waiting = 'Waiting',
   postponed = 'Wostponed',

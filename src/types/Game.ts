@@ -1,3 +1,4 @@
+import { BracketProperties } from './BracketProperties';
 import { GameState } from './GameState';
 import { Match } from './Match';
 import Team from './Team';
@@ -18,6 +19,8 @@ export default class Game {
 
   team2Wins: number;
 
+  bracketProperties?: BracketProperties;
+
   constructor(props: IGame) {
     this.id = props.id;
     this.team1 = props.team1;
@@ -26,5 +29,6 @@ export default class Game {
     this.gameState = props.gameState;
     this.team1Wins = props.team1Wins || 0;
     this.team2Wins = props.team2Wins || 0;
+    this.bracketProperties = props.bracketProperties;
   }
 }

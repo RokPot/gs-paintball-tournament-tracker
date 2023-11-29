@@ -1,5 +1,5 @@
-import { TournamentType } from './TournamentType';
 import { v4 } from 'uuid';
+import { TournamentType } from './TournamentType';
 
 export interface TournamentSettings {
   id: string;
