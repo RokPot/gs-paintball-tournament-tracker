@@ -99,6 +99,8 @@ export const generateGamesForLayer = (
         roundGameNumber: 1,
         winnerNextRoundGameNumber: 1,
         loserNextRoundGameNumber: 2,
+        previousLayerGame1Number: 3,
+        previousLayerGame2Number: 4,
       },
     };
     const game2: Game = {
@@ -125,6 +127,8 @@ export const generateGamesForLayer = (
         roundGameNumber: 2,
         winnerNextRoundGameNumber: 1,
         loserNextRoundGameNumber: 2,
+        previousLayerGame1Number: 1,
+        previousLayerGame2Number: 2,
       },
     };
     games.push(game1, game2);
@@ -171,7 +175,22 @@ export const generateGamesForLayer = (
 
 export const generateGamesForEliminationBrackets = (teams: Team[]) => {
   console.log(teams);
-  const numberOfGames = 14;
+  const numberOfTeams = 32;
+  const teamss: Team[] = [];
+
+  for (let i = 0; i < numberOfTeams; i += 1) {
+    teamss.push(
+      new Team({
+        _id: v4(),
+        id: v4(),
+        teamName: `TBD${i}`,
+        teamTag: `TBD${i}`,
+      }),
+    );
+  }
+
+  const numberOfGames = Math.ceil(numberOfTeams / 2);
+  const isTeamLeftOut = numberOfTeams % 2 > 0;
   const games: Game[] = [];
   let totalNumberOfRounds = 0;
   while (numberOfGames > 2 ** totalNumberOfRounds) {
@@ -179,9 +198,15 @@ export const generateGamesForEliminationBrackets = (teams: Team[]) => {
   }
   totalNumberOfRounds += 1;
 
+  if (isTeamLeftOut) {
+    totalNumberOfRounds += 1;
+  }
+
   for (let round = 0; round < totalNumberOfRounds; round += 1) {
     games.push(...generateGamesForLayer(round, totalNumberOfRounds));
   }
+
+  for (let round = 0; round < totalNumberOfRounds; round += 1) {}
   console.log(games.map((game) => game.bracketProperties));
   return { totalNumberOfRounds, games };
 };

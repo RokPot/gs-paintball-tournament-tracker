@@ -1,1 +1,147 @@
-const BracketsRoundColumn = () => {};
+import { Theme, Typography, css, styled } from '@mui/material';
+import FlexContainer from 'components/shared/FlexContainer';
+import Game from 'types/Game';
+import BracketsGameRow from './BracketsGameRow';
+
+interface VerticalArrowProps {
+  height: number;
+}
+
+const StyledArrowUpperVertical = styled('div')(
+  (props: VerticalArrowProps & { theme?: Theme }) => css`
+    border-top: 2px solid ${props.theme?.palette.primary.light};
+    border-right: 2px solid ${props.theme?.palette.primary.light};
+    width: 70px;
+    margin-top: 0px;
+    height: ${props.height}px;
+    border-left: none;
+    border-radius: 0px 5px 5px 0px;
+    border-collapse: collapse;
+  `,
+);
+const StyledArrowLowerVertical = styled('div')(
+  (props: VerticalArrowProps & { theme?: Theme }) => css`
+    border-bottom: 2px solid ${props.theme?.palette.primary.light};
+    border-right: 2px solid ${props.theme?.palette.primary.light};
+    width: 70px;
+    margin-top: 0px;
+    height: ${props.height}px;
+    border-left: none;
+    border-radius: 0px 5px 5px 0px;
+    border-collapse: collapse;
+  `,
+);
+
+const StyledArrowHorizontal = styled('div')(
+  (props) => css`
+    border: 1.5px solid ${props.theme.palette.primary.light};
+    width: 70px;
+    height: 0.5px;
+    border-left: none;
+    border-radius: 0px 5px 5px 0px;
+  `,
+);
+
+interface IProps {
+  isLastRound: boolean;
+  round: number;
+  currentRoundGames: Game[];
+  previousRoundGames?: Game[];
+  nextRoundGames?: Game[];
+}
+
+const BracketsRoundColumn: React.FC<IProps> = ({
+  isLastRound,
+  round,
+  currentRoundGames,
+  nextRoundGames,
+  previousRoundGames,
+}) => {
+  const teamComponentRowHeight = 40;
+  const firstRoundPadding = 40 + Math.ceil(40 / 4);
+  const firstRowHeight = 2 * teamComponentRowHeight + 20;
+  const layerConstants = [0.5, 3, 8, 18, 5];
+  const getContainerMargin = (depth: number) => {
+    if (isLastRound) {
+      return teamComponentRowHeight;
+    }
+    return layerConstants[depth] * teamComponentRowHeight;
+  };
+  const getArrowMargin = (depth: number) => {
+    return (
+      layerConstants[depth] * teamComponentRowHeight +
+      2 * teamComponentRowHeight -
+      2
+    );
+  };
+  const getContainerPadding = (depth: number) => {
+    return depth === 0 ? 0 : (2 ** depth - 1) * firstRoundPadding;
+  };
+  const getArrowPadding = (depth: number) => {
+    if (depth === 0) {
+      return teamComponentRowHeight - 1;
+    }
+    return (2 ** depth - 1) * firstRoundPadding + teamComponentRowHeight - 1;
+  };
+
+  const getArrowsHeight = (depth: number) => {
+    return 2 ** depth * firstRowHeight + 1 * 2;
+  };
+  return (
+    <FlexContainer
+      flexDirection="column"
+      alignItems="flex-start"
+      padding="0px 0px 0px 8px"
+    >
+      <Typography padding="0px 0px 8px 50px" variant="h3">
+        Round {round + 1}
+      </Typography>
+      <FlexContainer flexDirection="row" alignItems="flex-start">
+        <FlexContainer
+          flexDirection="column"
+          margin={getContainerMargin(round)}
+          padding={`${getContainerPadding(round)}px 0px 0px 0px`}
+        >
+          {currentRoundGames.map(
+            (game) => !game.bracketProperties?.bye && <BracketsGameRow />,
+          )}
+        </FlexContainer>
+        <FlexContainer
+          flexDirection="column"
+          style={{ marginLeft: '-7px', marginRight: '-7px' }}
+          margin={getArrowMargin(round)}
+          padding={`${getArrowPadding(round)}px 0px 0px 0px`}
+        >
+          {nextRoundGames?.map((newLayerGame) => {
+            const previousGames = currentRoundGames?.filter(
+              (game) =>
+                (newLayerGame.bracketProperties?.previousLayerGame1Number ===
+                  game?.bracketProperties?.roundGameNumber ||
+                  newLayerGame.bracketProperties?.previousLayerGame2Number ===
+                    game?.bracketProperties?.roundGameNumber) &&
+                !game.bracketProperties?.bye,
+            );
+            if (!previousGames || !previousGames.length) {
+              return null;
+            }
+            return (
+              <FlexContainer>
+                <FlexContainer flexDirection="column">
+                  <StyledArrowUpperVertical
+                    height={Math.floor(getArrowsHeight(round) / 2)}
+                  />
+                  <StyledArrowLowerVertical
+                    height={Math.ceil(getArrowsHeight(round) / 2)}
+                  />
+                </FlexContainer>
+                <StyledArrowHorizontal />
+              </FlexContainer>
+            );
+          })}
+        </FlexContainer>
+      </FlexContainer>
+    </FlexContainer>
+  );
+};
+
+export default BracketsRoundColumn;
