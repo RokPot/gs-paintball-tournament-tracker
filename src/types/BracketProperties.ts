@@ -1,13 +1,19 @@
 export interface BracketProperties {
-  layer: number;
+  round: number;
 
-  layerGameNumber: number;
+  roundGameNumber: number;
 
-  nextLayerGameNumber: number;
+  winnerNextRoundGameNumber: number;
+
+  loserNextRoundGameNumber?: number;
 
   previousLayerGame1Number?: number;
 
   previousLayerGame2Number?: number;
+
+  isFirstPlaceGame?: boolean;
+
+  isThridPlaceGame?: boolean;
 
   bye: boolean;
 }
