@@ -46,7 +46,6 @@ interface IProps {
   isLastRound: boolean;
   round: number;
   currentRoundGames: Game[];
-  previousRoundGames?: Game[];
   nextRoundGames?: Game[];
 }
 
@@ -55,24 +54,30 @@ const BracketsRoundColumn: React.FC<IProps> = ({
   round,
   currentRoundGames,
   nextRoundGames,
-  previousRoundGames,
 }) => {
   const teamComponentRowHeight = 40;
   const firstRoundPadding = 40 + Math.ceil(40 / 4);
   const firstRowHeight = 2 * teamComponentRowHeight + 20;
-  const layerConstants = [0.5, 3, 8, 18, 5];
-  const getContainerMargin = (depth: number) => {
+  const getContainerMargin = (depth: number): number => {
     if (isLastRound) {
       return teamComponentRowHeight;
     }
-    return layerConstants[depth] * teamComponentRowHeight;
+    if (depth === 0) {
+      return teamComponentRowHeight / 2;
+    }
+    const depthSquare = 2 ** depth;
+    const depthSquareMinusOne = depthSquare - 1;
+    const singleGameRowHeight =
+      2 * teamComponentRowHeight + teamComponentRowHeight / 2;
+
+    return (
+      depthSquareMinusOne * singleGameRowHeight + teamComponentRowHeight / 2
+    );
   };
   const getArrowMargin = (depth: number) => {
-    return (
-      layerConstants[depth] * teamComponentRowHeight +
-      2 * teamComponentRowHeight -
-      2
-    );
+    const containerMargin = getContainerMargin(depth);
+
+    return containerMargin + 2 * teamComponentRowHeight - 2;
   };
   const getContainerPadding = (depth: number) => {
     return depth === 0 ? 0 : (2 ** depth - 1) * firstRoundPadding;
@@ -103,12 +108,13 @@ const BracketsRoundColumn: React.FC<IProps> = ({
           padding={`${getContainerPadding(round)}px 0px 0px 0px`}
         >
           {currentRoundGames.map(
-            (game) => !game.bracketProperties?.bye && <BracketsGameRow />,
+            (game) =>
+              !game.bracketProperties?.bye && <BracketsGameRow game={game} />,
           )}
         </FlexContainer>
         <FlexContainer
           flexDirection="column"
-          style={{ marginLeft: '-7px', marginRight: '-7px' }}
+          style={{ marginLeft: '-7px', marginRight: '-14px' }}
           margin={getArrowMargin(round)}
           padding={`${getArrowPadding(round)}px 0px 0px 0px`}
         >

@@ -36,9 +36,6 @@ const TournamentBrackets = ({ activeLeague }: IProps) => {
             nextRoundGames={games.filter(
               (game) => game.bracketProperties?.round === index + 1,
             )}
-            previousRoundGames={games.filter(
-              (game) => game.bracketProperties?.round === index - 1,
-            )}
           />
         );
       })}

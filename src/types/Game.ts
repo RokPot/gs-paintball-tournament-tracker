@@ -19,7 +19,7 @@ export default class Game {
 
   team2Wins: number;
 
-  bracketProperties?: BracketProperties;
+  bracketProperties: BracketProperties | null;
 
   constructor(props: IGame) {
     this.id = props.id;

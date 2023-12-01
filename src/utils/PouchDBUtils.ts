@@ -77,6 +77,7 @@ export const mapTournamentsFromResponse = (
     const newTournament = new Tournament({
       ...teamInResult,
       leaderboard: [],
+      schedule: [],
     });
     tournaments.push(newTournament);
   });

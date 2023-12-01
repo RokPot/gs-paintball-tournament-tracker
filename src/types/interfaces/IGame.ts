@@ -18,5 +18,5 @@ export interface IGame {
 
   team2Wins?: number;
 
-  bracketProperties?: BracketProperties;
+  bracketProperties: BracketProperties | null;
 }

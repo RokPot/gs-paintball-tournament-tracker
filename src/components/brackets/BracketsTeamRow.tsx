@@ -1,5 +1,7 @@
 import { Typography, css, styled } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
+import React from 'react';
+import Team from 'types/Team';
 
 const StyledTeamNameContainer = styled('div')(
   (props) => css`
@@ -28,7 +30,12 @@ const StyledTeamScoreContainer = styled('div')(
   `,
 );
 
-const BracketsTeamRow = () => {
+interface IProps {
+  team: Team;
+  teamScore: number;
+}
+
+const BracketsTeamRow: React.FC<IProps> = ({ team, teamScore }) => {
   return (
     <FlexContainer flexDirection="row">
       <StyledTeamNameContainer>
@@ -36,7 +43,7 @@ const BracketsTeamRow = () => {
           variant="p1"
           color={(theme) => theme.palette.primary.contrastText}
         >
-          Team 1 asd
+          {team.teamName}
         </Typography>
       </StyledTeamNameContainer>
       <StyledTeamScoreContainer>
@@ -44,7 +51,7 @@ const BracketsTeamRow = () => {
           variant="p1Bold"
           color={(theme) => theme.palette.primary.contrastText}
         >
-          1
+          {teamScore}
         </Typography>
       </StyledTeamScoreContainer>
     </FlexContainer>

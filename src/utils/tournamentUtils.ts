@@ -173,24 +173,38 @@ export const generateGamesForLayer = (
   return games;
 };
 
+const nextLayer = (pls: any) => {
+  const out: any = [];
+  const length = pls.length * 2 + 1;
+  pls.forEach((d: any) => {
+    out.push(d);
+    out.push(length - d);
+  });
+  return out;
+};
+
+export const seeding = (numPlayers: number) => {
+  const rounds = Math.log(numPlayers) / Math.log(2) - 1;
+  let pls = [1, 2];
+  for (let i = 0; i < rounds; i += 1) {
+    pls = nextLayer(pls);
+  }
+  return pls;
+};
+
 export const generateGamesForEliminationBrackets = (teams: Team[]) => {
   console.log(teams);
-  const numberOfTeams = 32;
+  const numberOfTeams = 9;
   const teamss: Team[] = [];
-
-  for (let i = 0; i < numberOfTeams; i += 1) {
-    teamss.push(
-      new Team({
-        _id: v4(),
-        id: v4(),
-        teamName: `TBD${i}`,
-        teamTag: `TBD${i}`,
-      }),
-    );
-  }
-
+  const teamPairs: any = [];
+  console.log('4', seeding(4));
+  console.log('5', seeding(5));
+  console.log('8', seeding(8));
+  console.log('16', seeding(8));
+  console.log('32', seeding(32));
   const numberOfGames = Math.ceil(numberOfTeams / 2);
-  const isTeamLeftOut = numberOfTeams % 2 > 0;
+  console.log(numberOfGames);
+  // const isTeamLeftOut = numberOfTeams % 2 > 0; a
   const games: Game[] = [];
   let totalNumberOfRounds = 0;
   while (numberOfGames > 2 ** totalNumberOfRounds) {
@@ -198,15 +212,57 @@ export const generateGamesForEliminationBrackets = (teams: Team[]) => {
   }
   totalNumberOfRounds += 1;
 
-  if (isTeamLeftOut) {
-    totalNumberOfRounds += 1;
+  if (numberOfTeams < 2 ** totalNumberOfRounds) {
+    console.log(
+      'teams, left out, need to change first layer',
+      2 ** totalNumberOfRounds - numberOfTeams,
+    );
   }
 
   for (let round = 0; round < totalNumberOfRounds; round += 1) {
     games.push(...generateGamesForLayer(round, totalNumberOfRounds));
   }
+  for (let i = 0; i < numberOfTeams; i += 1) {
+    const newTeam = new Team({
+      _id: v4(),
+      id: v4(),
+      teamName: `TBD${i}`,
+      teamTag: `TBD${i}`,
+    });
+    teamss.push(newTeam);
+  }
 
-  for (let round = 0; round < totalNumberOfRounds; round += 1) {}
+  if (totalNumberOfRounds ** 2 === numberOfTeams) {
+    console.log('we have something');
+  }
+
+  const roundOneGames = games.filter(
+    (game) => game.bracketProperties?.round === 0,
+  );
+
+  for (let j = 0, i = 0; j < roundOneGames.length; j += 1) {
+    // assign team 1 2 3 4 5
+    if (i >= teamss.length) {
+      // games[j].bracketProperties!.bye = false;
+      games[j].team1.teamName += 'BYE';
+      games[j].team2.teamName += 'BYE';
+    } else {
+      if (i < teamss.length) {
+        games[j].team1 = teamss[i];
+        i += 1;
+      } else {
+        games[j].bracketProperties!.bye = true;
+      }
+      if (i < teamss.length) {
+        games[j].team2 = teamss[i];
+        i += 1;
+      } else {
+        // games[j].bracketProperties!.bye = false;
+        games[j].team1.teamName += 'BYE';
+        games[j].team2.teamName += 'BYE';
+      }
+    }
+  }
   console.log(games.map((game) => game.bracketProperties));
   return { totalNumberOfRounds, games };
 };

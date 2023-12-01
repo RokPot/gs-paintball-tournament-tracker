@@ -11,7 +11,10 @@ const useTournamentService = () => {
   const addNewTournament = useCallback(
     async (tournament: TournamentDto) => {
       const res = await db.post(tournament);
-      const newTournament = new Tournament(await db.get<TournamentDto>(res.id));
+      const newTournament = new Tournament({
+        ...(await db.get<TournamentDto>(res.id)),
+        schedule: [],
+      });
 
       return newTournament;
     },
@@ -28,9 +31,10 @@ const useTournamentService = () => {
       };
       await db.put(toUpdate);
 
-      const updatedTournament = new Tournament(
-        await db.get<TournamentDto>(tournament._id),
-      );
+      const updatedTournament = new Tournament({
+        ...(await db.get<TournamentDto>(tournament._id)),
+        schedule: [],
+      });
 
       return updatedTournament;
     },
