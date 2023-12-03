@@ -3,12 +3,13 @@ import FlexContainer from 'components/shared/FlexContainer';
 import Game from 'types/Game';
 import BracketsGameRow from './BracketsGameRow';
 
-interface VerticalArrowProps {
-  height: number;
+interface ArrowProps {
+  height?: number;
+  width?: number;
 }
 
 const StyledArrowUpperVertical = styled('div')(
-  (props: VerticalArrowProps & { theme?: Theme }) => css`
+  (props: ArrowProps & { theme?: Theme }) => css`
     border-top: 2px solid ${props.theme?.palette.primary.light};
     border-right: 2px solid ${props.theme?.palette.primary.light};
     width: 70px;
@@ -20,7 +21,7 @@ const StyledArrowUpperVertical = styled('div')(
   `,
 );
 const StyledArrowLowerVertical = styled('div')(
-  (props: VerticalArrowProps & { theme?: Theme }) => css`
+  (props: ArrowProps & { theme?: Theme }) => css`
     border-bottom: 2px solid ${props.theme?.palette.primary.light};
     border-right: 2px solid ${props.theme?.palette.primary.light};
     width: 70px;
@@ -32,10 +33,25 @@ const StyledArrowLowerVertical = styled('div')(
   `,
 );
 
+const StyledArrowPairVertical = styled('div')(
+  (props: ArrowProps & { theme?: Theme }) => css`
+    border-top: 2px solid ${props.theme?.palette.primary.light};
+    border-bottom: 2px solid ${props.theme?.palette.primary.light};
+    border-right: 2px solid ${props.theme?.palette.primary.light};
+    width: ${props.width ?? 70}px;
+    margin-top: 0px;
+    border-left: none;
+    border-radius: 0px 5px 5px 0px;
+    border-collapse: collapse;
+    /* height: 0.5px !important; */
+  `,
+);
+
 const StyledArrowHorizontal = styled('div')(
-  (props) => css`
-    border: 1.5px solid ${props.theme.palette.primary.light};
-    width: 70px;
+  (props: ArrowProps & { theme?: Theme }) => css`
+    border: 1.5px solid ${props.theme?.palette.primary.light};
+    width: ${props.width ?? 70}px;
+
     height: 0.5px;
     border-left: none;
     border-radius: 0px 5px 5px 0px;
@@ -58,6 +74,21 @@ const BracketsRoundColumn: React.FC<IProps> = ({
   const teamComponentRowHeight = 40;
   const firstRoundPadding = 40 + Math.ceil(40 / 4);
   const firstRowHeight = 2 * teamComponentRowHeight + 20;
+  const pairedCurrentRoundGames: Game[][] = [];
+  let newPair: Game[] = [];
+  for (let i = 0; i < currentRoundGames.length; i += 1) {
+    if (newPair.length >= 2) {
+      pairedCurrentRoundGames.push(newPair);
+      newPair = [];
+    }
+    if (i === 2) {
+      currentRoundGames[i].bracketProperties!.bye = true;
+    }
+    newPair.push(currentRoundGames[i]);
+  }
+  if (newPair.length > 0) {
+    pairedCurrentRoundGames.push(newPair);
+  }
   const getContainerMargin = (depth: number): number => {
     if (isLastRound) {
       return teamComponentRowHeight;
@@ -104,21 +135,72 @@ const BracketsRoundColumn: React.FC<IProps> = ({
       <FlexContainer flexDirection="row" alignItems="flex-start">
         <FlexContainer
           flexDirection="column"
-          margin={getContainerMargin(round)}
           padding={`${getContainerPadding(round)}px 0px 0px 0px`}
         >
-          {currentRoundGames.map(
-            (game, index) =>
-              !game.bracketProperties?.bye && (
-                <BracketsGameRow
-                  game={game}
-                  index={index}
-                  arrowHeight={Math.floor(getArrowsHeight(round) / 2)}
-                />
-              ),
-          )}
+          {pairedCurrentRoundGames.map((games, index) => (
+            <FlexContainer
+              flexDirection="row"
+              style={{
+                marginBottom: getContainerMargin(round),
+                marginLeft: '-15px',
+              }}
+              flex="auto"
+              alignItems="stretch"
+            >
+              <FlexContainer
+                flexDirection="column"
+                margin={getContainerMargin(round)}
+                height={`${getContainerMargin(round) + 160}px`}
+              >
+                <div style={{ height: '80px' }}>
+                  {!games[0]?.bracketProperties?.bye && (
+                    <BracketsGameRow
+                      game={games[0]}
+                      index={index}
+                      arrowHeight={Math.floor(getArrowsHeight(round) / 2)}
+                    />
+                  )}
+                </div>
+                <div style={{ height: '80px' }}>
+                  {!games[1]?.bracketProperties?.bye && (
+                    <BracketsGameRow
+                      game={games[1]}
+                      index={index}
+                      arrowHeight={Math.floor(getArrowsHeight(round) / 2)}
+                    />
+                  )}
+                </div>
+              </FlexContainer>
+              {!isLastRound && (
+                <>
+                  {!games[1]?.bracketProperties?.bye &&
+                    !games[0].bracketProperties?.bye && (
+                      <>
+                        <StyledArrowPairVertical
+                          style={{
+                            width: '70px',
+                            marginBottom: '39px',
+                            marginTop: '39px',
+                            marginLeft: '-5px',
+                          }}
+                        />
+                        <FlexContainer>
+                          <StyledArrowHorizontal />
+                        </FlexContainer>
+                      </>
+                    )}
+                  {games[1]?.bracketProperties?.bye ||
+                    (games[0].bracketProperties?.bye && (
+                      <FlexContainer style={{ width: '140px' }}>
+                        <StyledArrowHorizontal width={140} />
+                      </FlexContainer>
+                    ))}
+                </>
+              )}
+            </FlexContainer>
+          ))}
         </FlexContainer>
-        <FlexContainer
+        {/* <FlexContainer
           flexDirection="column"
           style={{ marginLeft: '-7px', marginRight: '-14px' }}
           margin={getArrowMargin(round)}
@@ -138,19 +220,19 @@ const BracketsRoundColumn: React.FC<IProps> = ({
             }
             return (
               <FlexContainer>
-                {/* <FlexContainer flexDirection="column">
+                <FlexContainer flexDirection="column">
                   <StyledArrowUpperVertical
                     height={Math.floor(getArrowsHeight(round) / 2)}
                   />
                   <StyledArrowLowerVertical
                     height={Math.ceil(getArrowsHeight(round) / 2)}
                   />
-                </FlexContainer> */}
+                </FlexContainer>
                 <StyledArrowHorizontal />
               </FlexContainer>
             );
           })}
-        </FlexContainer>
+        </FlexContainer> */}
       </FlexContainer>
     </FlexContainer>
   );

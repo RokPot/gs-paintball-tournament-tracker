@@ -58,7 +58,7 @@ const BracketsGameRow: React.FC<IProps> = ({ game, index, arrowHeight }) => {
     <FlexContainer
       flexDirection="row"
       position="relative"
-      padding="0px 70px 0px 0px"
+      padding="0px 00px 0px 0px"
     >
       <FlexContainer flexDirection="column" position="relative">
         {game.bracketProperties?.isThridPlaceGame && (
@@ -69,14 +69,6 @@ const BracketsGameRow: React.FC<IProps> = ({ game, index, arrowHeight }) => {
 
         <BracketsTeamRow team={game.team1} teamScore={game.team1Wins} />
         <BracketsTeamRow team={game.team2} teamScore={game.team2Wins} />
-      </FlexContainer>
-      <FlexContainer flexDirection="row">
-        {index % 2 === 0 ? (
-          <StyledArrowUpperVertical height={arrowHeight} />
-        ) : (
-          <StyledArrowLowerVertical height={arrowHeight} />
-        )}
-        <StyledArrowHorizontal />
       </FlexContainer>
     </FlexContainer>
   );
