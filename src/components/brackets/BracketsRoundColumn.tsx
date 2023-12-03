@@ -108,8 +108,14 @@ const BracketsRoundColumn: React.FC<IProps> = ({
           padding={`${getContainerPadding(round)}px 0px 0px 0px`}
         >
           {currentRoundGames.map(
-            (game) =>
-              !game.bracketProperties?.bye && <BracketsGameRow game={game} />,
+            (game, index) =>
+              !game.bracketProperties?.bye && (
+                <BracketsGameRow
+                  game={game}
+                  index={index}
+                  arrowHeight={Math.floor(getArrowsHeight(round) / 2)}
+                />
+              ),
           )}
         </FlexContainer>
         <FlexContainer
@@ -132,14 +138,14 @@ const BracketsRoundColumn: React.FC<IProps> = ({
             }
             return (
               <FlexContainer>
-                <FlexContainer flexDirection="column">
+                {/* <FlexContainer flexDirection="column">
                   <StyledArrowUpperVertical
                     height={Math.floor(getArrowsHeight(round) / 2)}
                   />
                   <StyledArrowLowerVertical
                     height={Math.ceil(getArrowsHeight(round) / 2)}
                   />
-                </FlexContainer>
+                </FlexContainer> */}
                 <StyledArrowHorizontal />
               </FlexContainer>
             );

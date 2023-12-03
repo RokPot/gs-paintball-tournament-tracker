@@ -5,14 +5,21 @@ import Tournament from 'types/Tournament';
 import { v4 } from 'uuid';
 
 export const generateGamesForLayer = (
-  round: number,
-  totalNumberOfRounds: number,
+  roundToGenerate: number,
+  totalNumberOfRoundsToGenerate: number,
+  skipFirstRound?: boolean,
 ) => {
+  let round = roundToGenerate;
+  let totalNumberOfRounds = totalNumberOfRoundsToGenerate;
   const games: Game[] = [];
   const numberOfGamesForRound = 2 ** (totalNumberOfRounds - round - 1);
   let currentLayerPairCount = 1;
   let nextRoundGameNumber = 1;
-
+  if (skipFirstRound) {
+    round += 1;
+    //
+    totalNumberOfRounds += 1;
+  }
   if (round + 1 === totalNumberOfRounds) {
     // Finals + third place
     const firstPlaceGame: Game = {
@@ -183,7 +190,7 @@ const nextLayer = (pls: any) => {
   return out;
 };
 
-export const seeding = (numPlayers: number) => {
+export const getTeamsSeeding = (numPlayers: number) => {
   const rounds = Math.log(numPlayers) / Math.log(2) - 1;
   let pls = [1, 2];
   for (let i = 0; i < rounds; i += 1) {
@@ -192,18 +199,35 @@ export const seeding = (numPlayers: number) => {
   return pls;
 };
 
+export const generateFillerGame = (team1: Team, team2: Team) => {
+  return new Game({
+    gameState: GameState.created,
+    id: v4(),
+    matches: [],
+    team1,
+    team1Wins: 0,
+    team2,
+    team2Wins: 0,
+    bracketProperties: {
+      bye: false,
+      round: 0,
+      roundGameNumber: 1,
+      winnerNextRoundGameNumber: 1,
+      loserNextRoundGameNumber: 2,
+      isFirstPlaceGame: false,
+      previousLayerGame1Number: 1,
+      previousLayerGame2Number: 2,
+    },
+  });
+};
+
 export const generateGamesForEliminationBrackets = (teams: Team[]) => {
   console.log(teams);
-  const numberOfTeams = 9;
+  const numberOfTeams = 16;
   const teamss: Team[] = [];
-  console.log('4', seeding(4));
-  console.log('5', seeding(5));
-  console.log('8', seeding(8));
-  console.log('16', seeding(8));
-  console.log('32', seeding(32));
+  const teamsSeeding = getTeamsSeeding(numberOfTeams);
+  console.log('teamsSeeding', teamsSeeding);
   const numberOfGames = Math.ceil(numberOfTeams / 2);
-  console.log(numberOfGames);
-  // const isTeamLeftOut = numberOfTeams % 2 > 0; a
   const games: Game[] = [];
   let totalNumberOfRounds = 0;
   while (numberOfGames > 2 ** totalNumberOfRounds) {
@@ -214,79 +238,54 @@ export const generateGamesForEliminationBrackets = (teams: Team[]) => {
     const newTeam = new Team({
       _id: v4(),
       id: v4(),
-      teamName: `TBD${i}`,
-      teamTag: `TBD${i}`,
+      teamName: `TBD${i + 1}`,
+      teamTag: `TBD${i + 1}`,
     });
     teamss.push(newTeam);
   }
   if (numberOfTeams < 2 ** totalNumberOfRounds) {
-    const numberOfTeamsLeft = numberOfTeams - 2 ** (totalNumberOfRounds - 1);
-    const teamsLeft = teamss.slice(
-      teamss.length - numberOfTeamsLeft,
-      teamss.length,
-    );
-    totalNumberOfRounds -= 1;
-    console.log(
-      'teams, left out, need to change first layer',
-      numberOfTeams - 2 ** totalNumberOfRounds,
-      teamsLeft,
-    );
-    games.push({
-      gameState: GameState.created,
-      id: v4(),
-      matches: [],
-      team1: teamsLeft[0],
-      team1Wins: 0,
-      team2: new Team({
-        _id: v4(),
-        id: v4(),
-        teamName: 'TBD',
-        teamTag: 'TBD',
-      }),
-      team2Wins: 0,
-      bracketProperties: {
-        bye: false,
-        round: 0,
-        roundGameNumber: 1,
-        winnerNextRoundGameNumber: 1,
-        loserNextRoundGameNumber: 2,
-        isFirstPlaceGame: true,
-        previousLayerGame1Number: 1,
-        previousLayerGame2Number: 2,
-      },
-    });
-    for (let round = 0; round < totalNumberOfRounds; round += 1) {
-      games.push(...generateGamesForLayer(round + 1, totalNumberOfRounds));
-    }
+    // this is not done, brackets generation needs to be fixed first
+    // const numberOfTeamsLeft = numberOfTeams - 2 ** (totalNumberOfRounds - 1);
+    // const teamsLeft = teamss.slice(
+    //   teamss.length - numberOfTeamsLeft,
+    //   teamss.length,
+    // );
+    // totalNumberOfRounds -= 1;
+    // console.log(
+    //   'teams, left out, need to change first layer',
+    //   numberOfTeams - 2 ** totalNumberOfRounds,
+    //   teamsLeft,
+    // );
+    // games.push(generateFillerGame(teamsLeft[0], teamsLeft[0]));
+    // for (let round = 0; round <= totalNumberOfRounds + 1; round += 1) {
+    //   games.push(...generateGamesForLayer(round, totalNumberOfRounds, true));
+    // }
+    // totalNumberOfRounds += 1;
   } else {
     for (let round = 0; round < totalNumberOfRounds; round += 1) {
       games.push(...generateGamesForLayer(round, totalNumberOfRounds));
     }
   }
 
-  if (totalNumberOfRounds ** 2 === numberOfTeams) {
-    console.log('we have something');
-  }
-
   const roundOneGames = games.filter(
     (game) => game.bracketProperties?.round === 0,
   );
 
-  for (let j = 12, i = 0; j < roundOneGames.length; j += 1) {
+  for (let j = 0, i = 0; j < roundOneGames.length; j += 1) {
     // assign team 1 2 3 4 5
     if (i >= teamss.length) {
-      // games[j].bracketProperties!.bye = false;
+      // games[j].bracketProperties!.bye = false; a
       games[j].team1.teamName += 'BYE';
       games[j].team2.teamName += 'BYE';
     } else {
       if (i < teamss.length) {
-        games[j].team1 = teamss[i];
+        games[j].team1 = teamss[teamsSeeding[i] - 1];
         i += 1;
       } else {
         games[j].bracketProperties!.bye = true;
       }
       if (i < teamss.length) {
-        games[j].team2 = teamss[i];
+        games[j].team2 = teamss[teamsSeeding[i] - 1];
         i += 1;
       } else {
         // games[j].bracketProperties!.bye = false;
