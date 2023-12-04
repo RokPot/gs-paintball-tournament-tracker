@@ -1,4 +1,4 @@
-import { TournamentStage } from 'types/TournamentStage';
+import { TournamentStatus } from 'types/TournamentStatus';
 
 export interface ITournamentState {
   id: string;
@@ -7,5 +7,7 @@ export interface ITournamentState {
 
   isGameInProgress: boolean;
 
-  stage: TournamentStage;
+  status: TournamentStatus;
+
+  stage: number;
 }

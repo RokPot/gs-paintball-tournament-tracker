@@ -198,6 +198,7 @@ export const getTeamsSeeding = (numPlayers: number) => {
   }
   return pls;
 };
+//
 
 export const generateFillerGame = (team1: Team, team2: Team) => {
   return new Game({
@@ -221,80 +222,177 @@ export const generateFillerGame = (team1: Team, team2: Team) => {
   });
 };
 
+const getNumberOfRounds = (numberOfTeams: number) => {
+  return Math.ceil(Math.log(numberOfTeams) / Math.log(2));
+};
+
+const getTeamPairsForUnevenRound1 = (
+  teams: Team[],
+  startingSeed: number,
+  numberOfTeamsLeft: number,
+  numberOfTeamsInRound2: number,
+) => {
+  const teamPairs: Team[][] = [];
+  for (let j = 0, i = startingSeed; j < numberOfTeamsLeft; j += 1, i -= 1) {
+    teamPairs.push([teams[i - 1], teams[j + numberOfTeamsInRound2]]);
+  }
+  return teamPairs;
+};
+
+export const getGamePairs = (games: Game[]) => {
+  const pairedGames: Game[][] = [];
+  let newPair: Game[] = [];
+  for (let i = 0; i < games.length; i += 1) {
+    if (newPair.length >= 2) {
+      pairedGames.push(newPair);
+      newPair = [];
+    }
+    newPair.push(games[i]);
+  }
+
+  if (newPair.length > 0) {
+    pairedGames.push(newPair);
+  }
+  return pairedGames;
+};
+
 export const generateGamesForEliminationBrackets = (teams: Team[]) => {
-  console.log(teams);
-  const numberOfTeams = 16;
-  const teamss: Team[] = [];
-  const teamsSeeding = getTeamsSeeding(numberOfTeams);
-  console.log('teamsSeeding', teamsSeeding);
-  const numberOfGames = Math.ceil(numberOfTeams / 2);
+  const numberOfTeams = teams.length;
+  let teamsSeeding = getTeamsSeeding(numberOfTeams);
   const games: Game[] = [];
-  let totalNumberOfRounds = 0;
-  while (numberOfGames > 2 ** totalNumberOfRounds) {
-    totalNumberOfRounds += 1;
-  }
-  totalNumberOfRounds += 1;
-  for (let i = 0; i < numberOfTeams; i += 1) {
-    const newTeam = new Team({
-      _id: v4(),
-      id: v4(),
-      teamName: `TBD${i + 1}`,
-      teamTag: `TBD${i + 1}`,
+
+  const totalNumberOfRounds = getNumberOfRounds(numberOfTeams);
+  const numberOfTeamsInRound1 = 2 ** totalNumberOfRounds;
+  if (numberOfTeams < numberOfTeamsInRound1) {
+    const numberOfTeamsInRound2 = 2 ** (totalNumberOfRounds - 1);
+    const numberOfTeamsLeft = numberOfTeams - numberOfTeamsInRound2;
+
+    for (let round = 0; round <= totalNumberOfRounds; round += 1) {
+      games.push(...generateGamesForLayer(round, totalNumberOfRounds));
+    }
+    teamsSeeding = getTeamsSeeding(numberOfTeamsInRound2);
+    const teamPairsForRound1 = getTeamPairsForUnevenRound1(
+      teams,
+      numberOfTeamsInRound2,
+      numberOfTeamsLeft,
+      numberOfTeamsInRound2,
+    );
+    const roundTwoGames = games.filter(
+      (game) => game.bracketProperties?.round === 1,
+    );
+
+    for (let j = 0, i = 0; j < roundTwoGames.length; j += 1) {
+      if (roundTwoGames[j].bracketProperties?.isThridPlaceGame) {
+        continue;
+      }
+      if (i < teams.length) {
+        if (i < teams.length) {
+          const team1 = teams[teamsSeeding[i] - 1];
+
+          roundTwoGames[j].team1 = team1;
+
+          i += 1;
+        }
+        if (i < teams.length) {
+          const team2 = teams[teamsSeeding[i] - 1];
+
+          roundTwoGames[j].team2 = team2;
+
+          i += 1;
+        }
+      }
+    }
+    const roundOneGames = games.filter(
+      (game) => game.bracketProperties?.round === 0,
+    );
+    roundOneGames.forEach((game) => {
+      game.bracketProperties!.bye = true;
     });
-    teamss.push(newTeam);
-  }
-  if (numberOfTeams < 2 ** totalNumberOfRounds) {
-    // this is not done, brackets generation needs to be fixed first
-    // const numberOfTeamsLeft = numberOfTeams - 2 ** (totalNumberOfRounds - 1);
-    // const teamsLeft = teamss.slice(
-    //   teamss.length - numberOfTeamsLeft,
-    //   teamss.length,
-    // );
-    // totalNumberOfRounds -= 1;
-    // console.log(
-    //   'teams, left out, need to change first layer',
-    //   numberOfTeams - 2 ** totalNumberOfRounds,
-    //   teamsLeft,
-    // );
-    // games.push(generateFillerGame(teamsLeft[0], teamsLeft[0]));
-    // for (let round = 0; round <= totalNumberOfRounds + 1; round += 1) {
-    //   games.push(...generateGamesForLayer(round, totalNumberOfRounds, true));
-    // }
-    // totalNumberOfRounds += 1;
+    const pairedCurrentRoundGames: Game[][] = [];
+
+    let newPair: Game[] = [];
+    for (let i = 0; i < roundOneGames.length; i += 1) {
+      if (newPair.length >= 2) {
+        pairedCurrentRoundGames.push(newPair);
+        newPair = [];
+      }
+
+      newPair.push(roundOneGames[i]);
+    }
+
+    if (newPair.length > 0) {
+      pairedCurrentRoundGames.push(newPair);
+    }
+
+    for (let j = 0; j < teamPairsForRound1.length; j += 1) {
+      const teamIds = [
+        teamPairsForRound1[j][0].id,
+        teamPairsForRound1[j][1].id,
+      ];
+      const indexOfNextGame = roundTwoGames.findIndex(
+        (roundTwoGame) =>
+          teamIds.includes(roundTwoGame.team1.id) ||
+          teamIds.includes(roundTwoGame.team2.id),
+      );
+      if (indexOfNextGame >= 0) {
+        const round2Game = roundTwoGames[indexOfNextGame];
+
+        let firstRoundGameIndex = indexOfNextGame * 2;
+        // If first round bye is set to false, that means we already filled its place, and this should go to the next game
+        const isFirstGameSet =
+          games[firstRoundGameIndex].bracketProperties?.bye === false;
+
+        firstRoundGameIndex += isFirstGameSet ? 1 : 0;
+        const round1Team1 = teamPairsForRound1[j][0];
+        const round1Team2 = teamPairsForRound1[j][1];
+        if ([round1Team1.id, round1Team2.id].includes(round2Game.team1.id)) {
+          round2Game.team1 = new Team({
+            _id: v4(),
+            id: v4(),
+            teamName: `TBD round1`,
+            teamTag: `TBD round1`,
+          });
+        }
+        if ([round1Team1.id, round1Team2.id].includes(round2Game.team2.id)) {
+          round2Game.team2 = new Team({
+            _id: v4(),
+            id: v4(),
+            teamName: `TBD round1`,
+            teamTag: `TBD round1`,
+          });
+        }
+        games[firstRoundGameIndex].team1 = round1Team1;
+        games[firstRoundGameIndex].team2 = round1Team2;
+        games[firstRoundGameIndex].bracketProperties!.bye = false;
+      }
+    }
   } else {
     for (let round = 0; round < totalNumberOfRounds; round += 1) {
       games.push(...generateGamesForLayer(round, totalNumberOfRounds));
     }
-  }
+    const roundOneGames = games.filter(
+      (game) => game.bracketProperties?.round === 0,
+    );
 
-  const roundOneGames = games.filter(
-    (game) => game.bracketProperties?.round === 0,
-  );
-
-  for (let j = 0, i = 0; j < roundOneGames.length; j += 1) {
-    // assign team 1 2 3 4 5
-    if (i >= teamss.length) {
-      // games[j].bracketProperties!.bye = false; a
-      games[j].team1.teamName += 'BYE';
-      games[j].team2.teamName += 'BYE';
-    } else {
-      if (i < teamss.length) {
-        games[j].team1 = teamss[teamsSeeding[i] - 1];
-        i += 1;
-      } else {
-        games[j].bracketProperties!.bye = true;
-      }
-      if (i < teamss.length) {
-        games[j].team2 = teamss[teamsSeeding[i] - 1];
-        i += 1;
-      } else {
-        // games[j].bracketProperties!.bye = false;
+    for (let j = 0, i = 0; j < roundOneGames.length; j += 1) {
+      if (i >= teams.length) {
         games[j].team1.teamName += 'BYE';
         games[j].team2.teamName += 'BYE';
+      } else {
+        if (i < teams.length) {
+          games[j].team1 = teams[teamsSeeding[i] - 1];
+          i += 1;
+        } else {
+          games[j].bracketProperties!.bye = true;
+        }
+        if (i < teams.length) {
+          games[j].team2 = teams[teamsSeeding[i] - 1];
+          i += 1;
+        }
       }
     }
   }
-  console.log(games.map((game) => game.bracketProperties));
+
   return { totalNumberOfRounds, games };
 };
 

@@ -2,7 +2,7 @@ import FlexContainer from 'components/shared/FlexContainer';
 import Game from 'types/Game';
 import { GameState } from 'types/GameState';
 import Tournament from 'types/Tournament';
-import { TournamentStageLabels } from 'types/TournamentStage';
+import { TournamentStatusLabels } from 'types/TournamentStatus';
 import { TournamentTypeLabels } from 'types/TournamentType';
 import TournamentDetailsInfoRow from './TournamentDetailsInfoRow';
 
@@ -47,7 +47,7 @@ const TournamentDetailsList = ({ tournament }: IProps) => {
       >
         <TournamentDetailsInfoRow
           title="Status"
-          value={TournamentStageLabels[tournament.state.stage]}
+          value={TournamentStatusLabels[tournament.state.status]}
         />
         <TournamentDetailsInfoRow
           title="Tournament date"

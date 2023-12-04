@@ -62,7 +62,6 @@ const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
       );
     },
   });
-  console.log(!formik.isValid || !formik.dirty, !formik.isValid, !formik.dirty);
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
   return (
     <FlexContainer

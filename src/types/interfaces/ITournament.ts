@@ -4,7 +4,7 @@ import Team from 'types/Team';
 import { TournamentGroup } from 'types/TournamentGroup';
 import { TournamentSchedule } from 'types/TournamentSchedule';
 import { TournamentSettings } from 'types/TournamentSettings';
-import { TournamentState } from 'types/TournamentState';
+import TournamentState from 'types/TournamentState';
 import { PouchDBDto } from 'types/dto/PouchDBDto';
 
 export interface ITournament extends PouchDBDto {

@@ -1,19 +1,22 @@
-import { TournamentStage } from './TournamentStage';
+import { TournamentStatus } from './TournamentStatus';
 import { ITournamentState } from './interfaces/ITournamentState';
 
-export class TournamentState {
+export default class TournamentState {
   id: string;
 
   isTournamentFinished: boolean;
 
   isGameInProgress: boolean;
 
-  stage: TournamentStage;
+  status: TournamentStatus;
+
+  stage: number;
 
   constructor(props: ITournamentState) {
     this.id = props.id;
     this.isTournamentFinished = props.isTournamentFinished;
     this.isGameInProgress = props.isGameInProgress;
-    this.stage = props.stage;
+    this.status = props.status;
+    this.stage = props.stage || 0;
   }
 }

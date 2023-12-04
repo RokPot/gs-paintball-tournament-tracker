@@ -36,7 +36,7 @@ import { useCallback, useEffect, useState } from 'react';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
 import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
 import Tournament from 'types/Tournament';
-import { TournamentStage } from 'types/TournamentStage';
+import { TournamentStatus } from 'types/TournamentStatus';
 
 const StyledLoadingContainer = styled('div')(
   (props) => css`
@@ -119,12 +119,12 @@ const TournamentPage = () => {
     }
 
     const unfinishedLeagueTournaments = activeLeague?.tournaments.filter(
-      (tournament) => tournament.state.stage !== TournamentStage.finished,
+      (tournament) => tournament.state.status !== TournamentStatus.finished,
     );
 
     if (unfinishedLeagueTournaments?.length > 0) {
       const inProgressTournament = activeLeague?.tournaments.find(
-        (tournament) => tournament.state.stage === TournamentStage.inProgress,
+        (tournament) => tournament.state.status === TournamentStatus.inProgress,
       );
 
       if (inProgressTournament) {
@@ -169,8 +169,8 @@ const TournamentPage = () => {
           </Typography>
           <FlexContainer margin={8}>
             {!!selectedTournament &&
-              [TournamentStage.created].includes(
-                selectedTournament.state.stage,
+              [TournamentStatus.created].includes(
+                selectedTournament.state.status,
               ) && (
                 <Button variant="contained" onClick={generateTournament}>
                   <Typography variant="p1">

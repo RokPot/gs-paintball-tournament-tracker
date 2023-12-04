@@ -8,11 +8,11 @@ import {
   DefaultTournamentSettings,
   TournamentSettings,
 } from './TournamentSettings';
-import { TournamentState } from './TournamentState';
 import { TournamentDto } from './dto/TournamentDto';
 import { IPouchDB } from './interfaces/IPouchDB';
 import { ITournament } from './interfaces/ITournament';
 import { TournamentSchedule } from './TournamentSchedule';
+import TournamentState from './TournamentState';
 
 export default class Tournament extends IPouchDB {
   id: string;

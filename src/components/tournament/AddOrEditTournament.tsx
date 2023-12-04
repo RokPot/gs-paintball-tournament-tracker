@@ -28,8 +28,8 @@ import {
   DefaultTournamentSettings,
   TournamentSettings,
 } from 'types/TournamentSettings';
-import { TournamentStage } from 'types/TournamentStage';
-import { TournamentState } from 'types/TournamentState';
+import TournamentState from 'types/TournamentState';
+import { TournamentStatus } from 'types/TournamentStatus';
 import { TournamentType, TournamentTypeLabels } from 'types/TournamentType';
 import { v4 } from 'uuid';
 
@@ -128,7 +128,8 @@ const AddOrEditTournament = ({
             isGameInProgress: tournament?.state?.isGameInProgress || false,
             isTournamentFinished:
               tournament?.state?.isTournamentFinished || false,
-            stage: tournament?.state?.stage || TournamentStage.created,
+            status: tournament?.state?.status || TournamentStatus.created,
+            stage: tournament?.state?.stage || 0,
           }),
           teams: values.teams,
           leaderboard: tournament?.leaderboard || [],

@@ -14,9 +14,8 @@ interface IProps {
   game?: Game;
 }
 
-function DesktopScoreboard({ className, startStopMatch, game }: IProps) {
+const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
   const [isTeamUpsertModalOpen, setIsTeamUpsertModalOpen] = useState(false);
-  console.log(game);
   return (
     <FlexContainer
       justifyContent="center"
@@ -138,15 +137,15 @@ function DesktopScoreboard({ className, startStopMatch, game }: IProps) {
       </CustomModal>
     </FlexContainer>
   );
-}
+};
 
 export default styled(DesktopScoreboard)(
   (props) => `
     height: 100%;
-    
+
     .custom-card {
       box-shadow: ${alpha(props.theme.palette.primary.main, 0.5)} 0px 5px 15px;
-      border: solid 1px ${alpha(props.theme.palette.primary.main, 0.2)};  
+      border: solid 1px ${alpha(props.theme.palette.primary.main, 0.2)};
     }
 
     .counter-card {
