@@ -10,14 +10,12 @@ interface IProps {
   activeLeague: League;
 }
 
-const TournamentGroups = ({ activeLeague }: IProps) => {
+const TournamentGroups: React.FC<IProps> = ({ activeLeague }) => {
   const selectedTournament = activeLeague?.activeTournament;
 
   if (!selectedTournament?.groups?.length) {
     return (
       <FlexContainer
-        width="100%"
-        height="100%"
         justifyContent="center"
         alignItems="center"
         flexDirection="column"

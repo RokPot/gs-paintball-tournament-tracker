@@ -29,6 +29,7 @@ const StyledTabs = styled((props: StyledTabsProps) => (
     width: '100%',
     backgroundColor: theme.palette.primary.light,
   },
+  borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
 const StyledTab = styled((props: StyledTabProps) => (

@@ -1,4 +1,4 @@
-import { Typography } from '@mui/material';
+import { Typography, css, styled } from '@mui/material';
 import BracketsRoundColumn from 'components/brackets/BracketsRoundColumn';
 import FlexContainer from 'components/shared/FlexContainer';
 import League from 'types/League';
@@ -6,6 +6,15 @@ import Team from 'types/Team';
 import { TournamentType } from 'types/TournamentType';
 import { generateGamesForEliminationBrackets } from 'utils/tournamentUtils';
 import { v4 } from 'uuid';
+
+const StyledRoundRobinCell = styled('div')(
+  (props) => css`
+    border-left: 1px solid ${props.theme.palette.divider};
+    border-bottom: 1px solid ${props.theme.palette.divider};
+    height: 70px;
+    width: 70px;
+  `,
+);
 
 interface IProps {
   activeLeague: League;
@@ -17,7 +26,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
     return null;
   }
 
-  const numberOfTeams = 8;
+  const numberOfTeams = 5;
   const teamss: Team[] = [];
   for (let i = 0; i < numberOfTeams; i += 1) {
     const newTeam = new Team({
@@ -61,6 +70,27 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
                 )}
                 round={index}
               />
+            );
+          })}
+        </FlexContainer>
+      )}
+      {selectedTournament.settings.type === TournamentType.roundRobin && (
+        <FlexContainer
+          flexDirection="row"
+          alignItems="flex-start"
+          padding="20px 0px 0px 0px"
+        >
+          {[...Array(numberOfTeams + 1)].map((row, columnIndex) => {
+            return (
+              <FlexContainer flexDirection="column">
+                {[...Array(numberOfTeams + 1)].map((row, rowIndex) => {
+                  return (
+                    <StyledRoundRobinCell>
+                      {columnIndex} {rowIndex}
+                    </StyledRoundRobinCell>
+                  );
+                })}{' '}
+              </FlexContainer>
             );
           })}
         </FlexContainer>

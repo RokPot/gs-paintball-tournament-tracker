@@ -3,6 +3,7 @@ import FlexContainer from 'components/shared/FlexContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import TeamsShortList from 'components/teams/TeamShortList';
 import League from 'types/League';
+import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
 import TournamentDetailsList from './TournamentDetailsList';
 
 interface IProps {
@@ -12,8 +13,19 @@ interface IProps {
 const TournamentActivity = ({ activeLeague }: IProps) => {
   const selectedTournament = activeLeague?.activeTournament;
 
-  if (!selectedTournament || !activeLeague) {
-    return null;
+  if (!selectedTournament?.groups?.length) {
+    return (
+      <FlexContainer
+        justifyContent="center"
+        alignItems="center"
+        flexDirection="column"
+      >
+        <EmptyState />
+        <Typography variant="h3">
+          Tournament has not yet been initialized.
+        </Typography>
+      </FlexContainer>
+    );
   }
 
   return (
