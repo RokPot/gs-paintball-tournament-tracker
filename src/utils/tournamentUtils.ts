@@ -7,19 +7,14 @@ import { v4 } from 'uuid';
 export const generateGamesForLayer = (
   roundToGenerate: number,
   totalNumberOfRoundsToGenerate: number,
-  skipFirstRound?: boolean,
 ) => {
-  let round = roundToGenerate;
-  let totalNumberOfRounds = totalNumberOfRoundsToGenerate;
+  const round = roundToGenerate;
+  const totalNumberOfRounds = totalNumberOfRoundsToGenerate;
   const games: Game[] = [];
   const numberOfGamesForRound = 2 ** (totalNumberOfRounds - round - 1);
   let currentLayerPairCount = 1;
   let nextRoundGameNumber = 1;
-  if (skipFirstRound) {
-    round += 1;
-    //
-    totalNumberOfRounds += 1;
-  }
+
   if (round + 1 === totalNumberOfRounds) {
     // Finals + third place
     const firstPlaceGame: Game = {
@@ -180,23 +175,23 @@ export const generateGamesForLayer = (
   return games;
 };
 
-const nextLayer = (pls: any) => {
-  const out: any = [];
-  const length = pls.length * 2 + 1;
-  pls.forEach((d: any) => {
-    out.push(d);
-    out.push(length - d);
+const nextRoundSeeds = (teamSeeds: number[]) => {
+  const nextRoundSeedsArray: any = [];
+  const teamSeedsLength = teamSeeds.length * 2 + 1;
+  teamSeeds.forEach((index: number) => {
+    nextRoundSeedsArray.push(index);
+    nextRoundSeedsArray.push(teamSeedsLength - index);
   });
-  return out;
+  return nextRoundSeedsArray;
 };
 
 export const getTeamsSeeding = (numPlayers: number) => {
   const rounds = Math.log(numPlayers) / Math.log(2) - 1;
-  let pls = [1, 2];
+  let teamSeeds = [1, 2];
   for (let i = 0; i < rounds; i += 1) {
-    pls = nextLayer(pls);
+    teamSeeds = nextRoundSeeds(teamSeeds);
   }
-  return pls;
+  return teamSeeds;
 };
 //
 

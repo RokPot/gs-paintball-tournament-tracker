@@ -6,6 +6,7 @@ import { useState } from 'react';
 import League from 'types/League';
 import Team from 'types/Team';
 import { TournamentType } from 'types/TournamentType';
+import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
 import { generateGamesForEliminationBrackets } from 'utils/tournamentUtils';
 import { v4 } from 'uuid';
 
@@ -30,17 +31,8 @@ const StyledRoundRobinCell = styled('div')(
         )} !important`
       : 'inherit'};
     background-color: ${props.highlight
-      ? alpha(props.theme?.palette.primary.light || '#000000', 0.3)
+      ? alpha(props.theme?.palette.primary.main || '#000000', 0.1)
       : 'inherit'};
-  `,
-);
-
-const StyledRoundRobinTableContainer = styled('div')(
-  (props) => css`
-    border-right: 1px solid ${props.theme?.palette.divider};
-    border-top: 1px solid ${props.theme?.palette.divider};
-    display: flex;
-    flex-direction: row;
   `,
 );
 
@@ -77,16 +69,12 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
   const { games, totalNumberOfRounds } = generateGamesForEliminationBrackets(
     activeLeague?.activeTournament?.teams || [],
   );
-
+  generateGamesForRoundRobin(teamss);
   const onMouseEnterCell = (row: number, column: number) => {
-    console.log('Mouse entered a cell', row, column);
-    console.log('Row', row, column);
-    console.log('Mouse entered a cell', row, column);
     setHoveredColumn(column);
     setHoveredRow(row);
   };
-  const onMouseLeaveCell = (row: number, column: number) => {
-    console.log('Mouse left a cell', row, column);
+  const onMouseLeaveCell = () => {
     setHoveredColumn(null);
     setHoveredRow(null);
   };
@@ -125,6 +113,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
       )}
       {selectedTournament.settings.type === TournamentType.roundRobin && (
         <FlexContainer flexDirection="column">
+          <Typography variant="h3">Group 1</Typography>
           <FlexContainer flexDirection="row">
             <FlexContainer
               flexDirection="row"
@@ -152,9 +141,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
                             onMouseEnter={() =>
                               onMouseEnterCell(rowIndex, columnIndex)
                             }
-                            onMouseLeave={() =>
-                              onMouseLeaveCell(rowIndex, columnIndex)
-                            }
+                            onMouseLeave={onMouseLeaveCell}
                           >
                             <Avatar
                               variant="rounded"
@@ -191,9 +178,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
                             onMouseEnter={() =>
                               onMouseEnterCell(rowIndex, columnIndex)
                             }
-                            onMouseLeave={() =>
-                              onMouseLeaveCell(rowIndex, columnIndex)
-                            }
+                            onMouseLeave={onMouseLeaveCell}
                           >
                             <Avatar
                               variant="rounded"
@@ -237,15 +222,13 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
                           onMouseEnter={() =>
                             onMouseEnterCell(rowIndex, columnIndex)
                           }
-                          onMouseLeave={() =>
-                            onMouseLeaveCell(rowIndex, columnIndex)
-                          }
+                          onMouseLeave={onMouseLeaveCell}
                           highlight={
                             hoveredColumn === columnIndex ||
                             hoveredRow === rowIndex
                           }
                         >
-                          <Typography variant="p2Medium">
+                          <Typography variant="p1Medium">
                             {columnIndex} - {rowIndex}
                           </Typography>
                         </StyledRoundRobinCell>

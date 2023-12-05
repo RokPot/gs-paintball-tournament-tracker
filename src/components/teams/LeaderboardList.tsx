@@ -125,7 +125,7 @@ const LeaderboardList: React.FC<IProps> = ({
         </Typography>
       )}
       {(!!teams?.length || (showHeader && !teams?.length)) && (
-        <CustomDataTable height="100%" columns={columns} rows={teams || []} />
+        <CustomDataTable height="350px" columns={columns} rows={teams || []} />
       )}
     </FlexContainer>
   );
