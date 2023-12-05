@@ -1,6 +1,6 @@
-import LoadingIndicator, { LoadingIndicatorProps } from './LoadingIndicator';
 import { experimentalStyled as styled, Theme } from '@mui/material/styles';
 import { forwardRef, FunctionComponent, memo, MouseEvent } from 'react';
+import LoadingIndicator, { LoadingIndicatorProps } from './LoadingIndicator';
 
 interface FlexContainerProps {
   children?: any;
@@ -56,6 +56,8 @@ interface FlexContainerProps {
   loadingProps?: LoadingIndicatorProps;
   ref?: any;
   onClick?: (e: MouseEvent<HTMLDivElement>) => void;
+  onMouseEnter?: (e: MouseEvent<HTMLDivElement>) => void;
+  onMouseLeave?: (e: MouseEvent<HTMLDivElement>) => void;
   title?: string;
   highlightRowOnHover?: boolean;
 }
@@ -93,6 +95,8 @@ const FlexContainer: FunctionComponent<FlexContainerProps> = memo(
       loading,
       loadingProps,
       onClick,
+      onMouseEnter,
+      onMouseLeave,
       title,
     } = props;
 
@@ -103,6 +107,8 @@ const FlexContainer: FunctionComponent<FlexContainerProps> = memo(
     return (
       <div
         onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
         className={className}
         style={{
           display,
@@ -132,12 +138,12 @@ const FlexContainer: FunctionComponent<FlexContainerProps> = memo(
           ...style,
         }}
         ref={ref as any}
-        {...(!!title ? { title } : {})}
+        {...(title ? { title } : {})}
       >
         {children}
       </div>
     );
-  })
+  }),
 );
 
 FlexContainer.defaultProps = {
@@ -172,5 +178,5 @@ export default styled(FlexContainer)(
         : ''
     }
   }
-`
+`,
 );

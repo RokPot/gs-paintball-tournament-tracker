@@ -8,10 +8,15 @@ import LeaderboardTeam from 'types/LeadeboardTeam';
 
 interface IProps {
   teams?: LeaderboardTeam[];
+  showHeader?: boolean;
   className?: string;
 }
 
-function LeaderboardList({ teams, className }: IProps) {
+const LeaderboardList: React.FC<IProps> = ({
+  teams,
+  className,
+  showHeader,
+}) => {
   const getColor = (index: number) => {
     switch (index) {
       case 0:
@@ -24,7 +29,12 @@ function LeaderboardList({ teams, className }: IProps) {
         return '#172032';
     }
   };
-
+  console.log(
+    'unga',
+    !!teams?.length || (showHeader && !teams?.length),
+    showHeader,
+    teams?.length,
+  );
   const columns: GridColDef<LeaderboardTeam>[] = [
     {
       field: 'rank',
@@ -114,11 +124,11 @@ function LeaderboardList({ teams, className }: IProps) {
           There is currently no leaderboard available.
         </Typography>
       )}
-      {!!teams?.length && (
+      {(!!teams?.length || (showHeader && !teams?.length)) && (
         <CustomDataTable height="100%" columns={columns} rows={teams || []} />
       )}
     </FlexContainer>
   );
-}
+};
 
 export default LeaderboardList;

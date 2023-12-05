@@ -29,7 +29,7 @@ interface AddTeam {
   members: TeamMember[];
 }
 
-function QuickAddTeam({ onAccept, onCancel, team }: IProps) {
+const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
   const theme = useTheme();
   const formik = useFormik<AddTeam>({
     initialValues: {
@@ -192,6 +192,6 @@ function QuickAddTeam({ onAccept, onCancel, team }: IProps) {
       </FlexContainer>
     </FlexContainer>
   );
-}
+};
 
 export default QuickAddTeam;
