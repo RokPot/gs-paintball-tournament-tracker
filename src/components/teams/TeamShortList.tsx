@@ -10,7 +10,11 @@ interface IProps {
   onRemoveTeam?: (team: Team, index: number) => void;
 }
 
-function TeamsShortList({ teams, showRemoveButton, onRemoveTeam }: IProps) {
+const TeamsShortList: React.FC<IProps> = ({
+  teams,
+  showRemoveButton,
+  onRemoveTeam,
+}) => {
   return (
     <FlexContainer width="100%" flexDirection="column">
       {teams?.map((team: Team, index: number) => (
@@ -54,6 +58,6 @@ function TeamsShortList({ teams, showRemoveButton, onRemoveTeam }: IProps) {
       ))}
     </FlexContainer>
   );
-}
+};
 
 export default TeamsShortList;

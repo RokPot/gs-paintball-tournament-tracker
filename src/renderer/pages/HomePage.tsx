@@ -10,6 +10,9 @@ import {
   css,
 } from '@mui/material';
 import PageContainer from 'components/shared/PageContainer';
+import Team from 'types/Team';
+import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
+import { v4 } from 'uuid';
 
 const StyledRootContainer = styled('div')(
   (props) => css`
@@ -17,7 +20,7 @@ const StyledRootContainer = styled('div')(
     height: 100%;
     width: 100%;
     flex-direction: column;
-  `
+  `,
 );
 const StyledStackingContainer = styled('div')(
   (props) => css`
@@ -25,9 +28,21 @@ const StyledStackingContainer = styled('div')(
     width: 100%;
     flex-direction: row;
     gap: 15px;
-  `
+  `,
 );
 const HomePage: React.FC = () => {
+  const numberOfTeams = 10;
+  const teamss: Team[] = [];
+  for (let i = 0; i < numberOfTeams; i += 1) {
+    const newTeam = new Team({
+      _id: v4(),
+      id: v4(),
+      teamName: `TBD${i + 1}`,
+      teamTag: `TBD${i + 1}`,
+    });
+    teamss.push(newTeam);
+  }
+  generateGamesForRoundRobin(teamss);
   return (
     <PageContainer>
       <Typography variant="h6">Leagues</Typography>
@@ -50,7 +65,7 @@ const HomePage: React.FC = () => {
                 R
               </Avatar>
             }
-            action={<IconButton aria-label="settings"></IconButton>}
+            action={<IconButton aria-label="settings" />}
             title="Shrimp and Chorizo Paella"
             subheader="September 14, 2016"
           />
@@ -62,7 +77,7 @@ const HomePage: React.FC = () => {
                 R
               </Avatar>
             }
-            action={<IconButton aria-label="settings"></IconButton>}
+            action={<IconButton aria-label="settings" />}
             title="Shrimp and Chorizo Paella"
             subheader="September 14, 2016"
           />
@@ -74,7 +89,7 @@ const HomePage: React.FC = () => {
                 R
               </Avatar>
             }
-            action={<IconButton aria-label="settings"></IconButton>}
+            action={<IconButton aria-label="settings" />}
             title="Shrimp and Chorizo Paella"
             subheader="September 14, 2016"
           />

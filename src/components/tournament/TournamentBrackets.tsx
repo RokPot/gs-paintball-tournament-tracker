@@ -66,10 +66,11 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
     });
     teamss.push(newTeam);
   }
+  generateGamesForRoundRobin(teamss);
+
   const { games, totalNumberOfRounds } = generateGamesForEliminationBrackets(
     activeLeague?.activeTournament?.teams || [],
   );
-  generateGamesForRoundRobin(teamss);
   const onMouseEnterCell = (row: number, column: number) => {
     setHoveredColumn(column);
     setHoveredRow(row);
