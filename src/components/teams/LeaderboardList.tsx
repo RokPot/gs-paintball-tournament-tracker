@@ -29,12 +29,7 @@ const LeaderboardList: React.FC<IProps> = ({
         return '#172032';
     }
   };
-  console.log(
-    'unga',
-    !!teams?.length || (showHeader && !teams?.length),
-    showHeader,
-    teams?.length,
-  );
+
   const columns: GridColDef<LeaderboardTeam>[] = [
     {
       field: 'rank',

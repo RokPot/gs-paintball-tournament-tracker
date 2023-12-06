@@ -124,7 +124,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
               {[...Array(numberOfTeams + 1)].map((row, columnIndex) => {
                 return (
                   <FlexContainer flexDirection="column">
-                    {[...Array(numberOfTeams + 1)].map((row, rowIndex) => {
+                    {[...Array(numberOfTeams + 1)].map((row2, rowIndex) => {
                       if (columnIndex === 0 && rowIndex === 0) {
                         return (
                           <StyledRoundRobinCell

@@ -14,16 +14,8 @@ import Team from 'types/Team';
 import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
 import { v4 } from 'uuid';
 
-const StyledRootContainer = styled('div')(
-  (props) => css`
-    display: flex;
-    height: 100%;
-    width: 100%;
-    flex-direction: column;
-  `,
-);
 const StyledStackingContainer = styled('div')(
-  (props) => css`
+  () => css`
     display: flex;
     width: 100%;
     flex-direction: row;
