@@ -17,6 +17,16 @@ const checkIfthereAreSameTeamsRoundGame = (
   return isFirstIndiceTheSame || isSecondIndiceTheSame;
 };
 
+const removeIndicesIndexes = (
+  indicesIndexesFree: number[],
+  game1Index: number,
+  game2Index: number,
+) => {
+  indicesIndexesFree.splice(game1Index, 1);
+  indicesIndexesFree.splice(game2Index, 1);
+  return indicesIndexesFree;
+};
+
 const seekAndReplaceTeamsWithOtherRoundsIfTheyPlaySequentially = (
   reorderedIndices: GameIndices[],
   currentIndiceRound: GameIndices,
@@ -79,7 +89,7 @@ const seekAndReplaceTeamsWithOtherRoundsIfTheyPlaySequentially = (
 export const reorderRoundRobinGames = (
   games: Game[],
   indices: number[][],
-  numberOfGames: number,
+  totalNumberOfRounds: number,
 ) => {
   let reorderedIndices: GameIndices[] = [];
 
@@ -114,8 +124,9 @@ export const reorderRoundRobinGames = (
           );
         reorderedIndices = [...newIndices];
       }
-      indicesIndexesFree.splice(secondGameIndex, 1);
-      indicesIndexesFree.splice(firstGameIndex, 1);
+      removeIndicesIndexes(indicesIndexesFree, secondGameIndex, firstGameIndex);
+      // indicesIndexesFree.splice(secondGameIndex, 1);
+      // indicesIndexesFree.splice(firstGameIndex, 1);
       if (indicesIndexesFree.length === 1) {
         reorderedIndices.push({
           game1Indices: indices[indicesIndexesFree[0]],
@@ -175,8 +186,10 @@ export const reorderRoundRobinGames = (
           indicesIndexesFree.includes(i)
         ) {
           reorderedIndices.push({ game1Indices, game2Indices, isUsed: true });
-          indicesIndexesFree.splice(i, 1);
-          indicesIndexesFree.splice(firstGameIndex, 1);
+          removeIndicesIndexes(indicesIndexesFree, i, firstGameIndex);
+
+          // indicesIndexesFree.splice(i, 1);
+          // indicesIndexesFree.splice(firstGameIndex, 1);
           foundProperIndice = true;
           break;
         }
@@ -194,18 +207,27 @@ export const reorderRoundRobinGames = (
           );
         reorderedIndices = [...newIndices];
         if (hasReordered) {
-          indicesIndexesFree.splice(secondGameIndex, 1);
-          indicesIndexesFree.splice(firstGameIndex, 1);
+          removeIndicesIndexes(
+            indicesIndexesFree,
+            secondGameIndex,
+            firstGameIndex,
+          );
+
+          // indicesIndexesFree.splice(secondGameIndex, 1);
+          // indicesIndexesFree.splice(firstGameIndex, 1);
         }
       }
     } else {
-      indicesIndexesFree.splice(secondGameIndex, 1);
-      indicesIndexesFree.splice(firstGameIndex, 1);
+      removeIndicesIndexes(indicesIndexesFree, secondGameIndex, firstGameIndex);
+      // indicesIndexesFree.splice(secondGameIndex, 1);
+      // indicesIndexesFree.splice(firstGameIndex, 1);
       reorderedIndices.push({ game1Indices, game2Indices, isUsed: true });
     }
+
     retries += 1;
     secondGameIndex = indicesIndexesFree.length - 1;
-    if (reorderedIndices.length >= numberOfGames / 2) {
+    console.log(reorderedIndices.length, totalNumberOfRounds);
+    if (reorderedIndices.length >= totalNumberOfRounds) {
       break;
     }
   }
@@ -225,13 +247,12 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
   const numberOfTeams = teams.length;
   const numberOfGames = (numberOfTeams * (numberOfTeams - 1)) / 2;
   const numberOfRounds = Math.floor(numberOfGames / 2);
-  const totalNumberOfRounds = numberOfRounds + (numberOfGames % 2) > 0 ? 1 : 0;
+  const totalNumberOfRounds = numberOfRounds + (numberOfGames % 2 > 0 ? 1 : 0);
 
-  // console.log('numberOfTeams', numberOfTeams);
-  // console.log('numberOfGames', numberOfGames);
-  // console.log('numberOfRounds', numberOfRounds);
-  // console.log('totalNumberOfRounds', totalNumberOfRounds);
-  // console.log('gamesLeft', gamesLeft);
+  console.log('numberOfTeams', numberOfTeams);
+  console.log('numberOfGames', numberOfGames);
+  console.log('numberOfRounds', numberOfRounds);
+  console.log('totalNumberOfRounds', totalNumberOfRounds);
   const games: Game[] = [];
   const indices: number[][] = [];
   for (let i = 0; i < numberOfTeams; i += 1) {
@@ -253,7 +274,7 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
   const reorderedIndices = reorderRoundRobinGames(
     games,
     indices,
-    numberOfGames,
+    totalNumberOfRounds,
   );
   return {
     reorderedIndices,

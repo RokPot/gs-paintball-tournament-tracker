@@ -23,7 +23,7 @@ const StyledStackingContainer = styled('div')(
   `,
 );
 const HomePage: React.FC = () => {
-  const numberOfTeams = 10;
+  const numberOfTeams = 5;
   const teamss: Team[] = [];
   for (let i = 0; i < numberOfTeams; i += 1) {
     const newTeam = new Team({
