@@ -66,7 +66,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
     });
     teamss.push(newTeam);
   }
-  generateGamesForRoundRobin(teamss);
+  const { games: roundRobinGames } = generateGamesForRoundRobin(teamss);
 
   const { games, totalNumberOfRounds } = generateGamesForEliminationBrackets(
     activeLeague?.activeTournament?.teams || [],
@@ -184,10 +184,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
                             <Avatar
                               variant="rounded"
                               style={{
-                                backgroundColor:
-                                  activeLeague?.activeTournament?.teams[
-                                    columnIndex - 1
-                                  ]?.color,
+                                backgroundColor: teamss[columnIndex - 1]?.color,
                                 width: '50px',
                                 height: '50px',
                                 borderRadius: '0px',
@@ -197,11 +194,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
                                 variant="p2Medium"
                                 style={{ textTransform: 'uppercase' }}
                               >
-                                {
-                                  activeLeague?.activeTournament?.teams[
-                                    columnIndex - 1
-                                  ].teamName
-                                }
+                                {teamss[columnIndex - 1].teamName}
                               </Typography>
                             </Avatar>
                           </StyledRoundRobinCell>
@@ -216,6 +209,13 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
                           />
                         );
                       }
+                      const team1 = teamss[columnIndex - 1];
+                      const team2 = teamss[rowIndex - 1];
+                      const game = roundRobinGames.find(
+                        (gme) =>
+                          [team1?.id, team2?.id].includes(gme.team1.id) &&
+                          [team1?.id, team2?.id].includes(gme.team2.id),
+                      );
                       return (
                         <StyledRoundRobinCell
                           column={columnIndex}
@@ -230,11 +230,11 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
                           }
                         >
                           <Typography variant="p1Medium">
-                            {columnIndex} - {rowIndex}
+                            {game?.team1Wins} - {game?.team2Wins}
                           </Typography>
                         </StyledRoundRobinCell>
                       );
-                    })}{' '}
+                    })}
                   </FlexContainer>
                 );
               })}

@@ -260,19 +260,23 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
     indices,
     totalNumberOfRounds,
   );
+
+  const shuffledGameIndicesWithSortedTeams = shuffleArray(
+    gameIndicesWithSortedTeams,
+  );
   console.log(
     'standard',
 
     // shuffleArray(gameIndicesWithSortedTeams).map(
-    gameIndicesWithSortedTeams.map(
+    shuffledGameIndicesWithSortedTeams.map(
       (indicee) =>
         `${indicee.game1Indices.toString()} and ${indicee.game2Indices.toString()}`,
     ),
   );
-
   const newGames: Game[] = [];
-  for (let i = 0; i < gameIndicesWithSortedTeams.length; i += 1) {
-    const { game1Indices, game2Indices } = gameIndicesWithSortedTeams[i];
+  for (let i = 0; i < shuffledGameIndicesWithSortedTeams.length; i += 1) {
+    const { game1Indices, game2Indices } =
+      shuffledGameIndicesWithSortedTeams[i];
     console.log(game1Indices, game2Indices);
     console.log(teams[game1Indices[0]].teamName);
     const newRoundGame1: Game = {
@@ -280,9 +284,9 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
       id: v4(),
       matches: [],
       team1: teams[game1Indices[0]],
-      team1Wins: 0,
+      team1Wins: game1Indices[0],
       team2: teams[game1Indices[1]],
-      team2Wins: 0,
+      team2Wins: game1Indices[1],
       bracketProperties: null,
     };
     newGames.push(newRoundGame1);
@@ -293,9 +297,9 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
         id: v4(),
         matches: [],
         team1: teams[game2Indices[0]],
-        team1Wins: 0,
+        team1Wins: game2Indices[0],
         team2: teams[game2Indices[1]],
-        team2Wins: 0,
+        team2Wins: game2Indices[1],
         bracketProperties: null,
       };
       newGames.push(newRoundGame2);
@@ -308,9 +312,10 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
     newGames.map((game) => `${game.team1.teamName} vs ${game.team2.teamName}`),
   );
   return {
-    gameIndicesWithSortedTeams,
+    shuffledGameIndicesWithSortedTeams,
     numberOfGames,
     numberOfRounds,
     totalNumberOfRounds,
+    games: newGames,
   };
 };
