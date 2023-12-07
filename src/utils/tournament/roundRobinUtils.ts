@@ -3,7 +3,7 @@ import { GameState } from 'types/GameState';
 import Team from 'types/Team';
 import { v4 } from 'uuid';
 
-interface GameIndices {
+interface GameIndice {
   game1Indices: number[];
   game2Indices: number[];
   isUsed: boolean;
@@ -28,16 +28,16 @@ const removeIndicesIndexes = (
 };
 
 const seekAndReplaceTeamsWithOtherRoundsIfTheyPlaySequentially = (
-  reorderedIndices: GameIndices[],
-  currentIndiceRound: GameIndices,
+  reorderedIndices: GameIndice[],
+  currentIndiceRound: GameIndice,
 ) => {
   for (let i = reorderedIndices.length - 1; i >= 0; i -= 1) {
-    let tmpRoundPrevious: GameIndices = {
+    let tmpRoundPrevious: GameIndice = {
       game1Indices: reorderedIndices[i].game1Indices,
       game2Indices: currentIndiceRound.game1Indices,
       isUsed: true,
     };
-    let tmpRoundCurrent: GameIndices = {
+    let tmpRoundCurrent: GameIndice = {
       game1Indices: reorderedIndices[i].game2Indices,
       game2Indices: currentIndiceRound.game2Indices,
       isUsed: true,
@@ -86,12 +86,12 @@ const seekAndReplaceTeamsWithOtherRoundsIfTheyPlaySequentially = (
   return { newIndices: reorderedIndices, hasReordered: false };
 };
 
-export const reorderRoundRobinGames = (
+export const sortTeamIndicesIntoGameIndices = (
   games: Game[],
   indices: number[][],
   totalNumberOfRounds: number,
 ) => {
-  let reorderedIndices: GameIndices[] = [];
+  let gameIndicesWithSortedTeams: GameIndice[] = [];
 
   let retries = 0;
   // resolve current indices 1 2 3 4 5
@@ -108,9 +108,13 @@ export const reorderRoundRobinGames = (
     let game2Indices = indices[indicesIndexesFree[secondGameIndex]];
 
     if (indicesIndexesFree.length <= 3) {
-      reorderedIndices.push({ game1Indices, game2Indices, isUsed: true });
+      gameIndicesWithSortedTeams.push({
+        game1Indices,
+        game2Indices,
+        isUsed: true,
+      });
       const currentIndiceRoundGroup =
-        reorderedIndices[reorderedIndices.length - 1];
+        gameIndicesWithSortedTeams[gameIndicesWithSortedTeams.length - 1];
       if (
         checkIfthereAreSameTeamsRoundGame(
           currentIndiceRoundGroup.game1Indices,
@@ -119,63 +123,22 @@ export const reorderRoundRobinGames = (
       ) {
         const { newIndices } =
           seekAndReplaceTeamsWithOtherRoundsIfTheyPlaySequentially(
-            reorderedIndices,
+            gameIndicesWithSortedTeams,
             currentIndiceRoundGroup,
           );
-        reorderedIndices = [...newIndices];
+        gameIndicesWithSortedTeams = [...newIndices];
       }
       removeIndicesIndexes(indicesIndexesFree, secondGameIndex, firstGameIndex);
-      // indicesIndexesFree.splice(secondGameIndex, 1);
-      // indicesIndexesFree.splice(firstGameIndex, 1);
       if (indicesIndexesFree.length === 1) {
-        reorderedIndices.push({
+        gameIndicesWithSortedTeams.push({
           game1Indices: indices[indicesIndexesFree[0]],
           game2Indices: [],
           isUsed: true,
         });
       }
-      console.log(
-        '2 or 3',
-        indicesIndexesFree.length,
-        indicesIndexesFree,
-        reorderedIndices.map(
-          (indicee) =>
-            `${indicee.game1Indices.toString()} and ${indicee.game2Indices.toString()}`,
-        ),
-      );
-      return reorderedIndices;
+
+      break;
     }
-
-    // if (indicesIndexesFree.length === 3) {
-    //   reorderedIndices.push({ game1Indices, game2Indices, isUsed: true });
-    //   const currentIndiceRoundGroup =
-    //     reorderedIndices[reorderedIndices.length - 1];
-    //   const { hasReordered, newIndices } =
-    //     seekAndReplaceTeamsWithOtherRoundsIfTheyPlaySequentially(
-    //       reorderedIndices,
-    //       currentIndiceRoundGroup,
-    //     );
-    //   reorderedIndices = [...newIndices];
-    //   if (hasReordered) {
-    //     indicesIndexesFree.splice(secondGameIndex, 1);
-    //     indicesIndexesFree.splice(firstGameIndex, 1);
-    //   }
-
-    //   reorderedIndices.push({
-    //     game1Indices: indices[indicesIndexesFree[0]],
-    //     game2Indices: [],
-    //     isUsed: true,
-    //   });
-
-    //   console.log(
-    //     'break at 3',
-    //     reorderedIndices.map(
-    //       (indicee) =>
-    //         `${indicee.game1Indices.toString()} and ${indicee.game2Indices.toString()}`,
-    //     ),
-    //   );
-    //   return reorderedIndices;
-    // }
 
     if (checkIfthereAreSameTeamsRoundGame(game1Indices, game2Indices)) {
       let foundProperIndice = false;
@@ -185,64 +148,85 @@ export const reorderRoundRobinGames = (
           !checkIfthereAreSameTeamsRoundGame(game1Indices, game2Indices) &&
           indicesIndexesFree.includes(i)
         ) {
-          reorderedIndices.push({ game1Indices, game2Indices, isUsed: true });
+          gameIndicesWithSortedTeams.push({
+            game1Indices,
+            game2Indices,
+            isUsed: true,
+          });
           removeIndicesIndexes(indicesIndexesFree, i, firstGameIndex);
-
-          // indicesIndexesFree.splice(i, 1);
-          // indicesIndexesFree.splice(firstGameIndex, 1);
           foundProperIndice = true;
           break;
         }
       }
       if (!foundProperIndice) {
-        // if we've come here that means that there are no more viable free indices 1 2 3 5
+        // if we've come here that means that there are no more viable free indices and we need to check
+        // already set round for a swap
         game2Indices = indices[indicesIndexesFree[secondGameIndex]];
-        reorderedIndices.push({ game1Indices, game2Indices, isUsed: true });
+        gameIndicesWithSortedTeams.push({
+          game1Indices,
+          game2Indices,
+          isUsed: true,
+        });
         const currentIndiceRoundGroup =
-          reorderedIndices[reorderedIndices.length - 1];
+          gameIndicesWithSortedTeams[gameIndicesWithSortedTeams.length - 1];
         const { hasReordered, newIndices } =
           seekAndReplaceTeamsWithOtherRoundsIfTheyPlaySequentially(
-            reorderedIndices,
+            gameIndicesWithSortedTeams,
             currentIndiceRoundGroup,
           );
-        reorderedIndices = [...newIndices];
+        gameIndicesWithSortedTeams = [...newIndices];
         if (hasReordered) {
           removeIndicesIndexes(
             indicesIndexesFree,
             secondGameIndex,
             firstGameIndex,
           );
-
-          // indicesIndexesFree.splice(secondGameIndex, 1);
-          // indicesIndexesFree.splice(firstGameIndex, 1);
         }
       }
     } else {
       removeIndicesIndexes(indicesIndexesFree, secondGameIndex, firstGameIndex);
-      // indicesIndexesFree.splice(secondGameIndex, 1);
-      // indicesIndexesFree.splice(firstGameIndex, 1);
-      reorderedIndices.push({ game1Indices, game2Indices, isUsed: true });
+
+      gameIndicesWithSortedTeams.push({
+        game1Indices,
+        game2Indices,
+        isUsed: true,
+      });
     }
 
     retries += 1;
     secondGameIndex = indicesIndexesFree.length - 1;
-    console.log(reorderedIndices.length, totalNumberOfRounds);
-    if (reorderedIndices.length >= totalNumberOfRounds) {
+    if (gameIndicesWithSortedTeams.length >= totalNumberOfRounds) {
       break;
     }
   }
   console.log(
-    'standard',
+    '2 or 3',
     indicesIndexesFree.length,
     indicesIndexesFree,
-    reorderedIndices.map(
+    gameIndicesWithSortedTeams.map(
       (indicee) =>
         `${indicee.game1Indices.toString()} and ${indicee.game2Indices.toString()}`,
     ),
   );
-  return reorderedIndices;
+  // for (let i = 0; i < gameIndicesWithSortedTeams.length; i += 1) {
+  //   const currentIndiceRoundGroup = gameIndicesWithSortedTeams[i];
+  //   const { newIndices } =
+  //     seekAndReplaceTeamsWithOtherRoundsIfTheyPlaySequentially(
+  //       gameIndicesWithSortedTeams,
+  //       currentIndiceRoundGroup,
+  //     );
+  //   gameIndicesWithSortedTeams = [...newIndices];
+  // }
+  return gameIndicesWithSortedTeams;
 };
-
+const shuffleArray = <T>(array: T[]): T[] => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
 export const generateGamesForRoundRobin = (teams: Team[]) => {
   const numberOfTeams = teams.length;
   const numberOfGames = (numberOfTeams * (numberOfTeams - 1)) / 2;
@@ -271,13 +255,60 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
       indices.push([i, j]);
     }
   }
-  const reorderedIndices = reorderRoundRobinGames(
+  const gameIndicesWithSortedTeams = sortTeamIndicesIntoGameIndices(
     games,
     indices,
     totalNumberOfRounds,
   );
+  console.log(
+    'standard',
+
+    // shuffleArray(gameIndicesWithSortedTeams).map(
+    gameIndicesWithSortedTeams.map(
+      (indicee) =>
+        `${indicee.game1Indices.toString()} and ${indicee.game2Indices.toString()}`,
+    ),
+  );
+
+  const newGames: Game[] = [];
+  for (let i = 0; i < gameIndicesWithSortedTeams.length; i += 1) {
+    const { game1Indices, game2Indices } = gameIndicesWithSortedTeams[i];
+    console.log(game1Indices, game2Indices);
+    console.log(teams[game1Indices[0]].teamName);
+    const newRoundGame1: Game = {
+      gameState: GameState.created,
+      id: v4(),
+      matches: [],
+      team1: teams[game1Indices[0]],
+      team1Wins: 0,
+      team2: teams[game1Indices[1]],
+      team2Wins: 0,
+      bracketProperties: null,
+    };
+    newGames.push(newRoundGame1);
+
+    if (game2Indices.length > 0) {
+      const newRoundGame2: Game = {
+        gameState: GameState.created,
+        id: v4(),
+        matches: [],
+        team1: teams[game2Indices[0]],
+        team1Wins: 0,
+        team2: teams[game2Indices[1]],
+        team2Wins: 0,
+        bracketProperties: null,
+      };
+      newGames.push(newRoundGame2);
+    }
+  }
+  console.log(
+    games.length,
+    newGames.length,
+    teams,
+    newGames.map((game) => `${game.team1.teamName} vs ${game.team2.teamName}`),
+  );
   return {
-    reorderedIndices,
+    gameIndicesWithSortedTeams,
     numberOfGames,
     numberOfRounds,
     totalNumberOfRounds,

@@ -11,7 +11,7 @@ interface IProps {
 
 const InitializeTournament = ({ tournament }: IProps) => {
   const [groups, setGroups] = useState(tournament.groups);
-  const shuffleArray = (array: any[]) => {
+  const shuffleArray = <T,>(array: T[]): T[] => {
     const newArray = [...array];
     for (let i = newArray.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * (i + 1));

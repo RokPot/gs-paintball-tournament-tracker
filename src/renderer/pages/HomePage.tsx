@@ -29,8 +29,8 @@ const HomePage: React.FC = () => {
     const newTeam = new Team({
       _id: v4(),
       id: v4(),
-      teamName: `TBD${i + 1}`,
-      teamTag: `TBD${i + 1}`,
+      teamName: `${i}`,
+      teamTag: `${i}`,
     });
     teamss.push(newTeam);
   }
