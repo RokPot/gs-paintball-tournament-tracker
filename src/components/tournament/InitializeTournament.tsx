@@ -1,8 +1,16 @@
-import { Button, Typography } from '@mui/material';
+import {
+  Button,
+  InputLabel,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
+import { useFormik } from 'formik';
 import { useCallback, useState } from 'react';
 import Tournament from 'types/Tournament';
 import { TournamentGroup } from 'types/TournamentGroup';
+import { TournamentSettings } from 'types/TournamentSettings';
 import { v4 } from 'uuid';
 
 interface IProps {
@@ -35,6 +43,12 @@ const InitializeTournament = ({ tournament }: IProps) => {
     }
     setGroups(newGroups);
   }, [tournament.settings.numberOfGroups, tournament.teams]);
+  const formik = useFormik<TournamentSettings>({
+    initialValues: tournament.settings,
+    onSubmit: (settings) => {
+      console.log(settings);
+    },
+  });
 
   return (
     <FlexContainer
@@ -45,7 +59,21 @@ const InitializeTournament = ({ tournament }: IProps) => {
       width="100%"
     >
       <Typography variant="h1">Initialize {tournament.name}</Typography>
+      <InputLabel>Number of groups</InputLabel>
 
+      <Select
+        value={formik?.values?.numberOfGroups}
+        label="Team size"
+        onChange={(e) =>
+          formik.setFieldValue('numberOfGroups', Number(e.target.value))
+        }
+      >
+        {[1, 2, 3, 4, 5, 6]?.map((teamSize, index) => (
+          <MenuItem key={index} value={teamSize}>
+            {teamSize}-man
+          </MenuItem>
+        ))}
+      </Select>
       <FlexContainer flexDirection="column" width="100%">
         <FlexContainer
           flexDirection="row"

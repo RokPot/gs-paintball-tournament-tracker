@@ -9,11 +9,13 @@ import { TournamentType } from 'types/TournamentType';
 import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
 import { generateGamesForEliminationBrackets } from 'utils/tournamentUtils';
 import { v4 } from 'uuid';
+import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
 
 interface IRoundRobinContainerProps {
   row: number;
   column: number;
   highlight?: boolean;
+  isWinner?: boolean;
 }
 
 const StyledRoundRobinCell = styled('div')(
@@ -30,9 +32,13 @@ const StyledRoundRobinCell = styled('div')(
           0.5,
         )} !important`
       : 'inherit'};
+
     background-color: ${props.highlight
       ? alpha(props.theme?.palette.primary.main || '#000000', 0.1)
       : 'inherit'};
+    background-color: ${props.isWinner
+      ? alpha(props.theme?.palette.success.main || '#000000', 0.1)
+      : alpha(props.theme?.palette.error.main || '#000000', 0.1)};
   `,
 );
 
@@ -54,8 +60,8 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
     return null;
   }
 
-  const numberOfTeams = 5;
-  const teamss: Team[] = [];
+  const numberOfTeams = 0;
+  const teamss: Team[] = selectedTournament.teams;
   for (let i = 0; i < numberOfTeams; i += 1) {
     const newTeam = new Team({
       _id: v4(),
@@ -79,6 +85,22 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
     setHoveredColumn(null);
     setHoveredRow(null);
   };
+
+  if (!selectedTournament?.groups?.length) {
+    return (
+      <FlexContainer
+        justifyContent="center"
+        alignItems="center"
+        flexDirection="column"
+      >
+        <EmptyState />
+        <Typography variant="h3">
+          Tournament has not yet been initialized.
+        </Typography>
+      </FlexContainer>
+    );
+  }
+
   return (
     <FlexContainer
       flexDirection="column"
@@ -121,18 +143,10 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
               alignItems="flex-start"
               padding="20px 0px 0px 0px"
             >
-              {[...Array(numberOfTeams + 1)].map((row, columnIndex) => {
+              {[...Array(teamss.length + 1)].map((row, columnIndex) => {
                 return (
                   <FlexContainer flexDirection="column">
-                    {[...Array(numberOfTeams + 1)].map((row2, rowIndex) => {
-                      if (columnIndex === 0 && rowIndex === 0) {
-                        return (
-                          <StyledRoundRobinCell
-                            column={columnIndex}
-                            row={rowIndex}
-                          />
-                        );
-                      }
+                    {[...Array(teamss.length + 1)].map((row2, rowIndex) => {
                       if (columnIndex === 0 && rowIndex > 0) {
                         return (
                           <StyledRoundRobinCell
@@ -160,11 +174,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
                                 variant="p2Medium"
                                 style={{ textTransform: 'uppercase' }}
                               >
-                                {
-                                  activeLeague?.activeTournament?.teams[
-                                    rowIndex - 1
-                                  ].teamName
-                                }
+                                {teamss[rowIndex - 1].teamName}
                               </Typography>
                             </Avatar>
                           </StyledRoundRobinCell>
@@ -209,12 +219,29 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
                           />
                         );
                       }
-                      const team1 = teamss[columnIndex - 1];
-                      const team2 = teamss[rowIndex - 1];
+                      const colTeam = teamss[columnIndex - 1];
+                      const rowTeam = teamss[rowIndex - 1];
                       const game = roundRobinGames.find(
                         (gme) =>
-                          [team1?.id, team2?.id].includes(gme.team1.id) &&
-                          [team1?.id, team2?.id].includes(gme.team2.id),
+                          [colTeam?.id, rowTeam?.id].includes(gme.team1.id) &&
+                          [colTeam?.id, rowTeam?.id].includes(gme.team2.id),
+                      );
+                      const isAboveDiagonal =
+                        columnIndex !== rowIndex && rowIndex < columnIndex;
+                      const firstScore = isAboveDiagonal
+                        ? game?.team1Wins
+                        : game?.team2Wins;
+                      const secondScore = isAboveDiagonal
+                        ? game?.team2Wins
+                        : game?.team1Wins;
+                      const winner = firstScore! > secondScore!;
+                      console.log(
+                        'game',
+                        game?.id,
+                        game,
+                        isAboveDiagonal,
+                        firstScore,
+                        secondScore,
                       );
                       return (
                         <StyledRoundRobinCell
@@ -228,9 +255,15 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
                             hoveredColumn === columnIndex ||
                             hoveredRow === rowIndex
                           }
+                          isWinner={winner}
                         >
                           <Typography variant="p1Medium">
-                            {game?.team1Wins} - {game?.team2Wins}
+                            {`${
+                              isAboveDiagonal
+                                ? `${game?.team1Wins} - ${game?.team2Wins}`
+                                : `${game?.team2Wins} - ${game?.team1Wins}`
+                            }`}
+                            {/* {game?.team1Wins} - {game?.team2Wins} */}
                           </Typography>
                         </StyledRoundRobinCell>
                       );

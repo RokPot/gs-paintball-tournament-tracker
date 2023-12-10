@@ -284,9 +284,9 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
       id: v4(),
       matches: [],
       team1: teams[game1Indices[0]],
-      team1Wins: game1Indices[0],
+      team1Wins: Math.ceil(Math.random() * 10),
       team2: teams[game1Indices[1]],
-      team2Wins: game1Indices[1],
+      team2Wins: Math.ceil(Math.random() * 10),
       bracketProperties: null,
     };
     newGames.push(newRoundGame1);
@@ -297,9 +297,9 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
         id: v4(),
         matches: [],
         team1: teams[game2Indices[0]],
-        team1Wins: game2Indices[0],
+        team1Wins: Math.ceil(Math.random() * 10),
         team2: teams[game2Indices[1]],
-        team2Wins: game2Indices[1],
+        team2Wins: Math.ceil(Math.random() * 10),
         bracketProperties: null,
       };
       newGames.push(newRoundGame2);
