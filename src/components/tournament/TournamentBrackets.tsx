@@ -1,5 +1,4 @@
 import { Avatar, Theme, Typography, alpha, css, styled } from '@mui/material';
-import BracketsRoundColumn from 'components/brackets/BracketsRoundColumn';
 import FlexContainer from 'components/shared/FlexContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import { useState } from 'react';
@@ -10,6 +9,7 @@ import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
 import { generateGamesForEliminationBrackets } from 'utils/tournamentUtils';
 import { v4 } from 'uuid';
 import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
+import BracketsContainer from './visualizations/brackets/BracketsContainer';
 
 interface IRoundRobinContainerProps {
   row: number;
@@ -116,23 +116,10 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
       </Typography>
       {selectedTournament.settings.type ===
         TournamentType.singleElimination && (
-        <FlexContainer
-          flexDirection="row"
-          alignItems="flex-start"
-          padding="20px 0px 0px 0px"
-        >
-          {[...Array(totalNumberOfRounds)].map((val, index) => {
-            return (
-              <BracketsRoundColumn
-                isLastRound={index + 1 === totalNumberOfRounds}
-                currentRoundGames={games.filter(
-                  (game) => game.bracketProperties?.round === index,
-                )}
-                round={index}
-              />
-            );
-          })}
-        </FlexContainer>
+        <BracketsContainer
+          games={games}
+          totalNumberOfRounds={totalNumberOfRounds}
+        />
       )}
       {selectedTournament.settings.type === TournamentType.roundRobin && (
         <FlexContainer flexDirection="column">

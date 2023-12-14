@@ -93,7 +93,9 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
           <Select
             value={tournament?.settings.type}
             label="Type"
-            onChange={(e) => {}}
+            onChange={(e) => {
+              tournament.settings.type = e.target.value as TournamentType;
+            }}
           >
             {Object.values(TournamentType)?.map((tournamentKey, index) => (
               <MenuItem key={index} value={tournamentKey}>
