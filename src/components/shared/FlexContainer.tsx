@@ -33,7 +33,7 @@ interface FlexContainerProps {
   overflowX?: 'scroll' | 'hidden' | 'auto' | 'visible';
   overflowY?: 'scroll' | 'hidden' | 'auto' | 'visible';
   flexWrap?: 'nowrap' | 'wrap' | 'wrap-reverse' | 'initial' | 'inherit';
-  position?: 'relative' | 'absolute' | 'fixed';
+  position?: 'relative' | 'absolute' | 'fixed' | 'sticky';
   order?: number;
   minWidth?: string;
   maxHeight?: string;

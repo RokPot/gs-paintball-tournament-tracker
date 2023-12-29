@@ -233,10 +233,6 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
   const numberOfRounds = Math.floor(numberOfGames / 2);
   const totalNumberOfRounds = numberOfRounds + (numberOfGames % 2 > 0 ? 1 : 0);
 
-  console.log('numberOfTeams', numberOfTeams);
-  console.log('numberOfGames', numberOfGames);
-  console.log('numberOfRounds', numberOfRounds);
-  console.log('totalNumberOfRounds', totalNumberOfRounds);
   const games: Game[] = [];
   const indices: number[][] = [];
   for (let i = 0; i < numberOfTeams; i += 1) {
@@ -264,21 +260,12 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
   const shuffledGameIndicesWithSortedTeams = shuffleArray(
     gameIndicesWithSortedTeams,
   );
-  console.log(
-    'standard',
 
-    // shuffleArray(gameIndicesWithSortedTeams).map(
-    shuffledGameIndicesWithSortedTeams.map(
-      (indicee) =>
-        `${indicee.game1Indices.toString()} and ${indicee.game2Indices.toString()}`,
-    ),
-  );
   const newGames: Game[] = [];
   for (let i = 0; i < shuffledGameIndicesWithSortedTeams.length; i += 1) {
     const { game1Indices, game2Indices } =
       shuffledGameIndicesWithSortedTeams[i];
-    console.log(game1Indices, game2Indices);
-    console.log(teams[game1Indices[0]].teamName);
+
     const newRoundGame1: Game = {
       gameState: GameState.created,
       id: v4(),

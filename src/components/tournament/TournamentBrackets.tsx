@@ -82,8 +82,12 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
       )}
       {selectedTournament.settings.type === TournamentType.roundRobin && (
         <RoundRobinContainer
-          games={roundRobinGames}
-          teams={activeLeague?.activeTournament?.teams || []}
+          group={{
+            games: roundRobinGames,
+            teams: activeLeague?.activeTournament?.teams || [],
+            id: v4(),
+            groupIndex: 1,
+          }}
         />
       )}
     </FlexContainer>

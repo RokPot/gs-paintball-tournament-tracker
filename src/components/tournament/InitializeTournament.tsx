@@ -12,12 +12,15 @@ import {
 } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import { useFormik } from 'formik';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Tournament from 'types/Tournament';
 import { TournamentGroup } from 'types/TournamentGroup';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentType, TournamentTypeLabels } from 'types/TournamentType';
+import { shuffleArray } from 'utils/arrayUtils';
+import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
 import { v4 } from 'uuid';
+import TournamentTypesPreview from './visualizations/TournamentTypesPreview';
 
 interface IProps {
   tournament: Tournament;
@@ -27,36 +30,65 @@ interface IProps {
 const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
   const [groups, setGroups] = useState(tournament.groups);
   const theme = useTheme();
-  const shuffleArray = <T,>(array: T[]): T[] => {
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-    }
-    return newArray;
-  };
-  const shuffleTeams = useCallback(() => {
-    const shuffledTeams = shuffleArray(tournament.teams);
-    const newGroups: TournamentGroup[] = [];
 
-    for (let i = 0; i < tournament.settings.numberOfGroups; i += 1) {
-      newGroups.push({ games: [], groupIndex: i + 1, id: v4(), teams: [] });
-    }
-    for (let i = 0, groupIndex = 0; i < shuffledTeams.length; i += 1) {
-      newGroups[groupIndex].teams.push(shuffledTeams[i]);
-      groupIndex =
-        groupIndex + 1 >= tournament.settings.numberOfGroups
-          ? 0
-          : groupIndex + 1;
-    }
-    setGroups(newGroups);
-  }, [tournament.settings.numberOfGroups, tournament.teams]);
   const formik = useFormik<TournamentSettings>({
     initialValues: tournament.settings,
     onSubmit: (settings) => {
       console.log(settings);
     },
   });
+
+  const generateNewGroups = useCallback(() => {
+    const shuffledTeams = shuffleArray(tournament.teams);
+    const numberOfGroups = formik?.values?.numberOfGroups;
+    const newGroups: TournamentGroup[] = [];
+
+    // set new empty groups
+    for (let i = 0; i < numberOfGroups; i += 1) {
+      newGroups.push({
+        games: [],
+        groupIndex: i + 1,
+        id: v4(),
+        teams: [],
+        groupType: formik?.values?.type,
+      });
+    }
+
+    // push teams to groups
+    for (let i = 0, groupIndex = 0; i < shuffledTeams.length; i += 1) {
+      newGroups[groupIndex].teams.push(shuffledTeams[i]);
+      groupIndex = groupIndex + 1 >= numberOfGroups ? 0 : groupIndex + 1;
+    }
+
+    if (formik?.values?.type === TournamentType.roundRobin) {
+      for (let i = 0; i < newGroups.length; i += 1) {
+        const { games: roundRobinGames } = generateGamesForRoundRobin(
+          newGroups[i].teams,
+        );
+        newGroups[i].games = roundRobinGames;
+      }
+    }
+
+    if (formik?.values?.numberOfGroups > 1) {
+      newGroups.push({
+        games: [],
+        groupIndex: newGroups.length + 1,
+        id: v4(),
+        teams: [],
+        groupType: formik?.values?.secondStageType || TournamentType.roundRobin,
+      });
+    }
+    setGroups(newGroups);
+  }, [
+    formik?.values?.numberOfGroups,
+    formik?.values?.secondStageType,
+    formik?.values?.type,
+    tournament.teams,
+  ]);
+
+  useEffect(() => {
+    generateNewGroups();
+  }, []);
 
   return (
     <FlexContainer
@@ -67,18 +99,18 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
       width="100%"
       className={className}
     >
-      <Typography variant="h1">Initialize {tournament.name}</Typography>
-      <FlexContainer flexDirection="row" width="100%">
-        <FormControl fullWidth>
+      <FlexContainer flexDirection="row" width="100%" margin={8}>
+        <FormControl>
           <InputLabel>Number of groups</InputLabel>
 
           <Select
+            style={{ width: '150px' }}
             value={formik?.values?.numberOfGroups}
             label="Number of groups"
             onChange={(e) => {
               formik.setFieldValue('numberOfGroups', Number(e.target.value));
               tournament.settings.numberOfGroups = Number(e.target.value);
-              shuffleTeams();
+              generateNewGroups();
             }}
           >
             {[1, 2, 3, 4, 5, 6]?.map((numberOfGroups, index) => (
@@ -88,16 +120,37 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
             ))}
           </Select>
         </FormControl>
-        <FormControl fullWidth>
-          <InputLabel>Type</InputLabel>
+        <FormControl>
+          <InputLabel>Stage 1 Tournament Type</InputLabel>
           <Select
-            value={tournament?.settings.type}
-            label="Type"
+            style={{ width: '250px' }}
+            value={formik?.values?.type}
+            label="Stage 1 Tournament Type"
             onChange={(e) => {
-              tournament.settings.type = e.target.value as TournamentType;
+              formik.setFieldValue('type', e.target.value as TournamentType);
             }}
           >
-            {Object.values(TournamentType)?.map((tournamentKey, index) => (
+            {Object.values(TournamentType).map((tournamentKey, index) => (
+              <MenuItem key={index} value={tournamentKey}>
+                {TournamentTypeLabels[tournamentKey]}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl>
+          <InputLabel>Stage 2 Tournament Type</InputLabel>
+          <Select
+            style={{ width: '250px' }}
+            value={formik?.values?.secondStageType}
+            label="Stage 2 Tournament Type"
+            onChange={(e) => {
+              formik.setFieldValue(
+                'secondStageType',
+                e.target.value as TournamentType,
+              );
+            }}
+          >
+            {Object.values(TournamentType).map((tournamentKey, index) => (
               <MenuItem key={index} value={tournamentKey}>
                 {TournamentTypeLabels[tournamentKey]}
               </MenuItem>
@@ -113,35 +166,66 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
           width="100%"
         >
           <Typography variant="h3">Teams</Typography>
-          <Button onClick={shuffleTeams}>Shuffle</Button>
+          <Button onClick={generateNewGroups}>Shuffle</Button>
         </FlexContainer>
-        <FlexContainer flexDirection="row">
-          {groups.map((group) => (
-            <Card className="custom-card counter-card">
-              <FlexContainer flexDirection="column">
-                <Typography
-                  variant="h3Medium"
-                  borderBottom={`1px solid ${theme.palette.divider}`}
-                  width="100%"
-                >
-                  Group {group.groupIndex}
-                </Typography>
+        {formik?.values?.numberOfGroups > 1 && (
+          <Typography variant="h4Medium">Stage 1</Typography>
+        )}
+        <FlexContainer
+          flexDirection="row"
+          alignItems="flex-start"
+          width="100%"
+          flexWrap="wrap"
+          margin={16}
+        >
+          {groups.map((group, index) => (
+            <FlexContainer flexDirection="row" alignItems="center">
+              <Card className="custom-card counter-card" key={index}>
+                <FlexContainer flexDirection="column">
+                  <FlexContainer
+                    width="100%"
+                    flexDirection="row"
+                    justifyContent="space-between"
+                    style={{
+                      borderBottom: `1px solid ${theme.palette.divider}`,
+                    }}
+                  >
+                    <Typography variant="h3Medium" width="100%">
+                      Group {group.groupIndex}
+                    </Typography>
+                  </FlexContainer>
 
-                <FlexContainer
-                  highlightRowOnHover
-                  flexDirection="column"
-                  width="100%"
-                >
-                  {group?.teams.map((team) => (
-                    <div style={{ padding: '8px', width: '100%' }}>
-                      <Typography>{team.teamName}</Typography>
-                    </div>
-                  ))}
+                  <FlexContainer
+                    highlightRowOnHover
+                    flexDirection="column"
+                    width="100%"
+                  >
+                    {group?.teams.map((team) => (
+                      <div style={{ padding: '8px', width: '100%' }}>
+                        <Typography>{team.teamName}</Typography>
+                      </div>
+                    ))}
+                  </FlexContainer>
                 </FlexContainer>
-              </FlexContainer>
-            </Card>
+              </Card>
+              <TournamentTypesPreview
+                group={group}
+                tournamentType={formik?.values?.type}
+              />
+            </FlexContainer>
           ))}
         </FlexContainer>
+        {formik?.values?.numberOfGroups > 1 && (
+          <>
+            <Typography variant="h4Medium">Stage 2</Typography>
+            <FlexContainer>
+              <TournamentTypesPreview
+                group={groups[0]}
+                tournamentType={formik?.values?.type}
+              />
+            </FlexContainer>
+          </>
+        )}
       </FlexContainer>
     </FlexContainer>
   );
