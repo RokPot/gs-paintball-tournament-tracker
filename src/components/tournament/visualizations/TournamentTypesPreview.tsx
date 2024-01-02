@@ -5,26 +5,29 @@ import BracketsPreview from './brackets/BracketsPreview';
 import RoundRobinPreview from './round-robin/RoundRobinPreview';
 
 interface IProps {
-  tournamentType: TournamentType;
   group?: TournamentGroup;
   teams?: Team[];
+  totalNumberOfRounds?: number;
 }
 
 const TournamentTypesPreview: React.FC<IProps> = ({
-  tournamentType,
   group,
-  teams,
+  totalNumberOfRounds,
 }) => {
-  console.log(tournamentType, teams);
-  switch (tournamentType) {
+  switch (group?.groupType) {
     case TournamentType.roundRobin: {
       return group && <RoundRobinPreview group={group} />;
     }
     case TournamentType.singleElimination: {
-      return <div>This is training, what do you want</div>;
+      return (
+        <BracketsPreview
+          games={group.games}
+          totalNumberOfRounds={totalNumberOfRounds!}
+        />
+      );
     }
     case TournamentType.doubleElimination: {
-      return <BracketsPreview />;
+      return <div>Double elimination brackets</div>;
     }
     case TournamentType.training: {
       return <div>This is training, what do you want</div>;

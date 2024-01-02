@@ -12,4 +12,6 @@ export interface TournamentGroup {
   games: Game[];
 
   groupType: TournamentType;
+
+  stage: number;
 }

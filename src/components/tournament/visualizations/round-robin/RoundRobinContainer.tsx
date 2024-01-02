@@ -36,13 +36,13 @@ const RoundRobinContainer: React.FC<IProps> = ({
 
   return (
     <FlexContainer flexDirection="column">
-      {!hideTitle && <Typography variant="h3">Group {groupIndex}</Typography>}
+      {!hideTitle && (
+        <Typography variant="h3" padding="0px 0px 20px 0px">
+          Group {groupIndex}
+        </Typography>
+      )}
       <FlexContainer flexDirection="row">
-        <FlexContainer
-          flexDirection="row"
-          alignItems="flex-start"
-          padding="20px 0px 0px 0px"
-        >
+        <FlexContainer flexDirection="row" alignItems="flex-start">
           {[...Array(teams.length + 1)].map((row, columnIndex) => {
             return (
               <FlexContainer flexDirection="column">

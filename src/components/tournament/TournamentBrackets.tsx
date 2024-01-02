@@ -14,8 +14,8 @@ interface IProps {
   activeLeague: League;
 }
 function randomColor() {
-  const hex = Math.floor(Math.random() * 0xffffff);
-  const color = `#${hex.toString(16)}`;
+  const hex = Math.floor(Math.random() * 16777215).toString(16);
+  const color = `#${hex}`;
 
   return color;
 }
@@ -87,6 +87,8 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
             teams: activeLeague?.activeTournament?.teams || [],
             id: v4(),
             groupIndex: 1,
+            groupType: TournamentType.roundRobin,
+            stage: 1,
           }}
         />
       )}

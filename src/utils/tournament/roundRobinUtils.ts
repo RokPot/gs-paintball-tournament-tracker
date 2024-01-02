@@ -1,6 +1,7 @@
 import Game from 'types/Game';
 import { GameState } from 'types/GameState';
 import Team from 'types/Team';
+import { shuffleArray } from 'utils/arrayUtils';
 import { v4 } from 'uuid';
 
 interface GameIndice {
@@ -103,7 +104,6 @@ export const sortTeamIndicesIntoGameIndices = (
   let secondGameIndex = indicesIndexesFree.length - 1;
 
   while (retries < 100) {
-    // console.log(retries);
     const game1Indices = indices[indicesIndexesFree[firstGameIndex]];
     let game2Indices = indices[indicesIndexesFree[secondGameIndex]];
 
@@ -199,34 +199,10 @@ export const sortTeamIndicesIntoGameIndices = (
       break;
     }
   }
-  console.log(
-    '2 or 3',
-    indicesIndexesFree.length,
-    indicesIndexesFree,
-    gameIndicesWithSortedTeams.map(
-      (indicee) =>
-        `${indicee.game1Indices.toString()} and ${indicee.game2Indices.toString()}`,
-    ),
-  );
-  // for (let i = 0; i < gameIndicesWithSortedTeams.length; i += 1) {
-  //   const currentIndiceRoundGroup = gameIndicesWithSortedTeams[i];
-  //   const { newIndices } =
-  //     seekAndReplaceTeamsWithOtherRoundsIfTheyPlaySequentially(
-  //       gameIndicesWithSortedTeams,
-  //       currentIndiceRoundGroup,
-  //     );
-  //   gameIndicesWithSortedTeams = [...newIndices];
-  // }
+
   return gameIndicesWithSortedTeams;
 };
-const shuffleArray = <T>(array: T[]): T[] => {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-  }
-  return newArray;
-};
+
 export const generateGamesForRoundRobin = (teams: Team[]) => {
   const numberOfTeams = teams.length;
   const numberOfGames = (numberOfTeams * (numberOfTeams - 1)) / 2;
@@ -292,12 +268,7 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
       newGames.push(newRoundGame2);
     }
   }
-  console.log(
-    games.length,
-    newGames.length,
-    teams,
-    newGames.map((game) => `${game.team1.teamName} vs ${game.team2.teamName}`),
-  );
+
   return {
     shuffledGameIndicesWithSortedTeams,
     numberOfGames,
