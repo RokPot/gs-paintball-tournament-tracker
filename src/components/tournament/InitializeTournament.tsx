@@ -86,17 +86,25 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
       if (numberOfGroups > 1) {
         const nextStageTeams: Team[] = [];
         const nextStageGames: Game[] = [];
-        for (let i = 0; i < numberOfGroups * 2; i += 1) {
+        for (let i = 0; i < numberOfGroups; i += 1) {
           nextStageTeams.push(
             new Team({
-              _id: v4(),
-              id: v4(),
-              teamName: 'TBD',
-              teamTag: 'TBD',
+              _id: `G${i + 1}#1`,
+              id: `G${i + 1}#1`,
+              teamName: `Group${i + 1}#1`,
+              teamTag: `Group${i + 1}#1`,
+              color: randomColor(),
+            }),
+            new Team({
+              _id: `G${i + 1}#1`,
+              id: `G${i + 1}#1`,
+              teamName: `Group${i + 1}#2`,
+              teamTag: `Group${i + 1}#2`,
               color: randomColor(),
             }),
           );
         }
+
         if (formik?.values?.secondStageType === TournamentType.roundRobin) {
           const { games: roundRobinGames } =
             generateGamesForRoundRobin(nextStageTeams);
