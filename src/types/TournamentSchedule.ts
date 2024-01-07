@@ -1,5 +1,5 @@
 import Game from './Game';
-import { TournamentGroup } from './TournamentGroup';
+import TournamentGroup from './TournamentGroup';
 
 export interface TournamentSchedule {
   id: string;

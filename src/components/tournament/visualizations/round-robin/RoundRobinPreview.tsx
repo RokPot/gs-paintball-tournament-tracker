@@ -1,4 +1,4 @@
-import { TournamentGroup } from 'types/TournamentGroup';
+import TournamentGroup from 'types/TournamentGroup';
 import RoundRobinContainer from './RoundRobinContainer';
 
 interface IProps {

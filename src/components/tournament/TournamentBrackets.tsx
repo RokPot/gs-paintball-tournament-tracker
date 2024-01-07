@@ -2,6 +2,7 @@ import { Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import League from 'types/League';
 import Team from 'types/Team';
+import TournamentGroup from 'types/TournamentGroup';
 import { TournamentType } from 'types/TournamentType';
 import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
 import { generateGamesForEliminationBrackets } from 'utils/tournamentUtils';
@@ -82,14 +83,17 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
       )}
       {selectedTournament.settings.type === TournamentType.roundRobin && (
         <RoundRobinContainer
-          group={{
-            games: roundRobinGames,
-            teams: activeLeague?.activeTournament?.teams || [],
-            id: v4(),
-            groupIndex: 1,
-            groupType: TournamentType.roundRobin,
-            stage: 1,
-          }}
+          group={
+            new TournamentGroup({
+              games: roundRobinGames,
+              teams: activeLeague?.activeTournament?.teams || [],
+              id: v4(),
+              groupIndex: 1,
+              groupType: TournamentType.roundRobin,
+              stage: 1,
+              _id: v4(),
+            })
+          }
         />
       )}
     </FlexContainer>

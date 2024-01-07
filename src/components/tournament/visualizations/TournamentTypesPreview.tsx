@@ -1,5 +1,5 @@
 import Team from 'types/Team';
-import { TournamentGroup } from 'types/TournamentGroup';
+import TournamentGroup from 'types/TournamentGroup';
 import { TournamentType } from 'types/TournamentType';
 import BracketsPreview from './brackets/BracketsPreview';
 import RoundRobinPreview from './round-robin/RoundRobinPreview';

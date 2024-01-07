@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { useMemo } from 'react';
 import Team from 'types/Team';
-import { TournamentGroup } from 'types/TournamentGroup';
+import TournamentGroup from 'types/TournamentGroup';
 
 interface IRoundRobinContainerProps {
   row: number;

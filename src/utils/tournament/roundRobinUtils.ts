@@ -213,16 +213,18 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
   const indices: number[][] = [];
   for (let i = 0; i < numberOfTeams; i += 1) {
     for (let j = i + 1; j < numberOfTeams; j += 1) {
-      const newGame: Game = {
+      const newId = v4();
+      const newGame: Game = new Game({
         gameState: GameState.created,
-        id: v4(),
+        id: newId,
+        _id: newId,
         matches: [],
         team1: teams[i],
         team1Wins: 0,
         team2: teams[j],
         team2Wins: 0,
         bracketProperties: null,
-      };
+      });
       games.push(newGame);
       indices.push([i, j]);
     }
@@ -242,29 +244,34 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
     const { game1Indices, game2Indices } =
       shuffledGameIndicesWithSortedTeams[i];
 
-    const newRoundGame1: Game = {
+    const newId = v4();
+    const newRoundGame1: Game = new Game({
       gameState: GameState.created,
-      id: v4(),
+      id: newId,
+      _id: newId,
       matches: [],
       team1: teams[game1Indices[0]],
       team1Wins: Math.ceil(Math.random() * 10),
       team2: teams[game1Indices[1]],
       team2Wins: Math.ceil(Math.random() * 10),
       bracketProperties: null,
-    };
+    });
     newGames.push(newRoundGame1);
 
     if (game2Indices.length > 0) {
-      const newRoundGame2: Game = {
+      const newId2 = v4();
+
+      const newRoundGame2: Game = new Game({
         gameState: GameState.created,
-        id: v4(),
+        id: newId2,
+        _id: newId2,
         matches: [],
         team1: teams[game2Indices[0]],
         team1Wins: Math.ceil(Math.random() * 10),
         team2: teams[game2Indices[1]],
         team2Wins: Math.ceil(Math.random() * 10),
         bracketProperties: null,
-      };
+      });
       newGames.push(newRoundGame2);
     }
   }

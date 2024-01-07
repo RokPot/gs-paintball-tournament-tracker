@@ -34,9 +34,12 @@ import TournamentSchedule from 'components/tournament/TournamentSchedule';
 import useLeagueQueries from 'hooks/league/useLeagueQueries';
 import useTournamentQueries from 'hooks/tournament/useTournamentQueries';
 import { useCallback, useEffect, useState } from 'react';
+import useAddGame from 'services/queries/game/useAddGame';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
 import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
 import Tournament from 'types/Tournament';
+import TournamentGroup from 'types/TournamentGroup';
+import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentStatus } from 'types/TournamentStatus';
 
 const StyledLoadingContainer = styled('div')(
@@ -87,6 +90,7 @@ const TournamentPage = () => {
     useState<{ isOpen: boolean; tournament?: Tournament }>({ isOpen: false });
   const [isInitializeTournamentModalOpen, setIsInitializeTournamentModalOpen] =
     useState(false);
+  const { addGamesBulk } = useAddGame();
 
   const theme = useTheme();
   const selectedTournament = activeLeague?.activeTournament;
@@ -105,6 +109,24 @@ const TournamentPage = () => {
     await invalidateSelectedLeague();
 
     setAddOrEditTournamentModalProps({ isOpen: false });
+  };
+
+  const initializeTournament = async (
+    groups: TournamentGroup[],
+    settings: TournamentSettings,
+  ) => {
+    if (!selectedTournament) {
+      return;
+    }
+    // In groups there are games and also teams split.
+    // If there is second stage those games we're also generated already
+    selectedTournament.groups = groups;
+    selectedTournament.settings = settings;
+    selectedTournament.state.status = TournamentStatus.initialized;
+    console.log(addGamesBulk);
+    await addOrEditTournament(selectedTournament, activeLeague, true);
+    await invalidateSelectedLeague();
+    setIsInitializeTournamentModalOpen(false);
   };
 
   useEffect(() => {
@@ -315,7 +337,10 @@ const TournamentPage = () => {
         onClose={() => setIsInitializeTournamentModalOpen(false)}
         title={`Initialize ${selectedTournament?.name}`}
       >
-        <InitializeTournament tournament={selectedTournament!} />
+        <InitializeTournament
+          tournament={selectedTournament!}
+          onConfirm={initializeTournament}
+        />
       </CustomModal>
     </PageContainer>
   );

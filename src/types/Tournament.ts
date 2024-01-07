@@ -3,7 +3,6 @@ import { DocType } from 'services/pouchDB';
 import { DefaultGameSettings, GameSettings } from './GameSettings';
 import LeaderboardTeam from './LeadeboardTeam';
 import Team from './Team';
-import { TournamentGroup } from './TournamentGroup';
 import {
   DefaultTournamentSettings,
   TournamentSettings,
@@ -13,6 +12,7 @@ import { IPouchDB } from './interfaces/IPouchDB';
 import { ITournament } from './interfaces/ITournament';
 import { TournamentSchedule } from './TournamentSchedule';
 import TournamentState from './TournamentState';
+import TournamentGroup from './TournamentGroup';
 
 export default class Tournament extends IPouchDB {
   id: string;
@@ -59,7 +59,7 @@ export default class Tournament extends IPouchDB {
       docType: this.docType,
       id: this.id,
       gameSettings: this.gameSettings,
-      groups: this.groups,
+      groupIds: this.groups?.map((group) => group._id),
       name: this.name,
       settings: this.settings,
       state: this.state,

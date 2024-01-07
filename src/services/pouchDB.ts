@@ -8,6 +8,8 @@ export enum DocType {
   Tournament = 'tournament',
   LeaderboardTeam = 'leaderboardTeam',
   League = 'league',
+  Game = 'game',
+  Group = 'group',
 }
 PouchDB.default.plugin(plugin);
 const usePouchDB = (dbName: string) => {

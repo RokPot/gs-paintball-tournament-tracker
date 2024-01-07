@@ -17,9 +17,11 @@ export const generateGamesForLayer = (
 
   if (round + 1 === totalNumberOfRounds) {
     // Finals + third place
-    const firstPlaceGame: Game = {
+    const newFPId = v4();
+    const firstPlaceGame: Game = new Game({
       gameState: GameState.created,
-      id: v4(),
+      id: newFPId,
+      _id: newFPId,
       matches: [],
       team1: new Team({
         _id: v4(),
@@ -45,10 +47,13 @@ export const generateGamesForLayer = (
         previousLayerGame1Number: 1,
         previousLayerGame2Number: 2,
       },
-    };
-    const thirdPlaceGame: Game = {
+    });
+
+    const newTPId = v4();
+    const thirdPlaceGame: Game = new Game({
       gameState: GameState.created,
-      id: v4(),
+      id: newTPId,
+      _id: newTPId,
       matches: [],
       team1: new Team({
         _id: v4(),
@@ -71,15 +76,17 @@ export const generateGamesForLayer = (
         winnerNextRoundGameNumber: -1,
         isThridPlaceGame: true,
       },
-    };
+    });
     games.push(firstPlaceGame, thirdPlaceGame);
     return games;
   }
   if (round + 2 === totalNumberOfRounds) {
+    const newId1 = v4();
     // last round before finals
-    const game1: Game = {
+    const game1: Game = new Game({
       gameState: GameState.created,
-      id: v4(),
+      id: newId1,
+      _id: newId1,
       matches: [],
       team1: new Team({
         _id: v4(),
@@ -104,10 +111,13 @@ export const generateGamesForLayer = (
         previousLayerGame1Number: 3,
         previousLayerGame2Number: 4,
       },
-    };
-    const game2: Game = {
+    });
+
+    const newId2 = v4();
+    const game2: Game = new Game({
       gameState: GameState.created,
-      id: v4(),
+      id: newId2,
+      _id: newId2,
       matches: [],
       team1: new Team({
         _id: v4(),
@@ -132,7 +142,7 @@ export const generateGamesForLayer = (
         previousLayerGame1Number: 1,
         previousLayerGame2Number: 2,
       },
-    };
+    });
     games.push(game1, game2);
     return games;
   }
@@ -142,9 +152,12 @@ export const generateGamesForLayer = (
       currentLayerPairCount = 1;
       nextRoundGameNumber += 1;
     }
-    const newGame: Game = {
+
+    const newId = v4();
+    const newGame: Game = new Game({
       gameState: GameState.created,
-      id: v4(),
+      id: newId,
+      _id: newId,
       matches: [],
       team1: new Team({
         _id: v4(),
@@ -168,7 +181,7 @@ export const generateGamesForLayer = (
         previousLayerGame1Number: i * 2 + 1,
         previousLayerGame2Number: i * 2 + 2,
       },
-    };
+    });
     currentLayerPairCount += 1;
     games.push(newGame);
   }
@@ -196,9 +209,11 @@ export const getTeamsSeeding = (numPlayers: number) => {
 //
 
 export const generateFillerGame = (team1: Team, team2: Team) => {
+  const newId = v4();
   return new Game({
     gameState: GameState.created,
-    id: v4(),
+    id: newId,
+    _id: newId,
     matches: [],
     team1,
     team1Wins: 0,

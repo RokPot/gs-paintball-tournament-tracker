@@ -1,9 +1,11 @@
 import { groupBy } from 'lodash';
 import { DocType } from 'services/pouchDB';
+import Game from 'types/Game';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import League from 'types/League';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
+import { GameDto } from 'types/dto/GameDto';
 import { LeaderboardTeamDto } from 'types/dto/LeaderboardTeamDto';
 import { LeagueDto } from 'types/dto/LeagueDto';
 import { TeamDto } from 'types/dto/TeamDto';
@@ -31,6 +33,20 @@ export const mapTeamsFromResponse = <T>(
     teamsList.push(teammm);
   });
   return teamsList;
+};
+
+export const mapTeamFromResponse = <T>(
+  teamId: string,
+  response: PouchDBResponse<T>[],
+) => {
+  const teamInResult = response.find((res) => res?.doc?._id === teamId)
+    ?.doc as unknown as TeamDto;
+  if (!teamInResult) {
+    return null;
+  }
+
+  const team = new Team(teamInResult);
+  return team;
 };
 
 export const mapLeaderboardTeamsFromResponse = <T>(
@@ -121,6 +137,38 @@ export const getTournamentsList = (result: PouchDB.Query.Response<any>) => {
     leagues.push(newTournament);
   });
   return leagues;
+};
+
+export const getGamesList = (result: PouchDB.Query.Response<any>) => {
+  const games: Game[] = [];
+  const groupedResults = groupBy(result.rows, (row: any) => row.id);
+  Object.keys(groupedResults).forEach((key) => {
+    const { rootDoc, otherDocs } = getRootElementAndLinkedDocs<GameDto>(
+      groupedResults[key],
+      DocType.Game,
+    );
+
+    if (!rootDoc) {
+      return;
+    }
+
+    const team1 = mapTeamFromResponse(
+      rootDoc?.team1Id,
+      otherDocs.filter((val) => val.value.type === DocType.Team),
+    );
+    const team2 = mapTeamFromResponse(
+      rootDoc?.team2Id,
+      otherDocs.filter((val) => val.value.type === DocType.Team),
+    );
+    const newGame: Game = new Game({
+      ...rootDoc,
+      team1: team1 ?? new Team({} as any),
+      team2: team2 ?? new Team({} as any),
+    });
+
+    games.push(newGame);
+  });
+  return games;
 };
 
 export const getLeaguesList = (result: PouchDB.Query.Response<any>) => {

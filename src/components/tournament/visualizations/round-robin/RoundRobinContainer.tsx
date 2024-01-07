@@ -2,7 +2,7 @@ import { Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import { useState } from 'react';
-import { TournamentGroup } from 'types/TournamentGroup';
+import TournamentGroup from 'types/TournamentGroup';
 import {
   RoundRobinBlankCell,
   RoundRobinGameCell,
@@ -45,7 +45,7 @@ const RoundRobinContainer: React.FC<IProps> = ({
         <FlexContainer flexDirection="row" alignItems="flex-start">
           {[...Array(teams.length + 1)].map((row, columnIndex) => {
             return (
-              <FlexContainer flexDirection="column">
+              <FlexContainer flexDirection="column" key={columnIndex}>
                 {[...Array(teams.length + 1)].map((row2, rowIndex) => {
                   if (
                     (columnIndex === 0 && rowIndex > 0) ||
@@ -53,6 +53,7 @@ const RoundRobinContainer: React.FC<IProps> = ({
                   ) {
                     return (
                       <RoundRobinTeamCell
+                        key={rowIndex}
                         columnIndex={columnIndex}
                         rowIndex={rowIndex}
                         onMouseEnterCell={onMouseEnterCell}
@@ -71,6 +72,7 @@ const RoundRobinContainer: React.FC<IProps> = ({
                   if (columnIndex === rowIndex) {
                     return (
                       <RoundRobinBlankCell
+                        key={rowIndex}
                         columnIndex={columnIndex}
                         rowIndex={rowIndex}
                       />
@@ -79,6 +81,7 @@ const RoundRobinContainer: React.FC<IProps> = ({
 
                   return (
                     <RoundRobinGameCell
+                      key={rowIndex}
                       columnIndex={columnIndex}
                       rowIndex={rowIndex}
                       onMouseEnterCell={onMouseEnterCell}

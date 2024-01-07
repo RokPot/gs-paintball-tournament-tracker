@@ -9,10 +9,12 @@ interface IProps {
 
 const BracketsPreview: React.FC<IProps> = ({ games, totalNumberOfRounds }) => {
   return (
-    <BracketsContainer
-      games={games}
-      totalNumberOfRounds={totalNumberOfRounds}
-    />
+    <div style={{ paddingLeft: '15px' }}>
+      <BracketsContainer
+        games={games}
+        totalNumberOfRounds={totalNumberOfRounds}
+      />
+    </div>
   );
 };
 

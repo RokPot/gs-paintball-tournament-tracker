@@ -1,14 +1,14 @@
-import { getTournamentsList } from 'utils/PouchDBUtils';
 import { omit } from 'lodash';
 import { useCallback } from 'react';
 import Tournament from 'types/Tournament';
 import { TournamentDto } from 'types/dto/TournamentDto';
+import { getTournamentsList } from 'utils/PouchDBUtils';
 import usePouchDB, { DocType, pouchDbName } from './pouchDB';
 
-const useTournamentService = () => {
+const useGroupService = () => {
   const db = usePouchDB(pouchDbName);
 
-  const addNewTournament = useCallback(
+  const addNewGroup = useCallback(
     async (tournament: TournamentDto) => {
       const res = await db.post(tournament);
       const newTournament = new Tournament({
@@ -21,7 +21,20 @@ const useTournamentService = () => {
     [db],
   );
 
-  const updateTournament = useCallback(
+  const addNewGroupBatch = useCallback(
+    async (tournament: TournamentDto) => {
+      const res = await db.post(tournament);
+      const newTournament = new Tournament({
+        ...(await db.get<TournamentDto>(res.id)),
+        schedule: [],
+      });
+
+      return newTournament;
+    },
+    [db],
+  );
+
+  const updateGroup = useCallback(
     async (tournament: TournamentDto) => {
       const res = await db.get(tournament._id);
 
@@ -42,7 +55,7 @@ const useTournamentService = () => {
     [db],
   );
 
-  const deleteTournament = useCallback(
+  const deleteGroup = useCallback(
     async (tournament: TournamentDto) => {
       const fetchedTournament = await db.get<TournamentDto>(tournament._id);
       await db.remove(fetchedTournament._id, fetchedTournament._rev);
@@ -52,7 +65,7 @@ const useTournamentService = () => {
     [db],
   );
 
-  const getTournament = useCallback(
+  const getGroup = useCallback(
     async (tournamentId: string) => {
       const myMapFunction = (doc: any, emit: any) => {
         if (doc.docType === DocType.Tournament) {
@@ -82,7 +95,7 @@ const useTournamentService = () => {
     [db],
   );
 
-  const getTournaments = useCallback(async () => {
+  const getGroups = useCallback(async () => {
     const myMapFunction = (doc: any, emit: any) => {
       if (doc.docType === DocType.Tournament) {
         emit(doc, DocType.Tournament);
@@ -101,12 +114,13 @@ const useTournamentService = () => {
   }, [db]);
 
   return {
-    addNewTournament,
-    updateTournament,
-    deleteTournament,
-    getTournament,
-    getTournaments,
+    addNewGroup,
+    addNewGroupBatch,
+    updateGroup,
+    deleteGroup,
+    getGroup,
+    getGroups,
   };
 };
 
-export default useTournamentService;
+export default useGroupService;

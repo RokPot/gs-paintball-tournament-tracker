@@ -16,7 +16,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Game from 'types/Game';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
-import { TournamentGroup } from 'types/TournamentGroup';
+import TournamentGroup from 'types/TournamentGroup';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentType, TournamentTypeLabels } from 'types/TournamentType';
 import { shuffleArray } from 'utils/arrayUtils';
@@ -35,9 +35,14 @@ function randomColor() {
 interface IProps {
   tournament: Tournament;
   className?: string;
+  onConfirm: (groups: TournamentGroup[], settings: TournamentSettings) => void;
 }
 
-const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
+const InitializeTournament: React.FC<IProps> = ({
+  tournament,
+  className,
+  onConfirm,
+}) => {
   const [groups, setGroups] = useState(tournament.groups);
   const [totalNumberOfRounds, setTotalNumberOfRounds] = useState(0);
   const theme = useTheme();
@@ -56,14 +61,18 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
 
       // set new empty groups
       for (let i = 0; i < numberOfGroups; i += 1) {
-        newGroups.push({
-          games: [],
-          groupIndex: i + 1,
-          id: v4(),
-          teams: [],
-          groupType: formik?.values?.type,
-          stage: 1,
-        });
+        const newId = v4();
+        newGroups.push(
+          new TournamentGroup({
+            games: [],
+            groupIndex: i + 1,
+            _id: newId,
+            id: newId,
+            teams: [],
+            groupType: formik?.values?.type,
+            stage: 1,
+          }),
+        );
       }
 
       // push teams to groups
@@ -91,15 +100,15 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
             new Team({
               _id: `G${i + 1}#1`,
               id: `G${i + 1}#1`,
-              teamName: `Group${i + 1}#1`,
-              teamTag: `Group${i + 1}#1`,
+              teamName: `Group${i + 1} #1`,
+              teamTag: `Group${i + 1} #1`,
               color: randomColor(),
             }),
             new Team({
-              _id: `G${i + 1}#1`,
-              id: `G${i + 1}#1`,
-              teamName: `Group${i + 1}#2`,
-              teamTag: `Group${i + 1}#2`,
+              _id: `G${i + 1}#2`,
+              id: `G${i + 1}#2`,
+              teamName: `Group${i + 1} #2`,
+              teamTag: `Group${i + 1} #2`,
               color: randomColor(),
             }),
           );
@@ -113,10 +122,21 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
         if (
           formik?.values?.secondStageType === TournamentType.singleElimination
         ) {
+          const [firstSeedTeams, lowerSeedTeams] = nextStageTeams.reduce(
+            (teamArr: [Team[], Team[]], team: Team) => {
+              teamArr[team.teamName.includes('#1') ? 0 : 1].push(team);
+              return teamArr;
+            },
+            [[], []],
+          );
+
           const {
             games: bracketGames,
             totalNumberOfRounds: numberOfBracketRounds,
-          } = generateGamesForEliminationBrackets(nextStageTeams);
+          } = generateGamesForEliminationBrackets([
+            ...shuffleArray(firstSeedTeams),
+            ...shuffleArray(lowerSeedTeams),
+          ]);
           nextStageGames.push(...bracketGames);
           setTotalNumberOfRounds(numberOfBracketRounds);
         }
@@ -127,20 +147,28 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
             generateGamesForEliminationBrackets(nextStageTeams);
           nextStageGames.push(...bracketGames);
         }
-        newGroups.push({
-          games: nextStageGames,
-          groupIndex: newGroups.length + 1,
-          id: v4(),
-          teams: nextStageTeams,
-          groupType:
-            formik?.values?.secondStageType || TournamentType.roundRobin,
-          stage: 2,
-        });
+        const newId = v4();
+        newGroups.push(
+          new TournamentGroup({
+            games: nextStageGames,
+            groupIndex: newGroups.length + 1,
+            id: newId,
+            _id: newId,
+            teams: nextStageTeams,
+            groupType:
+              formik?.values?.secondStageType || TournamentType.roundRobin,
+            stage: 2,
+          }),
+        );
       }
       setGroups(newGroups);
     },
     [formik?.values?.secondStageType, formik?.values?.type, tournament.teams],
   );
+
+  const confirmTournamentSettings = () => {
+    onConfirm(groups, { ...tournament.settings, ...formik.values });
+  };
 
   useEffect(() => {
     generateNewGroups(tournament.settings.numberOfGroups);
@@ -149,14 +177,14 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
 
   return (
     <FlexContainer
-      padding="16px"
+      padding="16px 16px 0px 16px"
       flexDirection="column"
       alignItems="flex-start"
       margin={16}
       width="100%"
       className={className}
     >
-      <FlexContainer flexDirection="row" width="100%" margin={8}>
+      <FlexContainer flexDirection="row" width="100%" margin={8} height="70px">
         <FormControl>
           <InputLabel>Number of groups</InputLabel>
 
@@ -193,29 +221,31 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
             ))}
           </Select>
         </FormControl>
-        <FormControl>
-          <InputLabel>Stage 2 Tournament Type</InputLabel>
-          <Select
-            style={{ width: '250px' }}
-            value={formik?.values?.secondStageType}
-            label="Stage 2 Tournament Type"
-            onChange={(e) => {
-              formik.setFieldValue(
-                'secondStageType',
-                e.target.value as TournamentType,
-              );
-            }}
-          >
-            {Object.values(TournamentType).map((tournamentKey, index) => (
-              <MenuItem key={index} value={tournamentKey}>
-                {TournamentTypeLabels[tournamentKey]}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {formik?.values?.numberOfGroups > 1 && (
+          <FormControl>
+            <InputLabel>Stage 2 Tournament Type</InputLabel>
+            <Select
+              style={{ width: '250px' }}
+              value={formik?.values?.secondStageType}
+              label="Stage 2 Tournament Type"
+              onChange={(e) => {
+                formik.setFieldValue(
+                  'secondStageType',
+                  e.target.value as TournamentType,
+                );
+              }}
+            >
+              {Object.values(TournamentType).map((tournamentKey, index) => (
+                <MenuItem key={index} value={tournamentKey}>
+                  {TournamentTypeLabels[tournamentKey]}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
       </FlexContainer>
 
-      <FlexContainer flexDirection="column" width="100%">
+      <FlexContainer flexDirection="column" width="100%" height="100%">
         <FlexContainer
           flexDirection="row"
           justifyContent="space-between"
@@ -243,8 +273,13 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
           {groups
             .filter((group) => group.stage === 1)
             .map((group, index) => (
-              <FlexContainer flexDirection="row" alignItems="center">
-                <Card className="custom-card counter-card" key={index}>
+              <FlexContainer
+                flexDirection="row"
+                alignItems="center"
+                key={index}
+                margin={15}
+              >
+                <Card className="custom-card counter-card">
                   <FlexContainer flexDirection="column">
                     <FlexContainer
                       width="100%"
@@ -313,7 +348,10 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
                     width="100%"
                   >
                     {groups[groups.length - 1]?.teams.map((team) => (
-                      <div style={{ padding: '8px', width: '100%' }}>
+                      <div
+                        style={{ padding: '8px', width: '100%' }}
+                        key={team._id}
+                      >
                         <Typography>{team.teamName}</Typography>
                       </div>
                     ))}
@@ -327,6 +365,22 @@ const InitializeTournament: React.FC<IProps> = ({ tournament, className }) => {
             </FlexContainer>
           </FlexContainer>
         )}
+      </FlexContainer>
+      <FlexContainer
+        width="100%"
+        justifyContent="flex-end"
+        style={{
+          borderTop: `1px solid ${theme.palette.divider}`,
+          background: theme.palette.background.default,
+          zIndex: 2,
+        }}
+        padding="8px"
+        position="sticky"
+        bottom="0px"
+      >
+        <Button variant="contained" onClick={confirmTournamentSettings}>
+          Initialize tournament
+        </Button>
       </FlexContainer>
     </FlexContainer>
   );
