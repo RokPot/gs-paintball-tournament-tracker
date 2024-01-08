@@ -72,7 +72,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
         variant="body1"
         color={(theme) => theme.palette.text.disabled}
       >
-        Tournament has not yet started. This is jsut a preview.{' '}
+        Tournament has not yet started. This is just a preview.{' '}
       </Typography>
       {selectedTournament.settings.type ===
         TournamentType.singleElimination && (

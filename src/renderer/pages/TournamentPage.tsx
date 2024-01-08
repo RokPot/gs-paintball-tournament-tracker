@@ -35,8 +35,10 @@ import useLeagueQueries from 'hooks/league/useLeagueQueries';
 import useTournamentQueries from 'hooks/tournament/useTournamentQueries';
 import { useCallback, useEffect, useState } from 'react';
 import useAddGame from 'services/queries/game/useAddGame';
+import useAddGroup from 'services/queries/group/useAddGroup';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
 import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
+import Game from 'types/Game';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
 import { TournamentSettings } from 'types/TournamentSettings';
@@ -91,6 +93,7 @@ const TournamentPage = () => {
   const [isInitializeTournamentModalOpen, setIsInitializeTournamentModalOpen] =
     useState(false);
   const { addGamesBulk } = useAddGame();
+  const { addGroupsBulk } = useAddGroup();
 
   const theme = useTheme();
   const selectedTournament = activeLeague?.activeTournament;
@@ -123,7 +126,13 @@ const TournamentPage = () => {
     selectedTournament.groups = groups;
     selectedTournament.settings = settings;
     selectedTournament.state.status = TournamentStatus.initialized;
-    console.log(addGamesBulk);
+    await addGamesBulk(
+      groups.reduce((prev: Game[], curr) => {
+        prev.push(...curr.games);
+        return prev;
+      }, []),
+    );
+    await addGroupsBulk(groups);
     await addOrEditTournament(selectedTournament, activeLeague, true);
     await invalidateSelectedLeague();
     setIsInitializeTournamentModalOpen(false);

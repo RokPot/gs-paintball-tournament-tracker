@@ -29,7 +29,6 @@ const useTournamentService = () => {
         ...res,
         ...omit(tournament, ['_rev', '_id']),
       };
-      console.log(toUpdate, tournament);
       await db.put(toUpdate);
 
       const updatedTournament = new Tournament({
@@ -66,6 +65,11 @@ const useTournamentService = () => {
             if (doc.leaderboardTeamIds) {
               doc.leaderboardTeamIds.forEach((item: any) => {
                 emit(doc._id, { _id: item, type: DocType.LeaderboardTeam });
+              });
+            }
+            if (doc.groupIds) {
+              doc.groupIds.forEach((item: any) => {
+                emit(doc._id, { _id: item, type: DocType.Group });
               });
             }
           }

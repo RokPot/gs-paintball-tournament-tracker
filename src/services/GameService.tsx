@@ -19,10 +19,9 @@ const useGameService = () => {
 
   const addNewGameBatch = useCallback(
     async (games: GameDto[]) => {
-      const res = await db.post(games[0]);
-      const newGame = await db.get<GameDto>(res.id);
+      await db.bulkDocs(games);
 
-      return newGame;
+      return true;
     },
     [db],
   );

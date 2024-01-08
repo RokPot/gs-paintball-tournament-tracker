@@ -20,7 +20,7 @@ export default class TournamentGroup extends IPouchDB {
   stage: number;
 
   constructor(props: ITournamentGroup) {
-    super(props._id, props._rev, props.docType || DocType.Tournament);
+    super(props._id, props._rev, props.docType || DocType.Group);
     this.id = props.id;
     this.teams = props.teams || [];
     this.groupIndex = props.groupIndex;

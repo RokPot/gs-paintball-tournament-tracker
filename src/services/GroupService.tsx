@@ -1,64 +1,49 @@
 import { omit } from 'lodash';
 import { useCallback } from 'react';
-import Tournament from 'types/Tournament';
 import { TournamentDto } from 'types/dto/TournamentDto';
-import { getTournamentsList } from 'utils/PouchDBUtils';
+import { TournamentGroupDto } from 'types/dto/TournamentGroupDto';
+import { getGroupsList } from 'utils/PouchDBUtils';
 import usePouchDB, { DocType, pouchDbName } from './pouchDB';
 
 const useGroupService = () => {
   const db = usePouchDB(pouchDbName);
 
   const addNewGroup = useCallback(
-    async (tournament: TournamentDto) => {
-      const res = await db.post(tournament);
-      const newTournament = new Tournament({
-        ...(await db.get<TournamentDto>(res.id)),
-        schedule: [],
-      });
+    async (group: TournamentGroupDto) => {
+      await db.post(group);
 
-      return newTournament;
+      return true;
     },
     [db],
   );
 
   const addNewGroupBatch = useCallback(
-    async (tournament: TournamentDto) => {
-      const res = await db.post(tournament);
-      const newTournament = new Tournament({
-        ...(await db.get<TournamentDto>(res.id)),
-        schedule: [],
-      });
-
-      return newTournament;
+    async (groups: TournamentGroupDto[]) => {
+      await db.bulkDocs(groups);
+      return true;
     },
     [db],
   );
 
   const updateGroup = useCallback(
-    async (tournament: TournamentDto) => {
-      const res = await db.get(tournament._id);
+    async (group: TournamentGroupDto) => {
+      const res = await db.get(group._id);
 
       const toUpdate = {
         ...res,
-        ...omit(tournament, ['_rev', '_id']),
+        ...omit(group, ['_rev', '_id']),
       };
-      console.log(toUpdate, tournament);
       await db.put(toUpdate);
 
-      const updatedTournament = new Tournament({
-        ...(await db.get<TournamentDto>(tournament._id)),
-        schedule: [],
-      });
-
-      return updatedTournament;
+      return true;
     },
     [db],
   );
 
   const deleteGroup = useCallback(
-    async (tournament: TournamentDto) => {
-      const fetchedTournament = await db.get<TournamentDto>(tournament._id);
-      await db.remove(fetchedTournament._id, fetchedTournament._rev);
+    async (group: TournamentGroupDto) => {
+      const fetchedGroup = await db.get<TournamentGroupDto>(group._id);
+      await db.remove(fetchedGroup._id, fetchedGroup._rev);
 
       return true;
     },
@@ -66,19 +51,19 @@ const useGroupService = () => {
   );
 
   const getGroup = useCallback(
-    async (tournamentId: string) => {
+    async (groupId: string) => {
       const myMapFunction = (doc: any, emit: any) => {
-        if (doc.docType === DocType.Tournament) {
-          if (tournamentId === doc._id) {
-            emit(doc, DocType.Tournament);
+        if (doc.docType === DocType.Group) {
+          if (groupId === doc._id) {
+            emit(doc, DocType.Group);
             if (doc.teamIds) {
               doc.teamIds.forEach((item: any) => {
                 emit(doc._id, { _id: item, type: DocType.Team });
               });
             }
-            if (doc.leaderboardTeamIds) {
-              doc.leaderboardTeamIds.forEach((item: any) => {
-                emit(doc._id, { _id: item, type: DocType.LeaderboardTeam });
+            if (doc.gameIds) {
+              doc.gameIds.forEach((item: any) => {
+                emit(doc._id, { _id: item, type: DocType.Game });
               });
             }
           }
@@ -87,31 +72,41 @@ const useGroupService = () => {
       const result = await db.query<TournamentDto[]>(myMapFunction, {
         include_docs: true,
       });
-      const tournamentsList = getTournamentsList(result);
-      const tournament =
-        tournamentsList?.length > 0 ? tournamentsList[0] : null;
-      return tournament;
+      const groupsList = getGroupsList(result);
+      const group = groupsList?.length > 0 ? groupsList[0] : null;
+      return group;
     },
     [db],
   );
 
-  const getGroups = useCallback(async () => {
-    const myMapFunction = (doc: any, emit: any) => {
-      if (doc.docType === DocType.Tournament) {
-        emit(doc, DocType.Tournament);
-        if (doc.teamIds) {
-          doc.teamIds.forEach((item: any) => {
-            emit(doc._id, { _id: item, type: DocType.Team });
-          });
+  const getGroups = useCallback(
+    async (groupIds?: string[]) => {
+      const myMapFunction = (doc: any, emit: any) => {
+        if (
+          doc.docType === DocType.Group &&
+          ((groupIds && groupIds.includes(doc._id)) || !groupIds)
+        ) {
+          emit(doc, DocType.Group);
+          if (doc.teamIds) {
+            doc.teamIds.forEach((item: any) => {
+              emit(doc._id, { _id: item, type: DocType.Team });
+            });
+          }
+          if (doc.gameIds) {
+            doc.gameIds.forEach((item: any) => {
+              emit(doc._id, { _id: item, type: DocType.Game });
+            });
+          }
         }
-      }
-    };
-    const result = await db.query<TournamentDto[]>(myMapFunction, {
-      include_docs: true,
-    });
+      };
+      const result = await db.query<TournamentGroupDto[]>(myMapFunction, {
+        include_docs: true,
+      });
 
-    return getTournamentsList(result);
-  }, [db]);
+      return getGroupsList(result);
+    },
+    [db],
+  );
 
   return {
     addNewGroup,

@@ -6,10 +6,12 @@ import { getLeaguesList } from 'utils/PouchDBUtils';
 import usePouchDB, { DocType, pouchDbName } from './pouchDB';
 
 import useTournamentService from './TournamentService';
+import useGroupService from './GroupService';
 
 const useLeagueService = () => {
   const db = usePouchDB(pouchDbName);
   const { getTournament } = useTournamentService();
+  const { getGroups } = useGroupService();
 
   const addNewLeague = useCallback(
     async (league: League) => {
@@ -79,18 +81,29 @@ const useLeagueService = () => {
     });
     const leagues = getLeaguesList(result);
     const activeLeague = leagues?.length > 0 ? leagues[0] : null;
+
     if (!activeLeague) {
       return null;
     }
+
     if (!activeLeague?.activeTournament) {
       return activeLeague;
     }
+
     const activeTournament = await getTournament(
       activeLeague.activeTournament._id,
     );
+
+    if (activeTournament?.groups) {
+      const groups = await getGroups(
+        activeTournament.groups.map((group) => group._id),
+      );
+      activeLeague.activeTournament.groups = groups;
+    }
+
     activeLeague.activeTournament = activeTournament || undefined;
     return activeLeague;
-  }, [db, getTournament]);
+  }, [db, getGroups, getTournament]);
 
   const getLeagues = useCallback(async () => {
     const myMapFunction = (doc: any, emit: any) => {
