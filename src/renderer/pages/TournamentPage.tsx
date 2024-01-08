@@ -345,6 +345,7 @@ const TournamentPage = () => {
         fullScreen
         onClose={() => setIsInitializeTournamentModalOpen(false)}
         title={`Initialize ${selectedTournament?.name}`}
+        showHeader
       >
         <InitializeTournament
           tournament={selectedTournament!}

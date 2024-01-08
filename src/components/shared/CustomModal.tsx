@@ -26,6 +26,7 @@ interface IProps {
   width?: number;
   fullScreen?: boolean;
   title?: string;
+  showHeader?: boolean;
 }
 const style = {
   position: 'absolute' as 'absolute',
@@ -44,6 +45,7 @@ const CustomModal = ({
   width = 400,
   fullScreen,
   title,
+  showHeader = false,
 }: IProps) => {
   const theme = useTheme();
   return (
@@ -56,25 +58,27 @@ const CustomModal = ({
             maxHeight: fullScreen ? '100%' : 'inherit',
           }}
         >
-          <FlexContainer
-            width="100%"
-            justifyContent="space-between"
-            alignItems="center"
-            position="sticky"
-            top="0px"
-            padding="5px 0px 5px 20px"
-            zIndex={10}
-            style={{
-              backgroundColor: theme.palette.background.default,
-              boxShadow: `0px 0px 8px 0px ${theme.palette.primary.dark}`,
-            }}
-          >
-            <Typography variant="h1">{title}</Typography>
+          {showHeader && (
+            <FlexContainer
+              width="100%"
+              justifyContent="space-between"
+              alignItems="center"
+              position="sticky"
+              top="0px"
+              padding="5px 0px 5px 20px"
+              zIndex={10}
+              style={{
+                backgroundColor: theme.palette.background.default,
+                boxShadow: `0px 0px 8px 0px ${theme.palette.primary.dark}`,
+              }}
+            >
+              <Typography variant="h1">{title}</Typography>
 
-            <Button onClick={onClose}>
-              <FontAwesomeIcon icon={faClose} />
-            </Button>
-          </FlexContainer>
+              <Button onClick={onClose}>
+                <FontAwesomeIcon icon={faClose} />
+              </Button>
+            </FlexContainer>
+          )}
 
           {children}
         </StyledModalContainer>

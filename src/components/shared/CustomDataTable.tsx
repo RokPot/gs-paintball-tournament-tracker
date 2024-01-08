@@ -9,6 +9,7 @@ interface IProps {
   onRowSelect?: (selected: any) => void;
   height?: string;
   loading?: boolean;
+  pageSize?: number;
 }
 
 const CustomDataTable: React.FC<IProps> = ({
@@ -18,6 +19,7 @@ const CustomDataTable: React.FC<IProps> = ({
   onRowSelect,
   height,
   loading,
+  pageSize = 5,
 }) => {
   return (
     <div
@@ -30,20 +32,20 @@ const CustomDataTable: React.FC<IProps> = ({
       }}
     >
       <DataGrid
-        className={'custom-table'}
+        className="custom-table"
         rows={rows}
         columns={columns}
         initialState={{
           pagination: {
-            paginationModel: { page: 0, pageSize: 5 },
+            paginationModel: { page: 0, pageSize },
           },
         }}
-        pageSizeOptions={[5]}
+        pageSizeOptions={[pageSize]}
         onRowClick={(param1) => onRowSelect?.(param1.row)}
         disableColumnFilter
         disableEval
         disableColumnMenu
-        disableColumnSelector={true}
+        disableColumnSelector
         disableDensitySelector
         loading={loading}
       />
@@ -66,5 +68,5 @@ export default styled(CustomDataTable)(
     .MuiDataGrid-cell:focus {
       outline: none;
     }
-  `
+  `,
 );

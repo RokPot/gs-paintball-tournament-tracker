@@ -126,6 +126,7 @@ const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
         isModalOpen={isTeamAddModalOpen}
         onClose={() => setIsTeamAddModalOpen(false)}
         width={600}
+        title="Add Team"
       >
         <QuickAddTeam
           onAccept={(team) => {

@@ -144,6 +144,11 @@ const TeamsPage = () => {
     },
   ];
 
+  const closeModal = () => {
+    setIsTeamUpsertModalOpen(false);
+    setTeamToUpsert(undefined);
+  };
+
   return (
     <PageContainer>
       <StyledHeaderContainer>
@@ -159,18 +164,19 @@ const TeamsPage = () => {
           rows={teamsList || []}
           loading={isFetchingTeamsList}
           height="100%"
+          pageSize={10}
         />
       </div>
 
       <CustomModal
         isModalOpen={isTeamUpsertModalOpen}
-        onClose={() => setIsTeamUpsertModalOpen(false)}
+        onClose={closeModal}
         width={600}
       >
         <QuickAddTeam
           team={teamToUpsert}
           onAccept={addNewTeam}
-          onCancel={() => setIsTeamUpsertModalOpen(false)}
+          onCancel={closeModal}
         />
       </CustomModal>
     </PageContainer>

@@ -26,7 +26,7 @@ export const mapGamesFromResponse = <T>(
   response: PouchDBResponse<T>[],
 ) => {
   const gamesList: Game[] = [];
-  gameIds.forEach((gameId) => {
+  gameIds?.forEach((gameId) => {
     const gameInResult = response.find((res) => res?.doc?._id === gameId)
       ?.doc as unknown as GameDto;
     if (!gameInResult) {
@@ -51,7 +51,7 @@ export const mapTeamsFromResponse = <T>(
   response: PouchDBResponse<T>[],
 ) => {
   const teamsList: Team[] = [];
-  teamIds.forEach((teamId) => {
+  teamIds?.forEach((teamId) => {
     const teamInResult = response.find((res) => res?.doc?._id === teamId)
       ?.doc as unknown as TeamDto;
     if (!teamInResult) {
@@ -68,7 +68,7 @@ export const mapGroupsFromResponse = <T>(
   response: PouchDBResponse<T>[],
 ) => {
   const groupsList: TournamentGroup[] = [];
-  groupIds.forEach((groupId) => {
+  groupIds?.forEach((groupId) => {
     const groupInResult = response.find((res) => res?.doc?._id === groupId)
       ?.doc as unknown as TournamentGroupDto;
     if (!groupInResult) {
@@ -104,7 +104,7 @@ export const mapLeaderboardTeamsFromResponse = <T>(
   response: PouchDBResponse<T>[],
 ) => {
   const teamsList: LeaderboardTeam[] = [];
-  leaderboardTeamIds.forEach((teamId) => {
+  leaderboardTeamIds?.forEach((teamId) => {
     const teamInResult = response.find((res) => res?.doc?._id === teamId)
       ?.doc as unknown as LeaderboardTeamDto;
     if (!teamInResult) {
@@ -132,7 +132,7 @@ export const mapTournamentsFromResponse = (
   response: PouchDBResponse<unknown>[],
 ) => {
   const tournaments: Tournament[] = [];
-  leaderboardTeamIds.forEach((teamId) => {
+  leaderboardTeamIds?.forEach((teamId) => {
     const teamInResult = response.find((res) => res?.doc?._id === teamId)
       ?.doc as unknown as TournamentDto;
     if (!teamInResult) {
@@ -165,7 +165,7 @@ export const getRootElementAndLinkedDocs = <T>(
 export const getTournamentsList = (result: PouchDB.Query.Response<any>) => {
   const leagues: Tournament[] = [];
   const groupedResults = groupBy(result.rows, (row: any) => row.id);
-  Object.keys(groupedResults).forEach((key) => {
+  Object.keys(groupedResults)?.forEach((key) => {
     const { rootDoc, otherDocs } = getRootElementAndLinkedDocs<TournamentDto>(
       groupedResults[key],
       DocType.Tournament,
@@ -196,7 +196,7 @@ export const getTournamentsList = (result: PouchDB.Query.Response<any>) => {
 export const getGroupsList = (result: PouchDB.Query.Response<any>) => {
   const groups: TournamentGroup[] = [];
   const groupedResults = groupBy(result.rows, (row: any) => row.id);
-  Object.keys(groupedResults).forEach((key) => {
+  Object.keys(groupedResults)?.forEach((key) => {
     const { rootDoc, otherDocs } =
       getRootElementAndLinkedDocs<TournamentGroupDto>(
         groupedResults[key],
@@ -231,7 +231,7 @@ export const getGroupsList = (result: PouchDB.Query.Response<any>) => {
 export const getGamesList = (result: PouchDB.Query.Response<any>) => {
   const games: Game[] = [];
   const groupedResults = groupBy(result.rows, (row: any) => row.id);
-  Object.keys(groupedResults).forEach((key) => {
+  Object.keys(groupedResults)?.forEach((key) => {
     const { rootDoc, otherDocs } = getRootElementAndLinkedDocs<GameDto>(
       groupedResults[key],
       DocType.Game,
@@ -263,7 +263,7 @@ export const getGamesList = (result: PouchDB.Query.Response<any>) => {
 export const getLeaguesList = (result: PouchDB.Query.Response<any>) => {
   const leagues: League[] = [];
   const groupedResults = groupBy(result.rows, (row: any) => row.id);
-  Object.keys(groupedResults).forEach((key) => {
+  Object.keys(groupedResults)?.forEach((key) => {
     const { rootDoc, otherDocs } = getRootElementAndLinkedDocs<LeagueDto>(
       groupedResults[key],
       DocType.League,
