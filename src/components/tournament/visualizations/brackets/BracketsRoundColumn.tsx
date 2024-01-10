@@ -100,7 +100,7 @@ const BracketsRoundColumn: React.FC<IProps> = ({
               >
                 <FlexContainer
                   flexDirection="column"
-                  margin={getContainerMargin(round)}
+                  gap={getContainerMargin(round)}
                   height={`${getContainerMargin(round) + 160}px`}
                   justifyContent="center"
                 >

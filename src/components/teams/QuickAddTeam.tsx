@@ -73,12 +73,12 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
       padding="16px"
       flexDirection="column"
       alignItems="flex-start"
-      margin={16}
+      gap={16}
       width="100%"
     >
       <Typography variant="h1">Add team</Typography>
       <Typography variant="h3">Details</Typography>
-      <FlexContainer width="100%" margin={16} style={{ marginBottom: '0px' }}>
+      <FlexContainer width="100%" gap={16} style={{ marginBottom: '0px' }}>
         <CustomTextField
           label="Team name *"
           id="teamName"
@@ -121,7 +121,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
           <FlexContainer
             highlightRowOnHover
             flexDirection="row"
-            margin={8}
+            gap={8}
             width="100%"
             key={index}
             padding="8px"
@@ -178,7 +178,7 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
         </Button>
       </FlexContainer>
 
-      <FlexContainer flexDirection="row" margin={16}>
+      <FlexContainer flexDirection="row" gap={16}>
         <Button
           variant="contained"
           onClick={formik.submitForm}

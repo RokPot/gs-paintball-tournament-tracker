@@ -2,14 +2,9 @@ import { Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import League from 'types/League';
 import Team from 'types/Team';
-import TournamentGroup from 'types/TournamentGroup';
-import { TournamentType } from 'types/TournamentType';
-import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
-import { generateGamesForEliminationBrackets } from 'utils/tournamentUtils';
 import { v4 } from 'uuid';
 import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
-import BracketsContainer from './visualizations/brackets/BracketsContainer';
-import RoundRobinContainer from './visualizations/round-robin/RoundRobinContainer';
+import TournamentTypesPreview from './visualizations/TournamentTypesPreview';
 
 interface IProps {
   activeLeague: League;
@@ -39,12 +34,12 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
     });
     teamss.push(newTeam);
   }
-  const { games: roundRobinGames } = generateGamesForRoundRobin(teamss);
+  // const { games: roundRobinGames } = generateGamesForRoundRobin(teamss);
 
-  const { games: bracketGames, totalNumberOfRounds } =
-    generateGamesForEliminationBrackets(
-      activeLeague?.activeTournament?.teams || [],
-    );
+  // const { games: bracketGames, totalNumberOfRounds } =
+  //   generateGamesForEliminationBrackets(
+  //     activeLeague?.activeTournament?.teams || [],
+  //   );
 
   if (!selectedTournament?.groups?.length) {
     return (
@@ -61,12 +56,15 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
     );
   }
 
+  console.log(selectedTournament?.groups);
+
   return (
     <FlexContainer
       flexDirection="column"
       width="100%"
       alignItems="flex-start"
       padding="20px 0px 0px 0px"
+      gap={16}
     >
       <Typography
         variant="body1"
@@ -74,7 +72,19 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
       >
         Tournament has not yet started. This is just a preview.{' '}
       </Typography>
-      {selectedTournament.settings.type ===
+      {selectedTournament?.groups?.map((group, index) => (
+        <FlexContainer
+          flexDirection="column"
+          alignItems="center"
+          key={index}
+          gap={15}
+          flexWrap="wrap"
+        >
+          <Typography variant="h4">Group {group.groupIndex}</Typography>
+          <TournamentTypesPreview group={group} />
+        </FlexContainer>
+      ))}
+      {/* {selectedTournament.settings.type ===
         TournamentType.singleElimination && (
         <BracketsContainer
           games={bracketGames}
@@ -95,7 +105,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
             })
           }
         />
-      )}
+      )} */}
     </FlexContainer>
   );
 };

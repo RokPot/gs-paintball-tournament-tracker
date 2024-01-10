@@ -71,7 +71,7 @@ const TeamsPage = () => {
       maxWidth: 350,
       renderCell: (params) => {
         return (
-          <FlexContainer flexDirection="row" margin={8}>
+          <FlexContainer flexDirection="row" gap={8}>
             <Avatar
               variant="rounded"
               style={{ backgroundColor: params?.row?.color }}
@@ -158,13 +158,13 @@ const TeamsPage = () => {
         </Button>
       </StyledHeaderContainer>
 
-      <div style={{ height: '100%' }}>
+      <div style={{ height: 'calc(100% - 40px)' }}>
         <CustomDataTable
           columns={columns}
           rows={teamsList || []}
           loading={isFetchingTeamsList}
           height="100%"
-          pageSize={10}
+          pageSize={15}
         />
       </div>
 

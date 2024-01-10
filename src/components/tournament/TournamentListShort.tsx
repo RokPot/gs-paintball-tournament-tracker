@@ -21,7 +21,7 @@ const TournamentShortList: React.FC<IProps> = ({ tournaments }) => {
         tournaments?.map((tournament, index) => (
           <FlexContainer
             flexDirection="row"
-            margin={8}
+            gap={8}
             padding="8px"
             key={index}
             width="100%"

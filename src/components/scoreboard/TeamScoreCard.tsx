@@ -8,7 +8,7 @@ const StyledTeamHeader = styled('div')(
     text-align: center;
     padding: 8px;
     border-radius: 2px 2px 20px 20px;
-`
+`,
 );
 
 const StyledTeamScoreTypography = styled(Typography)`
@@ -22,7 +22,7 @@ const StyledHeaderTypography = styled(Typography)`
 const StyledCard = styled(Card)(
   (props) => `
     box-shadow: ${alpha(props.theme.palette.primary.main, 0.5)} 0px 5px 15px;
-    border: solid 1px ${alpha(props.theme.palette.primary.main, 0.2)};  
+    border: solid 1px ${alpha(props.theme.palette.primary.main, 0.2)};
     min-width: 100px;
     max-width: 300px;
     width: 100%;
@@ -30,13 +30,13 @@ const StyledCard = styled(Card)(
     max-height: 300px;
     min-height: 100px;
     flex: 1;
-    `
+    `,
 );
 
 const TeamScoreCard: React.FC = () => {
   return (
     <StyledCard className="custom-card teams-card">
-      <FlexContainer flexDirection="column" margin={8}>
+      <FlexContainer flexDirection="column" gap={8}>
         <StyledTeamHeader>
           <StyledHeaderTypography
             variant="h1Medium"

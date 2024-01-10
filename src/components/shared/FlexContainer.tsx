@@ -5,6 +5,7 @@ import LoadingIndicator, { LoadingIndicatorProps } from './LoadingIndicator';
 interface FlexContainerProps {
   children?: any;
   margin?: number;
+  gap?: number;
   marginBottom?: number;
   style?: any;
   className?: any;
@@ -94,6 +95,7 @@ const FlexContainer: FunctionComponent<FlexContainerProps> = memo(
       children,
       loading,
       loadingProps,
+      margin,
       onClick,
       onMouseEnter,
       onMouseLeave,
@@ -105,6 +107,7 @@ const FlexContainer: FunctionComponent<FlexContainerProps> = memo(
     }
 
     return (
+      // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
       <div
         onClick={onClick}
         onMouseEnter={onMouseEnter}
@@ -135,6 +138,7 @@ const FlexContainer: FunctionComponent<FlexContainerProps> = memo(
           top,
           width,
           zIndex,
+          margin,
           ...style,
         }}
         ref={ref as any}
@@ -155,14 +159,7 @@ FlexContainer.defaultProps = {
 export default styled(FlexContainer)(
   (props: FlexContainerProps & { theme?: Theme }) => `
   margin-bottom: ${props.marginBottom ? `${props.marginBottom}px` : undefined};
-  >:not(:last-child) {
-    margin-right: ${
-      props.margin && props.flexDirection === 'row' ? props.margin : 0
-    }px;
-    margin-bottom: ${
-      props.margin && props.flexDirection === 'column' ? props.margin : 0
-    }px;
-  }
+  gap: ${props.gap || 0}px;
   &:hover {
     ${
       props.highlightRowOnHover && props.flexDirection === 'row'

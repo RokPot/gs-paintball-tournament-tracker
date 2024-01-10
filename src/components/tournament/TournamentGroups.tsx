@@ -1,10 +1,8 @@
 import { Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
-import LeaderboardList from 'components/teams/LeaderboardList';
-import TeamsShortList from 'components/teams/TeamShortList';
 import League from 'types/League';
 import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
-import TournamentDetailsList from './TournamentDetailsList';
+import TournamentGroupCard from './TournamentGroupCard';
 
 interface IProps {
   activeLeague: League;
@@ -27,33 +25,18 @@ const TournamentGroups: React.FC<IProps> = ({ activeLeague }) => {
       </FlexContainer>
     );
   }
-
   return (
-    <FlexContainer flexDirection="column">
-      <TournamentDetailsList tournament={selectedTournament} />
-      <FlexContainer flexDirection="row" width="100%">
-        <FlexContainer
-          flexDirection="column"
-          width="100%"
-          alignItems="flex-start"
-          justifyContent="flex-start"
-          height="100%"
-        >
-          <Typography variant="h5">Participating teams</Typography>
-          <TeamsShortList teams={selectedTournament.teams} />
-        </FlexContainer>
-        <FlexContainer
-          flexDirection="column"
-          width="100%"
-          alignItems="flex-start"
-          justifyContent="flex-start"
-          height="100%"
-        >
-          <Typography variant="h5">Tournament leaderboard</Typography>
-
-          <LeaderboardList teams={selectedTournament.leaderboard} />
-        </FlexContainer>
-      </FlexContainer>
+    <FlexContainer
+      flexDirection="row"
+      gap={16}
+      flexWrap="wrap"
+      alignItems="stretch"
+    >
+      {selectedTournament.groups
+        .sort((a, b) => a.groupIndex - b.groupIndex)
+        .map((group, index) => (
+          <TournamentGroupCard key={index} group={group} />
+        ))}
     </FlexContainer>
   );
 };

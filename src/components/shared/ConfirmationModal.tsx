@@ -1,9 +1,9 @@
-import CustomModal from './CustomModal';
-import FlexContainer from './FlexContainer';
 import { Button, Typography } from '@mui/material';
 import { isString } from 'lodash';
 import { FunctionComponent } from 'react';
 import useConfirmationModalStore from 'store/ConfirmationModalStore';
+import CustomModal from './CustomModal';
+import FlexContainer from './FlexContainer';
 
 const preventPropagationAndPreventDefault = (event: any) => {
   try {
@@ -62,7 +62,7 @@ const ConfirmationModal: FunctionComponent<any> = (props) => {
         {!confirmationModalStore.hideButtons && (
           <FlexContainer
             justifyContent={confirmationModalStore.buttonsFlexSpacing}
-            margin={30}
+            gap={30}
             style={{ marginTop: '40px', width: '100%' }}
           >
             {!confirmationModalStore.hideDeny && (

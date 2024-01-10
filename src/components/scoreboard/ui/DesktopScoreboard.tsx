@@ -25,7 +25,7 @@ const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
       width="100%"
       className={className}
       padding="8px"
-      margin={8}
+      gap={8}
     >
       <FlexContainer
         flex={1}
@@ -33,7 +33,7 @@ const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
         height="100%"
         alignItems="center"
         justifyContent="center"
-        margin={8}
+        gap={8}
       >
         <TeamScoreCard />
         <Card className="custom-card counter-card">
@@ -88,15 +88,15 @@ const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
             height="100%"
             justifyContent="center"
             alignItems="center"
-            margin={8}
+            gap={8}
             padding="16px"
           >
-            <FlexContainer flexDirection="column" margin={8}>
+            <FlexContainer flexDirection="column" gap={8}>
               <Button variant="contained" fullWidth size="large">
                 <Typography variant="p1Medium">Team 1 Pause</Typography>
               </Button>
             </FlexContainer>
-            <FlexContainer flexDirection="column" margin={8}>
+            <FlexContainer flexDirection="column" gap={8}>
               <Button
                 variant="contained"
                 color="secondary"
@@ -116,7 +116,7 @@ const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
                 <Typography variant="h3Medium">Start Game</Typography>
               </Button>
             </FlexContainer>
-            <FlexContainer flexDirection="column" margin={8}>
+            <FlexContainer flexDirection="column" gap={8}>
               <Button variant="contained" size="large">
                 <Typography variant="p1Medium">Team 2 Pause</Typography>
               </Button>

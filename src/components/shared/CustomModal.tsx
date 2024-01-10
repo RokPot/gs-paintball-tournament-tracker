@@ -55,7 +55,7 @@ const CustomModal = ({
           style={{
             width: fullScreen ? '100%' : width,
             height: fullScreen ? '100%' : 'auto',
-            maxHeight: fullScreen ? '100%' : 'inherit',
+            maxHeight: fullScreen ? '100%' : '',
           }}
         >
           {showHeader && (

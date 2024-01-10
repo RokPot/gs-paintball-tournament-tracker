@@ -46,6 +46,7 @@ const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
       );
       onConfirm(
         new League({
+          ...(league || {}),
           id: teamId,
           _id: teamId,
           leaderboard: [
@@ -56,7 +57,6 @@ const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
           ],
           name: values.name,
           teams: values.teams,
-          tournaments: [],
         }),
         !!league,
       );
@@ -68,7 +68,7 @@ const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
       padding="16px"
       flexDirection="column"
       alignItems="flex-start"
-      margin={16}
+      gap={16}
     >
       <Typography variant="h1">
         {`${league ? 'Edit' : 'Add'} league`}
@@ -140,7 +140,7 @@ const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
           onCancel={() => setIsTeamAddModalOpen(false)}
         />
       </CustomModal>
-      <FlexContainer flexDirection="row" margin={16}>
+      <FlexContainer flexDirection="row" gap={16}>
         <Button
           variant="contained"
           onClick={formik.submitForm}

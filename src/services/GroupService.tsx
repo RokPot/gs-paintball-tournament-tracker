@@ -102,8 +102,8 @@ const useGroupService = () => {
       const result = await db.query<TournamentGroupDto[]>(myMapFunction, {
         include_docs: true,
       });
-
-      return getGroupsList(result);
+      const groups = getGroupsList(result);
+      return groups.sort((a, b) => a.groupIndex - b.groupIndex);
     },
     [db],
   );

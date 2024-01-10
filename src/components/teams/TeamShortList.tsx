@@ -20,7 +20,7 @@ const TeamsShortList: React.FC<IProps> = ({
       {teams?.map((team: Team, index: number) => (
         <FlexContainer
           flexDirection="row"
-          margin={8}
+          gap={8}
           padding="8px"
           key={index}
           width="100%"

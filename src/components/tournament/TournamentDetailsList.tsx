@@ -38,7 +38,7 @@ const TournamentDetailsList = ({ tournament }: IProps) => {
   };
 
   return (
-    <FlexContainer width="100%" justifyContent="flex-start" margin={16}>
+    <FlexContainer width="100%" justifyContent="flex-start" gap={16}>
       <FlexContainer
         flexDirection="column"
         justifyContent="center"

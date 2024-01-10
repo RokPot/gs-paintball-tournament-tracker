@@ -199,7 +199,7 @@ const TournamentPage = () => {
               />
             </IconButton>
           </Typography>
-          <FlexContainer margin={8}>
+          <FlexContainer gap={8}>
             {!!selectedTournament &&
               [TournamentStatus.created].includes(
                 selectedTournament.state.status,
@@ -243,7 +243,7 @@ const TournamentPage = () => {
           flexDirection="column"
           justifyContent="flex-start"
           alignItems="flex-start"
-          margin={8}
+          gap={8}
         >
           <Typography variant="h4">No league selected</Typography>
           <Typography variant="subtitle1" color={theme.palette.text.secondary}>
@@ -310,7 +310,7 @@ const TournamentPage = () => {
             flexDirection="column"
             justifyContent="flex-start"
             alignItems="flex-start"
-            margin={8}
+            gap={8}
           >
             <Typography variant="h4">No tournament selected</Typography>
             <Typography

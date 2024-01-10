@@ -157,18 +157,14 @@ const AddOrEditTournament = ({
         maxHeight="500px"
         flexDirection="column"
         alignItems="flex-start"
-        margin={16}
+        gap={16}
         width="100%"
         overflowY="scroll"
         style={{ flexGrow: '1' }}
       >
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="sl">
           <Typography variant="h3">Details</Typography>
-          <FlexContainer
-            width="100%"
-            margin={16}
-            style={{ marginBottom: '0px' }}
-          >
+          <FlexContainer width="100%" gap={16} style={{ marginBottom: '0px' }}>
             <CustomTextField
               label="Tournament name *"
               id="name"
@@ -181,7 +177,7 @@ const AddOrEditTournament = ({
               debounceTime={200}
             />
           </FlexContainer>
-          <FlexContainer width="100%" justifyContent="space-between" margin={8}>
+          <FlexContainer width="100%" justifyContent="space-between" gap={8}>
             <DesktopDatePicker
               onChange={(date) => formik.setFieldValue('startDate', date)}
               defaultValue={formik.values.startDate}
@@ -368,7 +364,7 @@ const AddOrEditTournament = ({
               } as AddGameSettings)
             }
           />
-          <FlexContainer width="100%" margin={8}>
+          <FlexContainer width="100%" gap={8}>
             <TimePicker
               sx={{ width: '100%' }}
               label="Short break time"
@@ -398,7 +394,7 @@ const AddOrEditTournament = ({
           </FlexContainer>
         </LocalizationProvider>
       </FlexContainer>
-      <FlexContainer flexDirection="row" margin={16} padding="16px">
+      <FlexContainer flexDirection="row" gap={16} padding="16px">
         <Button
           variant="contained"
           onClick={formik.submitForm}

@@ -98,7 +98,7 @@ const useLeagueService = () => {
       const groups = await getGroups(
         activeTournament.groups.map((group) => group._id),
       );
-      activeLeague.activeTournament.groups = groups;
+      activeTournament.groups = groups;
     }
 
     activeLeague.activeTournament = activeTournament || undefined;
