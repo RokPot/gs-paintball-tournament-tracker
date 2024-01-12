@@ -33,6 +33,7 @@ const TournamentGroups: React.FC<IProps> = ({ activeLeague }) => {
       alignItems="stretch"
     >
       {selectedTournament.groups
+        .filter((group) => group.stage === 1)
         .sort((a, b) => a.groupIndex - b.groupIndex)
         .map((group, index) => (
           <TournamentGroupCard key={index} group={group} />

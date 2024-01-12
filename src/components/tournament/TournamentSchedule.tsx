@@ -1,10 +1,9 @@
 import { Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
-import LeaderboardList from 'components/teams/LeaderboardList';
-import TeamsShortList from 'components/teams/TeamShortList';
+import { useState } from 'react';
+import Game from 'types/Game';
 import League from 'types/League';
 import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
-import TournamentDetailsList from './TournamentDetailsList';
 
 interface IProps {
   activeLeague: League;
@@ -12,6 +11,20 @@ interface IProps {
 
 const TournamentSchedule = ({ activeLeague }: IProps) => {
   const selectedTournament = activeLeague?.activeTournament;
+  const [schedule, setSchedule] = useState<Game[]>([]);
+
+  const generateSchedule = () => {
+    if (!selectedTournament?.groups?.length) {
+      return;
+    }
+    const { switchGames, switchGroups } = selectedTournament.settings;
+    const totalGames = selectedTournament.groups.reduce((prev, curr) => {
+      return prev + (curr?.games?.length || 0);
+    }, 0);
+
+    const currentGame = 0;
+    const currentGroup = 1;
+  };
 
   if (!selectedTournament?.groups?.length) {
     return (
@@ -28,34 +41,7 @@ const TournamentSchedule = ({ activeLeague }: IProps) => {
     );
   }
 
-  return (
-    <FlexContainer flexDirection="column">
-      <TournamentDetailsList tournament={selectedTournament} />
-      <FlexContainer flexDirection="row" width="100%">
-        <FlexContainer
-          flexDirection="column"
-          width="100%"
-          alignItems="flex-start"
-          justifyContent="flex-start"
-          height="100%"
-        >
-          <Typography variant="h5">Participating teams</Typography>
-          <TeamsShortList teams={selectedTournament.teams} />
-        </FlexContainer>
-        <FlexContainer
-          flexDirection="column"
-          width="100%"
-          alignItems="flex-start"
-          justifyContent="flex-start"
-          height="100%"
-        >
-          <Typography variant="h5">Tournament leaderboard</Typography>
-
-          <LeaderboardList teams={selectedTournament.leaderboard} />
-        </FlexContainer>
-      </FlexContainer>
-    </FlexContainer>
-  );
+  return <FlexContainer flexDirection="column">{}</FlexContainer>;
 };
 
 export default TournamentSchedule;

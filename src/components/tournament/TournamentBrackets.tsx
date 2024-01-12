@@ -72,18 +72,28 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
       >
         Tournament has not yet started. This is just a preview.{' '}
       </Typography>
-      {selectedTournament?.groups?.map((group, index) => (
-        <FlexContainer
-          flexDirection="column"
-          alignItems="center"
-          key={index}
-          gap={15}
-          flexWrap="wrap"
-        >
-          <Typography variant="h4">Group {group.groupIndex}</Typography>
-          <TournamentTypesPreview group={group} />
-        </FlexContainer>
-      ))}
+      <FlexContainer
+        flexDirection="row"
+        gap={16}
+        height="100%"
+        alignItems="flex-start"
+      >
+        {selectedTournament?.groups
+          ?.filter((group) => group.stage === 1)
+          .map((group, index) => (
+            <FlexContainer
+              flexDirection="column"
+              alignItems="center"
+              key={index}
+              gap={15}
+              flexWrap="wrap"
+            >
+              <Typography variant="h4">Group {group.groupIndex}</Typography>
+              <TournamentTypesPreview group={group} />
+            </FlexContainer>
+          ))}
+      </FlexContainer>
+
       {/* {selectedTournament.settings.type ===
         TournamentType.singleElimination && (
         <BracketsContainer
