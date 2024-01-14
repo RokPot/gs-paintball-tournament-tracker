@@ -38,7 +38,7 @@ export const mapGamesFromResponse = <T>(
         teams.find((team) => team._id === gameInResult.team1Id) ??
         new Team({} as any),
       team2:
-        teams.find((team) => team._id === gameInResult.team1Id) ??
+        teams.find((team) => team._id === gameInResult.team2Id) ??
         new Team({} as any),
     });
     gamesList.push(game);

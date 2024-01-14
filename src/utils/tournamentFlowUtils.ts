@@ -3,11 +3,21 @@ import { GameState } from 'types/GameState';
 import TournamentGroup from 'types/TournamentGroup';
 import { TournamentSettings } from 'types/TournamentSettings';
 
-export const switchGroups = (
+export const getNextGroup = (
   currentGroup: TournamentGroup,
   groups: TournamentGroup[],
   currentStage: number,
+  switchGroups: boolean,
 ) => {
+  if (
+    !switchGroups &&
+    currentGroup.games.some(
+      (game) => ![GameState.finished].includes(game.gameState),
+    )
+  ) {
+    return currentGroup;
+  }
+
   const currentStageGroups = groups.filter(
     (group) => group.stage === currentStage,
   );
@@ -46,7 +56,6 @@ export const switchGroups = (
 export const checkIfCurrentGamesAreFinished = (
   pairedGame1: Game,
   pairedGame2?: Game,
-  settings: TournamentSettings,
 ): { switchToNewPair?: boolean; newActiveGameId?: string } => {
   if (
     (pairedGame1.gameState === GameState.finished &&
@@ -74,9 +83,7 @@ export const getNextGamePair = (currentGroup: TournamentGroup) => {
   const availableGroupGames = currentGroup.games.filter(
     (game) => game.gameState === GameState.created,
   );
-  return availableGroupGames.length >= 2
-    ? { game1: availableGroupGames[0], game2: availableGroupGames[1] }
-    : null;
+  return { game1: availableGroupGames[0], game2: availableGroupGames[1] };
 };
 
 export const switchGames = (
@@ -92,15 +99,19 @@ export const switchGames = (
   if (!activeGroup) {
     return;
   }
-  const { switchToNewPair, newActiveGameId } = checkIfCurrentGamesAreFinished(
+  const { switchToNewPair } = checkIfCurrentGamesAreFinished(
     pairedGame1,
     pairedGame2,
-    settings,
   );
   if (switchToNewPair) {
     if (settings.switchGroups) {
       // Get new games in a new group
-      activeGroup = switchGroups(activeGroup, groups, currentStage);
+      activeGroup = getNextGroup(
+        activeGroup,
+        groups,
+        currentStage,
+        settings.switchGroups,
+      );
     }
     if (settings.switchGames) {
       getNextGamePair(activeGroup!);
