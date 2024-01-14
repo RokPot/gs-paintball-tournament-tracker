@@ -70,13 +70,7 @@ const RoundRobinContainer: React.FC<IProps> = ({
                   }
 
                   if (columnIndex === rowIndex) {
-                    return (
-                      <RoundRobinBlankCell
-                        key={rowIndex}
-                        columnIndex={columnIndex}
-                        rowIndex={rowIndex}
-                      />
-                    );
+                    return <RoundRobinBlankCell key={rowIndex} />;
                   }
 
                   return (

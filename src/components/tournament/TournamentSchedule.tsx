@@ -1,4 +1,4 @@
-import { Typography, css, styled, useTheme } from '@mui/material';
+import { Typography, alpha, css, styled, useTheme } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import { compact } from 'lodash';
 import { useEffect, useState } from 'react';
@@ -17,10 +17,10 @@ import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.s
 
 const StyledGameContainer = styled('div')(
   (props) => css`
-    border: solid 1px ${props.theme.palette.divider};
+    /* border: solid 1px ${props.theme.palette.divider}; */
     padding: 8px;
     border-radius: 3px;
-    box-shadow: 1px 1px 1px ${props.theme.palette.grey[300]};
+    box-shadow: 0px 0px 5px 0px ${alpha(props.theme.palette.primary.light, 0.4)};
     width: 100%;
     &:hover {
       background: ${props.theme.palette.grey[200]};
@@ -37,7 +37,7 @@ const TournamentSchedule = ({ activeLeague }: IProps) => {
   const [schedule, setSchedule] = useState<Schedule[]>([]);
   const theme = useTheme();
   const switchGroups = true;
-  const switchGames = true;
+  const switchGames = false;
   console.log(selectedTournament);
   const generateSchedule = () => {
     if (!selectedTournament?.groups?.length) {
@@ -60,7 +60,10 @@ const TournamentSchedule = ({ activeLeague }: IProps) => {
     let pairedGame2: Game | null = switchGames
       ? mostCurrentGroup.games[1]
       : null;
-
+    mostCurrentGroup.games[0].gameState = GameState.finished;
+    if (switchGames) {
+      mostCurrentGroup.games[1].gameState = GameState.finished;
+    }
     const games: Schedule[] = compact([
       pairedGame1 &&
         ({
@@ -168,10 +171,7 @@ const TournamentSchedule = ({ activeLeague }: IProps) => {
           index > 0 &&
           schedule[index - 1].groupId.groupIndex !==
             schedule[index].groupId.groupIndex;
-        const isPreviousGroup2Different =
-          index > 1 &&
-          schedule[index - 2].groupId.groupIndex !==
-            schedule[index].groupId.groupIndex;
+
         const isFirstRow = index === 0;
         const shouldPairGames =
           !isPreviousGroupDifferent && index % (switchGames ? 2 : 1) === 0;
@@ -180,7 +180,7 @@ const TournamentSchedule = ({ activeLeague }: IProps) => {
             {index > 0 && index % 2 === 0 && (
               <div
                 style={{
-                  borderBottom: `0.5px solid ${theme.palette.divider}`,
+                  borderBottom: `0.5px solid ${theme.palette.primary.light}`,
                   width: '100%',
                   height: '1px',
                 }}
@@ -188,12 +188,7 @@ const TournamentSchedule = ({ activeLeague }: IProps) => {
             )}
             <FlexContainer flexDirection="column" width="100%">
               {(isPreviousGroupDifferent || isFirstRow || shouldPairGames) && (
-                <Typography
-                  variant="p1Medium"
-                  textAlign="start"
-                  width="100%"
-                  height="30px"
-                >
+                <Typography variant="p1Medium" textAlign="start" width="100%">
                   {(isPreviousGroupDifferent || isFirstRow) &&
                     `Group${sched.groupId.groupIndex}`}
                 </Typography>

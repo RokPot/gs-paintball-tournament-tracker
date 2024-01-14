@@ -12,9 +12,7 @@ import Team from 'types/Team';
 import TournamentGroup from 'types/TournamentGroup';
 
 interface IRoundRobinContainerProps {
-  row: number;
-  column: number;
-  backgroundColor?: string;
+  backgroundCellColor?: string;
 }
 
 const StyledRoundRobinCell = styled('div')(
@@ -25,14 +23,10 @@ const StyledRoundRobinCell = styled('div')(
     align-items: center;
     height: 50px;
     width: 50px;
-    background-color: ${props.row === props.column
-      ? `${alpha(
-          props.theme?.palette.primary.light || '#000000',
-          0.5,
-        )} !important`
-      : 'inherit'};
 
-    background-color: ${props.backgroundColor};
+    ${props.backgroundCellColor && props.backgroundCellColor !== 'inherit'
+      ? `background-color: ${props.backgroundCellColor};`
+      : ''};
   `,
 );
 
@@ -81,14 +75,17 @@ export const RoundRobinGameCell: React.FC<IRoundRobinGameCellProps> = ({
     let backgroundColor = isFirstTeamWinner
       ? alpha(theme.palette.success.main, 0.1)
       : alpha(theme?.palette.error.main, 0.1);
+
     const isHoveringOver =
       hoveredColumnIndex === columnIndex || hoveredRowIndex === rowIndex;
     if (hasNotPlayedYet) {
-      backgroundColor = 'inherit';
+      const { '200': grey200 } = theme.palette.grey;
+      backgroundColor = grey200;
     }
     if (isHoveringOver) {
       backgroundColor = alpha(backgroundColor, 0.3);
     }
+
     return { firstTeamScore, secondTeamScore, backgroundColor };
   }, [
     columnIndex,
@@ -98,15 +95,14 @@ export const RoundRobinGameCell: React.FC<IRoundRobinGameCellProps> = ({
     rowIndex,
     teams,
     theme.palette.error.main,
+    theme.palette.grey,
     theme.palette.success.main,
   ]);
   return (
     <StyledRoundRobinCell
-      column={columnIndex}
-      row={rowIndex}
       onMouseEnter={() => onMouseEnterCell?.(rowIndex, columnIndex)}
       onMouseLeave={() => onMouseLeaveCell?.()}
-      backgroundColor={cellGameData.backgroundColor}
+      backgroundCellColor={cellGameData.backgroundColor}
     >
       <Typography variant="p1Medium">
         {cellGameData.firstTeamScore} - {cellGameData.secondTeamScore}
@@ -132,8 +128,6 @@ export const RoundRobinTeamCell: React.FC<IRoundRobinTeamCellProps> = ({
 }) => {
   return (
     <StyledRoundRobinCell
-      column={columnIndex}
-      row={rowIndex}
       onMouseEnter={() => onMouseEnterCell?.(rowIndex, columnIndex)}
       onMouseLeave={() => onMouseLeaveCell?.()}
     >
@@ -154,14 +148,13 @@ export const RoundRobinTeamCell: React.FC<IRoundRobinTeamCellProps> = ({
   );
 };
 
-interface IRoundRobinBlankCellProps {
-  rowIndex: number;
-  columnIndex: number;
-}
+interface IRoundRobinBlankCellProps {}
 
-export const RoundRobinBlankCell: React.FC<IRoundRobinBlankCellProps> = ({
-  columnIndex,
-  rowIndex,
-}) => {
-  return <StyledRoundRobinCell column={columnIndex} row={rowIndex} />;
+export const RoundRobinBlankCell: React.FC<IRoundRobinBlankCellProps> = () => {
+  const theme = useTheme();
+  return (
+    <StyledRoundRobinCell
+      backgroundCellColor={alpha(theme.palette.primary.light, 0.5)}
+    />
+  );
 };
