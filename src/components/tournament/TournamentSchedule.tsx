@@ -1,4 +1,10 @@
+import {
+  faEdit,
+  faEllipsisVertical,
+  faInfo,
+} from '@fortawesome/free-solid-svg-icons';
 import { Typography, alpha, css, styled, useTheme } from '@mui/material';
+import CustomDropdownMenu from 'components/shared/CustomDropdownMenu';
 import FlexContainer from 'components/shared/FlexContainer';
 import { compact } from 'lodash';
 import { useEffect, useState } from 'react';
@@ -41,6 +47,39 @@ const StyledScoreCardContainer = styled('div')(
     display: flex;
     align-items: center;
     justify-content: center;
+  `,
+);
+
+const StyledGameStatusCircle = styled('div')(
+  (props) => css`
+    background-color: red;
+    border-radius: 10px;
+    height: 13px;
+    width: 13px;
+    -webkit-animation: glow linear 5s infinite;
+    animation: glow linear 5s infinite;
+    @-webkit-keyframes glow {
+      0% {
+        background-color: transparent;
+      }
+      50% {
+        background-color: ${props.theme.palette.success.light};
+      }
+      100% {
+        background-color: transparent;
+      }
+    }
+    @keyframes glow {
+      0% {
+        background-color: transparent;
+      }
+      50% {
+        background-color: ${props.theme.palette.success.light};
+      }
+      100% {
+        background-color: transparent;
+      }
+    }
   `,
 );
 
@@ -202,39 +241,73 @@ const TournamentSchedule = ({ activeLeague }: IProps) => {
                 }}
               />
             )}
-            <FlexContainer flexDirection="column" width="100%">
-              {(isPreviousGroupDifferent || isFirstRow || shouldPairGames) && (
-                <Typography variant="p1Medium" textAlign="start" width="100%">
-                  {(isPreviousGroupDifferent || isFirstRow) &&
-                    `Group${sched.groupId.groupIndex}`}
+            {(isPreviousGroupDifferent || isFirstRow || shouldPairGames) && (
+              <Typography variant="p1Medium" textAlign="start">
+                {(isPreviousGroupDifferent || isFirstRow) &&
+                  `Group${sched.groupId.groupIndex}`}
+              </Typography>
+            )}
+            <StyledGameContainer>
+              <FlexContainer
+                alignItems="center"
+                width="100%"
+                height="100%"
+                gap={8}
+              >
+                <Typography
+                  variant="h6Medium"
+                  textAlign="end"
+                  marginBottom="0px"
+                >
+                  Game: {sched.gameNumber}
                 </Typography>
-              )}
-              <StyledGameContainer>
-                <FlexContainer alignItems="center" width="100%" height="100%">
-                  <Typography variant="h5Medium" textAlign="end">
-                    Game: {sched.gameNumber}
-                  </Typography>
 
-                  <Typography variant="p1">
-                    {sched.game.team1.teamName}
+                <Typography variant="p1" minWidth="100px" textAlign="end">
+                  {sched.game.team1.teamName}
+                </Typography>
+                <StyledScoreCardContainer>
+                  <Typography variant="p1Bold">
+                    {sched.game.team2Wins}
                   </Typography>
-                  <StyledScoreCardContainer>
-                    <Typography variant="p1Bold">
-                      {sched.game.team2Wins}
-                    </Typography>
-                  </StyledScoreCardContainer>
-                  <div>
-                    <Typography>VS</Typography>
-                  </div>
-                  <StyledScoreCardContainer>
-                    <Typography variant="p1">{sched.game.team2Wins}</Typography>
-                  </StyledScoreCardContainer>
-                  <Typography variant="p1">
-                    {sched.game.team1.teamName} VS {sched.game.team2.teamName}
+                </StyledScoreCardContainer>
+
+                <Typography variant="p2Medium">VS</Typography>
+
+                <StyledScoreCardContainer>
+                  <Typography variant="p1Bold">
+                    {sched.game.team2Wins}
                   </Typography>
-                </FlexContainer>
-              </StyledGameContainer>
-            </FlexContainer>
+                </StyledScoreCardContainer>
+                <Typography variant="p1">
+                  {sched.game.team2.teamName}
+                </Typography>
+                <StyledGameStatusCircle />
+
+                <div style={{ marginLeft: 'auto' }}>
+                  <CustomDropdownMenu
+                    icon={faEllipsisVertical}
+                    actions={[
+                      {
+                        label: 'Edit game',
+                        icon: faEdit,
+                        onClick: () => {
+                          console.log('edit game', sched);
+                        },
+                        visible: true,
+                      },
+                      {
+                        label: 'Info',
+                        icon: faInfo,
+                        onClick: () => {
+                          console.log('Game info', sched);
+                        },
+                        visible: true,
+                      },
+                    ]}
+                  />
+                </div>
+              </FlexContainer>
+            </StyledGameContainer>
           </>
         );
       })}
