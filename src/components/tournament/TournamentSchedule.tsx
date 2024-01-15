@@ -20,11 +20,27 @@ const StyledGameContainer = styled('div')(
     /* border: solid 1px ${props.theme.palette.divider}; */
     padding: 8px;
     border-radius: 3px;
-    box-shadow: 0px 0px 5px 0px ${alpha(props.theme.palette.primary.light, 0.4)};
+    /*box-shadow: 0px 0px 5px 0px ${alpha(
+      props.theme.palette.primary.light,
+      0.4,
+    )};*/
     width: 100%;
     &:hover {
       background: ${props.theme.palette.grey[200]};
     }
+  `,
+);
+
+const StyledScoreCardContainer = styled('div')(
+  (props) => css`
+    padding: 4px;
+    border-radius: 3px;
+    background: ${props.theme.palette.primary.light};
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   `,
 );
 
@@ -198,11 +214,24 @@ const TournamentSchedule = ({ activeLeague }: IProps) => {
                   <Typography variant="h5Medium" textAlign="end">
                     Game: {sched.gameNumber}
                   </Typography>
-                  <Typography variant="p1">1</Typography>
+
+                  <Typography variant="p1">
+                    {sched.game.team1.teamName}
+                  </Typography>
+                  <StyledScoreCardContainer>
+                    <Typography variant="p1Bold">
+                      {sched.game.team2Wins}
+                    </Typography>
+                  </StyledScoreCardContainer>
+                  <div>
+                    <Typography>VS</Typography>
+                  </div>
+                  <StyledScoreCardContainer>
+                    <Typography variant="p1">{sched.game.team2Wins}</Typography>
+                  </StyledScoreCardContainer>
                   <Typography variant="p1">
                     {sched.game.team1.teamName} VS {sched.game.team2.teamName}
                   </Typography>
-                  <Typography variant="p1">2</Typography>
                 </FlexContainer>
               </StyledGameContainer>
             </FlexContainer>
