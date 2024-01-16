@@ -8,8 +8,8 @@ export enum GameState {
 
 export enum GameStateLabels {
   created = 'Created',
-  playing = 'Playing',
-  waiting = 'Waiting',
-  postponed = 'Wostponed',
-  finished = 'Winished',
+  playing = 'Game is in progress',
+  waiting = 'Game is waiting',
+  postponed = 'Game is postponed',
+  finished = 'Game is finished',
 }

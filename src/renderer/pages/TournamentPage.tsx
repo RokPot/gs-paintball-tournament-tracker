@@ -30,7 +30,7 @@ import TournamentActivity from 'components/tournament/TournamentActivity';
 import TournamentBrackets from 'components/tournament/TournamentBrackets';
 import TournamentDetails from 'components/tournament/TournamentDetails';
 import TournamentGroups from 'components/tournament/TournamentGroups';
-import TournamentSchedule from 'components/tournament/TournamentSchedule';
+import TournamentScheduleContainer from 'components/tournament/TournamentScheduleContainer';
 import useLeagueQueries from 'hooks/league/useLeagueQueries';
 import useTournamentQueries from 'hooks/tournament/useTournamentQueries';
 import { useCallback, useEffect, useState } from 'react';
@@ -41,6 +41,7 @@ import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidatio
 import Game from 'types/Game';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
+import { TournamentSchedule } from 'types/TournamentSchedule';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentStatus } from 'types/TournamentStatus';
 
@@ -117,6 +118,7 @@ const TournamentPage = () => {
   const initializeTournament = async (
     groups: TournamentGroup[],
     settings: TournamentSettings,
+    schedule: TournamentSchedule[],
   ) => {
     if (!selectedTournament) {
       return;
@@ -300,7 +302,7 @@ const TournamentPage = () => {
             <TournamentActivity activeLeague={activeLeague} />
           )}
           {activeTab === TournamentTabs.schedule && (
-            <TournamentSchedule activeLeague={activeLeague} />
+            <TournamentScheduleContainer activeLeague={activeLeague} />
           )}
         </FlexContainer>
       ) : (

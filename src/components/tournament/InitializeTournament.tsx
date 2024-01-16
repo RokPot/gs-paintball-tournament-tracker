@@ -13,6 +13,7 @@ import Game from 'types/Game';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
+import { TournamentSchedule } from 'types/TournamentSchedule';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentType, TournamentTypeLabels } from 'types/TournamentType';
 import { shuffleArray } from 'utils/arrayUtils';
@@ -32,7 +33,11 @@ function randomColor() {
 interface IProps {
   tournament: Tournament;
   className?: string;
-  onConfirm: (groups: TournamentGroup[], settings: TournamentSettings) => void;
+  onConfirm: (
+    groups: TournamentGroup[],
+    settings: TournamentSettings,
+    schedule: TournamentSchedule[],
+  ) => void;
 }
 
 const InitializeTournament: React.FC<IProps> = ({

@@ -3,22 +3,22 @@ import {
   faEllipsisVertical,
   faInfo,
 } from '@fortawesome/free-solid-svg-icons';
-import { Typography, alpha, css, styled, useTheme } from '@mui/material';
+import {
+  Theme,
+  Tooltip,
+  Typography,
+  alpha,
+  css,
+  styled,
+  useTheme,
+} from '@mui/material';
 import CustomDropdownMenu from 'components/shared/CustomDropdownMenu';
 import FlexContainer from 'components/shared/FlexContainer';
-import { compact } from 'lodash';
 import { useEffect, useState } from 'react';
-import Game from 'types/Game';
-import { GameState } from 'types/GameState';
+import { GameState, GameStateLabels } from 'types/GameState';
 import League from 'types/League';
-import TournamentGroup from 'types/TournamentGroup';
 import { TournamentSchedule as Schedule } from 'types/TournamentSchedule';
-import {
-  getNextGame,
-  getNextGamePair,
-  getNextGroup,
-} from 'utils/tournamentFlowUtils';
-import { v4 } from 'uuid';
+import { generateTournamentSchedule } from 'utils/tournamentUtils';
 import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
 
 const StyledGameContainer = styled('div')(
@@ -50,20 +50,27 @@ const StyledScoreCardContainer = styled('div')(
   `,
 );
 
+interface IStyledGameStatusCircleProps {
+  color?: string;
+  shouldAnimate?: boolean;
+}
+
 const StyledGameStatusCircle = styled('div')(
-  (props) => css`
-    background-color: red;
+  (props: IStyledGameStatusCircleProps & { theme?: Theme }) => css`
     border-radius: 10px;
     height: 13px;
     width: 13px;
     -webkit-animation: glow linear 5s infinite;
     animation: glow linear 5s infinite;
-    @-webkit-keyframes glow {
+    background-color: ${props.color};
+    margin: 4px;
+    ${props.shouldAnimate &&
+    `@-webkit-keyframes glow {
       0% {
         background-color: transparent;
       }
       50% {
-        background-color: ${props.theme.palette.success.light};
+        background-color: ${props.color};
       }
       100% {
         background-color: transparent;
@@ -74,12 +81,12 @@ const StyledGameStatusCircle = styled('div')(
         background-color: transparent;
       }
       50% {
-        background-color: ${props.theme.palette.success.light};
+        background-color: ${props.color};
       }
       100% {
         background-color: transparent;
       }
-    }
+    }`}
   `,
 );
 
@@ -87,116 +94,47 @@ interface IProps {
   activeLeague: League;
 }
 
-const TournamentSchedule = ({ activeLeague }: IProps) => {
+const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
   const selectedTournament = activeLeague?.activeTournament;
   const [schedule, setSchedule] = useState<Schedule[]>([]);
   const theme = useTheme();
   const switchGroups = true;
   const switchGames = false;
   console.log(selectedTournament);
-  const generateSchedule = () => {
-    if (!selectedTournament?.groups?.length) {
-      return;
+  console.log(schedule);
+  const getGameStatusColor = (gameState: GameState) => {
+    switch (gameState) {
+      case GameState.finished:
+        return theme.palette.error.main;
+      case GameState.playing:
+        return theme.palette.success.main;
+      case GameState.waiting:
+        return theme.palette.warning.main;
+      default:
+        return 'blue';
     }
-    const groups = [
-      ...(JSON.parse(
-        JSON.stringify(
-          selectedTournament.groups.filter((group) => group.stage === 1),
-        ),
-      ) as TournamentGroup[]),
-    ];
-    const totalGames = groups.reduce((prev, curr) => {
-      return prev + (curr?.games?.length || 0);
-    }, 0);
-
-    let mostCurrentGroup = groups.filter((group) => group.stage === 1)[0];
-    let currentGameNumber = 0;
-    let pairedGame1: Game = mostCurrentGroup.games[0];
-    let pairedGame2: Game | null = switchGames
-      ? mostCurrentGroup.games[1]
-      : null;
-    mostCurrentGroup.games[0].gameState = GameState.finished;
-    if (switchGames) {
-      mostCurrentGroup.games[1].gameState = GameState.finished;
-    }
-    const games: Schedule[] = compact([
-      pairedGame1 &&
-        ({
-          game: pairedGame1,
-          gameNumber: 1,
-          groupId: mostCurrentGroup,
-          id: v4(),
-        } as Schedule),
-      pairedGame2 &&
-        ({
-          game: pairedGame2,
-          gameNumber: 2,
-          groupId: mostCurrentGroup,
-          id: v4(),
-        } as Schedule),
-    ]);
-    currentGameNumber = games.length + 1;
-    while (games.length < totalGames) {
-      const newGroup = getNextGroup(mostCurrentGroup, groups, 1, switchGroups);
-      if (!newGroup) {
-        break;
-      }
-      mostCurrentGroup = newGroup;
-      if (switchGames) {
-        const gamePair = getNextGamePair(mostCurrentGroup);
-        if (!gamePair) {
-          const gamePair1 = getNextGamePair(mostCurrentGroup);
-          break;
-        }
-
-        if (gamePair.game1) {
-          pairedGame1 = gamePair.game1;
-          pairedGame1.gameState = GameState.finished;
-          games.push({
-            game: pairedGame1,
-            gameNumber: currentGameNumber,
-            groupId: mostCurrentGroup,
-            id: v4(),
-          });
-          currentGameNumber += 1;
-        }
-
-        if (gamePair.game2) {
-          pairedGame2 = gamePair.game2;
-          pairedGame2.gameState = GameState.finished;
-          games.push({
-            game: pairedGame2,
-            gameNumber: currentGameNumber,
-            groupId: mostCurrentGroup,
-            id: v4(),
-          });
-          currentGameNumber += 1;
-        }
-      } else {
-        const gamePair = getNextGame(mostCurrentGroup);
-        if (!gamePair) {
-          break;
-        }
-
-        if (gamePair.game1) {
-          pairedGame1 = gamePair.game1;
-          pairedGame1.gameState = GameState.finished;
-          games.push({
-            game: pairedGame1,
-            gameNumber: currentGameNumber,
-            groupId: mostCurrentGroup,
-            id: v4(),
-          });
-          currentGameNumber += 1;
-        }
-      }
-    }
-    setSchedule(games);
   };
 
   useEffect(() => {
-    generateSchedule();
+    setSchedule(
+      generateTournamentSchedule(
+        selectedTournament?.groups,
+        selectedTournament?.settings,
+      ),
+    );
   }, []);
+  console.log(
+    'GROUP 1',
+    selectedTournament?.groups
+      ?.find((group) => group.groupIndex === 1)
+      ?.games.map((game) => game.team1.teamName + 'VS' + game.team2.teamName),
+  );
+  console.log(
+    'GROUP 2',
+    selectedTournament?.groups
+      ?.find((group) => group.groupIndex === 2)
+      ?.games.map((game) => game.team1.teamName + 'VS' + game.team2.teamName),
+  );
   console.log(schedule);
   if (!selectedTournament?.groups?.length) {
     return (
@@ -281,7 +219,20 @@ const TournamentSchedule = ({ activeLeague }: IProps) => {
                 <Typography variant="p1">
                   {sched.game.team2.teamName}
                 </Typography>
-                <StyledGameStatusCircle />
+                {[
+                  GameState.finished,
+                  GameState.playing,
+                  GameState.waiting,
+                ].includes(sched.game.gameState) && (
+                  <Tooltip title={GameStateLabels[sched.game.gameState]} arrow>
+                    <StyledGameStatusCircle
+                      shouldAnimate={
+                        sched.game.gameState !== GameState.finished
+                      }
+                      color={getGameStatusColor(sched.game.gameState)}
+                    />
+                  </Tooltip>
+                )}
 
                 <div style={{ marginLeft: 'auto' }}>
                   <CustomDropdownMenu
@@ -315,4 +266,4 @@ const TournamentSchedule = ({ activeLeague }: IProps) => {
   );
 };
 
-export default TournamentSchedule;
+export default TournamentScheduleContainer;
