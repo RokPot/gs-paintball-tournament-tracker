@@ -42,6 +42,30 @@ const TournamentGroupCard: React.FC<IProps> = ({ group }) => {
               <Typography>{team.teamName}</Typography>
             </div>
           ))}
+          <FlexContainer
+            flexDirection="column"
+            width="100%"
+            gap={8}
+            justifyContent="center"
+            alignItems="flex-start"
+            style={{
+              borderTop: `1px solid ${theme.palette.divider}`,
+              paddingTop: '8px',
+            }}
+          >
+            <Typography variant="p1Medium">
+              # of teams:{' '}
+              <Typography variant="p1Medium" color={theme.palette.primary.main}>
+                {group.teams.length}
+              </Typography>
+            </Typography>
+            <Typography variant="p1Medium">
+              # of games:{' '}
+              <Typography variant="p1Medium" color={theme.palette.primary.main}>
+                {group.games.length}
+              </Typography>
+            </Typography>
+          </FlexContainer>
         </FlexContainer>
       </FlexContainer>
     </StyledCard>
