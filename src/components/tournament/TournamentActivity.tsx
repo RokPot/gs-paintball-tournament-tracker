@@ -1,10 +1,7 @@
 import { Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
-import LeaderboardList from 'components/teams/LeaderboardList';
-import TeamsShortList from 'components/teams/TeamShortList';
 import League from 'types/League';
 import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
-import TournamentDetailsList from './TournamentDetailsList';
 
 interface IProps {
   activeLeague: League;
@@ -29,30 +26,10 @@ const TournamentActivity = ({ activeLeague }: IProps) => {
   }
 
   return (
-    <FlexContainer flexDirection="column">
-      <TournamentDetailsList tournament={selectedTournament} />
-      <FlexContainer flexDirection="row" width="100%">
-        <FlexContainer
-          flexDirection="column"
-          width="100%"
-          alignItems="flex-start"
-          justifyContent="flex-start"
-          height="100%"
-        >
-          <Typography variant="h5">Participating teams</Typography>
-          <TeamsShortList teams={selectedTournament.teams} />
-        </FlexContainer>
-        <FlexContainer
-          flexDirection="column"
-          width="100%"
-          alignItems="flex-start"
-          justifyContent="flex-start"
-          height="100%"
-        >
-          <Typography variant="h5">Tournament leaderboard</Typography>
-
-          <LeaderboardList teams={selectedTournament.leaderboard} />
-        </FlexContainer>
+    <FlexContainer flexDirection="column" gap={8}>
+      <FlexContainer flexDirection="row" gap={8}>
+        21/01/2024 10:26 --- Game 1 (team 1 vs Team 2) - Team 1 won / lost ---
+        DRAFT - time: 05:11
       </FlexContainer>
     </FlexContainer>
   );

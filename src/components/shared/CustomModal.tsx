@@ -21,7 +21,7 @@ const StyledModalContainer = styled('div')(
 
 interface IProps {
   isModalOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   children: React.ReactNode;
   width?: number;
   fullScreen?: boolean;

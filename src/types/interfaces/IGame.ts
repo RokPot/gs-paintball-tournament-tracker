@@ -20,4 +20,6 @@ export interface IGame extends PouchDBDto {
   team2Wins?: number;
 
   bracketProperties: BracketProperties | null;
+
+  gameTime: number;
 }

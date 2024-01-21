@@ -24,6 +24,8 @@ export default class Game extends IPouchDB {
 
   bracketProperties: BracketProperties | null;
 
+  gameTime: number;
+
   constructor(props: IGame) {
     super(props._id, props._rev, props.docType || DocType.Game);
 
@@ -35,6 +37,7 @@ export default class Game extends IPouchDB {
     this.team1Wins = props.team1Wins || 0;
     this.team2Wins = props.team2Wins || 0;
     this.bracketProperties = props.bracketProperties;
+    this.gameTime = props.gameTime;
   }
 
   public toDto = (): GameDto => {

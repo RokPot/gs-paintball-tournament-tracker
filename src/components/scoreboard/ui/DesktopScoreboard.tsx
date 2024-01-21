@@ -2,11 +2,17 @@ import { Button, Card, Typography, alpha, styled } from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import QuickAddTeam from 'components/teams/QuickAddTeam';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import useActiveLeague from 'services/queries/league/useActiveLeague';
+import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
+import useUpdateTournament from 'services/queries/tournament/useUpdateTournament';
+import useTimerStore from 'store/TimerStore';
 import Game from 'types/Game';
+import { TournamentStatus } from 'types/TournamentStatus';
 import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
 import GameTimerStoreRenderComponent from '../GameTimerStoreRenderComponent';
 import TeamScoreCard from '../TeamScoreCard';
+import StartTournament from './StartTournament';
 
 interface IProps {
   className?: string;
@@ -15,7 +21,40 @@ interface IProps {
 }
 
 const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
+  const { activeLeague } = useActiveLeague();
+  const { updateTournament } = useUpdateTournament();
+  const { invalidateSelectedLeague } = useLeagueInvalidations();
+  const tournament = activeLeague?.activeTournament;
+  const { setDuration } = useTimerStore();
   const [isTeamUpsertModalOpen, setIsTeamUpsertModalOpen] = useState(false);
+  console.log(tournament);
+  const isTournamentNotStartedYet = ![
+    TournamentStatus.inProgress,
+    TournamentStatus.finished,
+  ].includes(tournament?.state?.status || TournamentStatus.created);
+
+  const currentGroup = useMemo(() => {
+    if (!tournament) {
+      return undefined;
+    }
+    return tournament.groups.find(
+      (group) => tournament.state.currentGroupId === group.id,
+    );
+  }, [tournament]);
+
+  const currentGame = useMemo(() => {
+    if (!currentGroup || !tournament) {
+      return undefined;
+    }
+    return currentGroup?.games.find(
+      (game) => tournament.state.currentGameId === game.id,
+    );
+  }, [currentGroup, tournament]);
+
+  useEffect(() => {
+    setDuration(currentGame?.bracketProperties);
+  }, []);
+
   return (
     <FlexContainer
       justifyContent="center"
@@ -35,7 +74,10 @@ const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
         justifyContent="center"
         gap={8}
       >
-        <TeamScoreCard />
+        <TeamScoreCard
+          team={currentGame?.team1}
+          teamScore={currentGame?.team1Wins}
+        />
         <Card className="custom-card counter-card">
           <FlexContainer
             flexDirection="column"
@@ -79,7 +121,10 @@ const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
             </FlexContainer>
           </FlexContainer>
         </Card>
-        <TeamScoreCard />
+        <TeamScoreCard
+          team={currentGame?.team2}
+          teamScore={currentGame?.team2Wins}
+        />
       </FlexContainer>
       <FlexContainer alignItems="flex-start">
         <Card className="custom-card actions-card">
@@ -133,6 +178,22 @@ const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
           team={undefined}
           onAccept={() => {}}
           onCancel={() => setIsTeamUpsertModalOpen(false)}
+        />
+      </CustomModal>
+      <CustomModal isModalOpen={isTournamentNotStartedYet} width={600}>
+        <StartTournament
+          onTournamentStart={async () => {
+            if (!tournament) {
+              return;
+            }
+            tournament.state.status = TournamentStatus.inProgress;
+            const newCurrentGroup = tournament.groups[0];
+            const newCurrentGame = newCurrentGroup.games[0];
+            tournament.state.currentGameId = newCurrentGame.id;
+            tournament.state.currentGroupId = newCurrentGroup.id;
+            await updateTournament(tournament);
+            await invalidateSelectedLeague();
+          }}
         />
       </CustomModal>
     </FlexContainer>

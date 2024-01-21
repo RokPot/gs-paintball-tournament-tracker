@@ -22,7 +22,7 @@ const TournamentGroupCard: React.FC<IProps> = ({ group }) => {
 
   return (
     <StyledCard>
-      <FlexContainer flexDirection="column">
+      <FlexContainer flexDirection="column" height="100%">
         <FlexContainer
           width="100%"
           flexDirection="row"
@@ -36,36 +36,41 @@ const TournamentGroupCard: React.FC<IProps> = ({ group }) => {
           </Typography>
         </FlexContainer>
 
-        <FlexContainer highlightRowOnHover flexDirection="column" width="100%">
+        <FlexContainer
+          highlightRowOnHover
+          flexDirection="column"
+          width="100%"
+          height="100%"
+        >
           {group?.teams.map((team) => (
             <div style={{ padding: '8px', width: '100%' }}>
               <Typography>{team.teamName}</Typography>
             </div>
           ))}
-          <FlexContainer
-            flexDirection="column"
-            width="100%"
-            gap={8}
-            justifyContent="center"
-            alignItems="flex-start"
-            style={{
-              borderTop: `1px solid ${theme.palette.divider}`,
-              paddingTop: '8px',
-            }}
-          >
-            <Typography variant="p1Medium">
-              # of teams:{' '}
-              <Typography variant="p1Medium" color={theme.palette.primary.main}>
-                {group.teams.length}
-              </Typography>
+        </FlexContainer>
+        <FlexContainer
+          flexDirection="column"
+          width="100%"
+          gap={8}
+          justifyContent="center"
+          alignItems="flex-start"
+          style={{
+            borderTop: `1px solid ${theme.palette.divider}`,
+            paddingTop: '8px',
+          }}
+        >
+          <Typography variant="p1Medium">
+            # of teams:{' '}
+            <Typography variant="p1Medium" color={theme.palette.primary.main}>
+              {group.teams.length}
             </Typography>
-            <Typography variant="p1Medium">
-              # of games:{' '}
-              <Typography variant="p1Medium" color={theme.palette.primary.main}>
-                {group.games.length}
-              </Typography>
+          </Typography>
+          <Typography variant="p1Medium">
+            # of games:{' '}
+            <Typography variant="p1Medium" color={theme.palette.primary.main}>
+              {group.games.length}
             </Typography>
-          </FlexContainer>
+          </Typography>
         </FlexContainer>
       </FlexContainer>
     </StyledCard>

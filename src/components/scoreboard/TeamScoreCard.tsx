@@ -1,5 +1,6 @@
 import { Button, Card, Typography, alpha, styled } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
+import Team from 'types/Team';
 
 const StyledTeamHeader = styled('div')(
   (props) => `
@@ -33,7 +34,12 @@ const StyledCard = styled(Card)(
     `,
 );
 
-const TeamScoreCard: React.FC = () => {
+interface IProps {
+  team?: Team;
+  teamScore?: number;
+}
+
+const TeamScoreCard: React.FC<IProps> = ({ team, teamScore }) => {
   return (
     <StyledCard className="custom-card teams-card">
       <FlexContainer flexDirection="column" gap={8}>
@@ -42,11 +48,11 @@ const TeamScoreCard: React.FC = () => {
             variant="h1Medium"
             color={(theme) => theme.palette.primary.contrastText}
           >
-            Team2
+            {team?.teamName || 'Team'}
           </StyledHeaderTypography>
         </StyledTeamHeader>
         <StyledTeamScoreTypography variant="h3Medium">
-          1
+          {teamScore || 0}
         </StyledTeamScoreTypography>
         <Button variant="contained" color="info">
           <Typography variant="p1Medium">Take pause</Typography>

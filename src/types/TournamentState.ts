@@ -10,6 +10,10 @@ export default class TournamentState {
 
   status: TournamentStatus;
 
+  currentGameId?: string;
+
+  currentGroupId?: string;
+
   stage: number;
 
   constructor(props: ITournamentState) {
@@ -18,5 +22,7 @@ export default class TournamentState {
     this.isGameInProgress = props.isGameInProgress;
     this.status = props.status;
     this.stage = props.stage || 0;
+    this.currentGameId = props.currentGameId;
+    this.currentGroupId = props.currentGroupId;
   }
 }

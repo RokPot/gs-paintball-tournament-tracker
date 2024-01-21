@@ -6,11 +6,12 @@ interface TimerStoreState {
   timerFn?: Function;
   duration: number;
   setTimerRef: (timer: number) => void;
+  setDuration: (duration: number) => void;
   startTimer: (
     delayInMs: number,
     duration: number,
     useAddition?: boolean,
-    timerFn?: Function
+    timerFn?: Function,
   ) => void;
   stopTimer: () => void;
 }
@@ -18,7 +19,7 @@ interface TimerStoreState {
 const useTimerStore = create<TimerStoreState>((set, get) => ({
   duration: 0,
   startTimer: (delayInMs, duration, useAddition, callback) => {
-    set(() => ({ timerFn: callback, duration: duration }));
+    set(() => ({ timerFn: callback, duration }));
     const interval = setInterval(() => {
       callback?.();
       set((state) => ({
@@ -36,6 +37,9 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
   },
   setTimerRef: (timer) => {
     set(() => ({ timerRef: timer }));
+  },
+  setDuration: (duration) => {
+    set(() => ({ duration }));
   },
 }));
 

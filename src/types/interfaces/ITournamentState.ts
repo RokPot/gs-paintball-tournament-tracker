@@ -10,4 +10,8 @@ export interface ITournamentState {
   status: TournamentStatus;
 
   stage: number;
+
+  currentGameId?: string;
+
+  currentGroupId?: string;
 }
