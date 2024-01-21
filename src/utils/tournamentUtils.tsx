@@ -1,5 +1,6 @@
 import { compact } from 'lodash';
 import Game from 'types/Game';
+import { GameSettings } from 'types/GameSettings';
 import { GameState } from 'types/GameState';
 import Team from 'types/Team';
 import TournamentGroup from 'types/TournamentGroup';
@@ -16,6 +17,7 @@ import {
 export const generateGamesForLayer = (
   roundToGenerate: number,
   totalNumberOfRoundsToGenerate: number,
+  gameTime: number,
 ) => {
   const round = roundToGenerate;
   const totalNumberOfRounds = totalNumberOfRoundsToGenerate;
@@ -56,6 +58,7 @@ export const generateGamesForLayer = (
         previousLayerGame1Number: 1,
         previousLayerGame2Number: 2,
       },
+      gameTime,
     });
 
     const newTPId = v4();
@@ -85,6 +88,7 @@ export const generateGamesForLayer = (
         winnerNextRoundGameNumber: -1,
         isThridPlaceGame: true,
       },
+      gameTime,
     });
     games.push(firstPlaceGame, thirdPlaceGame);
     return games;
@@ -120,6 +124,7 @@ export const generateGamesForLayer = (
         previousLayerGame1Number: 3,
         previousLayerGame2Number: 4,
       },
+      gameTime,
     });
 
     const newId2 = v4();
@@ -151,6 +156,7 @@ export const generateGamesForLayer = (
         previousLayerGame1Number: 1,
         previousLayerGame2Number: 2,
       },
+      gameTime,
     });
     games.push(game1, game2);
     return games;
@@ -190,6 +196,7 @@ export const generateGamesForLayer = (
         previousLayerGame1Number: i * 2 + 1,
         previousLayerGame2Number: i * 2 + 2,
       },
+      gameTime,
     });
     currentLayerPairCount += 1;
     games.push(newGame);
@@ -217,7 +224,11 @@ export const getTeamsSeeding = (numPlayers: number) => {
 };
 //
 
-export const generateFillerGame = (team1: Team, team2: Team) => {
+export const generateFillerGame = (
+  team1: Team,
+  team2: Team,
+  gameTime: number,
+) => {
   const newId = v4();
   return new Game({
     gameState: GameState.created,
@@ -238,6 +249,7 @@ export const generateFillerGame = (team1: Team, team2: Team) => {
       previousLayerGame1Number: 1,
       previousLayerGame2Number: 2,
     },
+    gameTime,
   });
 };
 
@@ -275,7 +287,10 @@ export const getGamePairs = (games: Game[]) => {
   return pairedGames;
 };
 
-export const generateGamesForEliminationBrackets = (teams: Team[]) => {
+export const generateGamesForEliminationBrackets = (
+  teams: Team[],
+  gameSettings: GameSettings,
+) => {
   const numberOfTeams = teams.length;
   let teamsSeeding = getTeamsSeeding(numberOfTeams);
   const games: Game[] = [];
@@ -287,7 +302,13 @@ export const generateGamesForEliminationBrackets = (teams: Team[]) => {
     const numberOfTeamsLeft = numberOfTeams - numberOfTeamsInRound2;
 
     for (let round = 0; round <= totalNumberOfRounds; round += 1) {
-      games.push(...generateGamesForLayer(round, totalNumberOfRounds));
+      games.push(
+        ...generateGamesForLayer(
+          round,
+          totalNumberOfRounds,
+          gameSettings.gameTimeInSeconds,
+        ),
+      );
     }
     teamsSeeding = getTeamsSeeding(numberOfTeamsInRound2);
     const teamPairsForRound1 = getTeamPairsForUnevenRound1(
@@ -387,7 +408,13 @@ export const generateGamesForEliminationBrackets = (teams: Team[]) => {
     }
   } else {
     for (let round = 0; round < totalNumberOfRounds; round += 1) {
-      games.push(...generateGamesForLayer(round, totalNumberOfRounds));
+      games.push(
+        ...generateGamesForLayer(
+          round,
+          totalNumberOfRounds,
+          gameSettings.gameTimeInSeconds,
+        ),
+      );
     }
     const roundOneGames = games.filter(
       (game) => game.bracketProperties?.round === 0,

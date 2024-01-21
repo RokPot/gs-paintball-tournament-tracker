@@ -19,4 +19,6 @@ export interface GameDto extends PouchDBDto {
   team2Wins: number;
 
   bracketProperties: BracketProperties | null;
+
+  gameTime: number;
 }

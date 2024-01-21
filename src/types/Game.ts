@@ -53,6 +53,7 @@ export default class Game extends IPouchDB {
       matches: this.matches,
       team1Wins: this.team1Wins,
       team2Wins: this.team2Wins,
+      gameTime: this.gameTime,
     };
   };
 }

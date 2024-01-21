@@ -10,9 +10,6 @@ import {
   css,
 } from '@mui/material';
 import PageContainer from 'components/shared/PageContainer';
-import Team from 'types/Team';
-import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
-import { v4 } from 'uuid';
 
 const StyledStackingContainer = styled('div')(
   () => css`
@@ -23,18 +20,6 @@ const StyledStackingContainer = styled('div')(
   `,
 );
 const HomePage: React.FC = () => {
-  const numberOfTeams = 5;
-  const teamss: Team[] = [];
-  for (let i = 0; i < numberOfTeams; i += 1) {
-    const newTeam = new Team({
-      _id: v4(),
-      id: v4(),
-      teamName: `${i}`,
-      teamTag: `${i}`,
-    });
-    teamss.push(newTeam);
-  }
-  generateGamesForRoundRobin(teamss);
   return (
     <PageContainer>
       <Typography variant="h6">Leagues</Typography>

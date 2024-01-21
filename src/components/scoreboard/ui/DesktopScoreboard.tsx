@@ -52,8 +52,11 @@ const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
   }, [currentGroup, tournament]);
 
   useEffect(() => {
-    setDuration(currentGame?.bracketProperties);
-  }, []);
+    if (!currentGame) {
+      return;
+    }
+    setDuration(currentGame.gameTime || 0);
+  }, [currentGame]);
 
   return (
     <FlexContainer

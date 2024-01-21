@@ -1,4 +1,5 @@
 import Game from 'types/Game';
+import { GameSettings } from 'types/GameSettings';
 import { GameState } from 'types/GameState';
 import Team from 'types/Team';
 import { shuffleArray } from 'utils/arrayUtils';
@@ -203,7 +204,10 @@ export const sortTeamIndicesIntoGameIndices = (
   return gameIndicesWithSortedTeams;
 };
 
-export const generateGamesForRoundRobin = (teams: Team[]) => {
+export const generateGamesForRoundRobin = (
+  teams: Team[],
+  gameSettings: GameSettings,
+) => {
   const numberOfTeams = teams.length;
   const numberOfGames = (numberOfTeams * (numberOfTeams - 1)) / 2;
   const numberOfRounds = Math.floor(numberOfGames / 2);
@@ -224,6 +228,7 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
         team2: teams[j],
         team2Wins: 0,
         bracketProperties: null,
+        gameTime: gameSettings.gameTimeInSeconds,
       });
       games.push(newGame);
       indices.push([i, j]);
@@ -255,6 +260,7 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
       team2: teams[game1Indices[1]],
       team2Wins: 0,
       bracketProperties: null,
+      gameTime: gameSettings.gameTimeInSeconds,
     });
     newGames.push(newRoundGame1);
 
@@ -271,6 +277,7 @@ export const generateGamesForRoundRobin = (teams: Team[]) => {
         team2: teams[game2Indices[1]],
         team2Wins: 0,
         bracketProperties: null,
+        gameTime: gameSettings.gameTimeInSeconds,
       });
       newGames.push(newRoundGame2);
     }
