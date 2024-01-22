@@ -18,7 +18,10 @@ import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentType, TournamentTypeLabels } from 'types/TournamentType';
 import { shuffleArray } from 'utils/arrayUtils';
 import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
-import { generateGamesForEliminationBrackets } from 'utils/tournamentUtils';
+import {
+  generateGamesForEliminationBrackets,
+  generateTournamentSchedule,
+} from 'utils/tournamentUtils';
 import { v4 } from 'uuid';
 import TournamentGroupCard from './TournamentGroupCard';
 import TournamentTypesPreview from './visualizations/TournamentTypesPreview';
@@ -46,6 +49,7 @@ const InitializeTournament: React.FC<IProps> = ({
   onConfirm,
 }) => {
   const [groups, setGroups] = useState(tournament.groups);
+  const [schedule, setSchedule] = useState(tournament.schedule || []);
   const [totalNumberOfRounds, setTotalNumberOfRounds] = useState(0);
   const [tournamentSettings, setTournamentSettings] = useState(
     tournament.settings,
@@ -164,21 +168,31 @@ const InitializeTournament: React.FC<IProps> = ({
         }),
       );
     }
-    setGroups(newGroups);
+    return newGroups;
   }, [
     tournamentSettings.numberOfGroups,
     tournamentSettings.type,
     tournamentSettings.secondStageType,
     tournament.teams,
+    tournament.gameSettings,
   ]);
 
   const confirmTournamentSettings = () => {
-    onConfirm(groups, { ...tournament.settings, ...tournamentSettings }, []);
+    onConfirm(
+      groups,
+      { ...tournament.settings, ...tournamentSettings },
+      schedule,
+    );
   };
-
   const generateNewTournamentDraft = useCallback(() => {
-    generateNewGroups();
-  }, [generateNewGroups]);
+    const newGroups = generateNewGroups();
+    const newSchedule = generateTournamentSchedule(
+      newGroups,
+      tournament.settings,
+    );
+    setGroups(newGroups);
+    setSchedule(newSchedule);
+  }, [generateNewGroups, tournament.settings]);
 
   useEffect(() => {
     generateNewTournamentDraft();

@@ -127,6 +127,7 @@ const TournamentPage = () => {
     // If there is second stage those games we're also generated already
     selectedTournament.groups = groups;
     selectedTournament.settings = settings;
+    selectedTournament.schedule = schedule;
     selectedTournament.state.status = TournamentStatus.initialized;
     await addGamesBulk(
       groups.reduce((prev: Game[], curr) => {

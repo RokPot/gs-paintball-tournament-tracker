@@ -123,19 +123,7 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
       ),
     );
   }, []);
-  console.log(
-    'GROUP 1',
-    selectedTournament?.groups
-      ?.find((group) => group.groupIndex === 1)
-      ?.games.map((game) => game.team1.teamName + 'VS' + game.team2.teamName),
-  );
-  console.log(
-    'GROUP 2',
-    selectedTournament?.groups
-      ?.find((group) => group.groupIndex === 2)
-      ?.games.map((game) => game.team1.teamName + 'VS' + game.team2.teamName),
-  );
-  console.log(schedule);
+
   if (!selectedTournament?.groups?.length) {
     return (
       <FlexContainer
