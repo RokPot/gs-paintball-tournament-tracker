@@ -101,6 +101,12 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
   const switchGroups = true;
   const switchGames = false;
   console.log(selectedTournament);
+  console.log(
+    'group1 games',
+    selectedTournament.groups[0].games.map(
+      (game) => `${game.team1.teamName}VS${game.team2.teamName}`,
+    ),
+  );
   console.log(schedule);
   const getGameStatusColor = (gameState: GameState) => {
     switch (gameState) {
@@ -150,8 +156,8 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
       {schedule?.map((sched, index) => {
         const isPreviousGroupDifferent =
           index > 0 &&
-          schedule[index - 1].groupId.groupIndex !==
-            schedule[index].groupId.groupIndex;
+          schedule[index - 1].group.groupIndex !==
+            schedule[index].group.groupIndex;
 
         const isFirstRow = index === 0;
         const shouldPairGames =
@@ -170,7 +176,7 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
             {(isPreviousGroupDifferent || isFirstRow || shouldPairGames) && (
               <Typography variant="p1Medium" textAlign="start">
                 {(isPreviousGroupDifferent || isFirstRow) &&
-                  `Group${sched.groupId.groupIndex}`}
+                  `Group${sched.group.groupIndex}`}
               </Typography>
             )}
             <StyledGameContainer>

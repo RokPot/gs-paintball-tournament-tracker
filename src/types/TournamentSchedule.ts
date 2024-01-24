@@ -6,7 +6,7 @@ export interface TournamentSchedule {
 
   gameNumber: number;
 
-  groupId: TournamentGroup;
+  group: TournamentGroup;
 
   game: Game;
 }

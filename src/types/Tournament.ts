@@ -13,6 +13,7 @@ import { ITournament } from './interfaces/ITournament';
 import { TournamentSchedule } from './TournamentSchedule';
 import TournamentState from './TournamentState';
 import TournamentGroup from './TournamentGroup';
+import { TournamentScheduleDto } from './dto/TournamentScheduleDto';
 
 export default class Tournament extends IPouchDB {
   id: string;
@@ -67,8 +68,16 @@ export default class Tournament extends IPouchDB {
       endDate: this.endDate?.toISOString(),
       startDate: this.startDate?.toISOString(),
       leaderboardTeamIds: this.leaderboard?.map((team) => team._id) || [],
-      // todo rokpot check this, NOT HANDLED
-      scheduleIds: this.schedule?.map((schedule) => schedule.id) || [],
+      schedule:
+        this.schedule?.map(
+          (schedule) =>
+            ({
+              gameId: schedule.game.id,
+              gameNumber: schedule.gameNumber,
+              groupId: schedule.group.id,
+              id: schedule.id,
+            }) as TournamentScheduleDto,
+        ) || [],
     };
   };
 }

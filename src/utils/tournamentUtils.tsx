@@ -480,14 +480,14 @@ const generateRoundRobinSchedule = (
       ({
         game: pairedGame1,
         gameNumber: 1,
-        groupId: mostCurrentGroup,
+        group: mostCurrentGroup,
         id: v4(),
       } as TournamentSchedule),
     pairedGame2 &&
       ({
         game: pairedGame2,
         gameNumber: 2,
-        groupId: mostCurrentGroup,
+        group: mostCurrentGroup,
         id: v4(),
       } as TournamentSchedule),
   ]);
@@ -518,7 +518,7 @@ const generateRoundRobinSchedule = (
         scheduledGames.push({
           game: pairedGame1,
           gameNumber: currentGameNumber,
-          groupId: mostCurrentGroup,
+          group: mostCurrentGroup,
           id: v4(),
         });
         currentGameNumber += 1;
@@ -530,7 +530,7 @@ const generateRoundRobinSchedule = (
         scheduledGames.push({
           game: pairedGame2,
           gameNumber: currentGameNumber,
-          groupId: mostCurrentGroup,
+          group: mostCurrentGroup,
           id: v4(),
         });
         currentGameNumber += 1;
@@ -547,7 +547,7 @@ const generateRoundRobinSchedule = (
         scheduledGames.push({
           game: pairedGame1,
           gameNumber: currentGameNumber,
-          groupId: mostCurrentGroup,
+          group: mostCurrentGroup,
           id: v4(),
         });
         currentGameNumber += 1;

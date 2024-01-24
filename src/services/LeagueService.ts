@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import League from 'types/League';
 import { LeagueDto } from 'types/dto/LeagueDto';
 import { getLeaguesList } from 'utils/PouchDBUtils';
+import { TournamentSchedule } from 'types/TournamentSchedule';
 import usePouchDB, { DocType, pouchDbName } from './pouchDB';
 
 import useTournamentService from './TournamentService';
@@ -100,7 +101,24 @@ const useLeagueService = () => {
       );
       activeTournament.groups = groups;
     }
-
+    if (activeTournament?.schedule) {
+      const schedule: TournamentSchedule[] = [];
+      activeTournament?.schedule.forEach((scheduledGame) => {
+        const scheduledGameDto = scheduledGame as any;
+        const scheduledGameGroup = activeTournament?.groups.find(
+          (group) => group.id === scheduledGameDto.groupId,
+        );
+        const scheduledActiveGame = scheduledGameGroup?.games.find(
+          (game) => game.id === scheduledGameDto.gameId,
+        );
+        schedule.push({
+          ...scheduledGame,
+          group: scheduledGameGroup!,
+          game: scheduledActiveGame!,
+        });
+      });
+      activeTournament.schedule = schedule;
+    }
     activeLeague.activeTournament = activeTournament || undefined;
     return activeLeague;
   }, [db, getGroups, getTournament]);

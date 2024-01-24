@@ -43,7 +43,7 @@ const TournamentGroupCard: React.FC<IProps> = ({ group }) => {
           height="100%"
         >
           {group?.teams.map((team) => (
-            <div style={{ padding: '8px', width: '100%' }}>
+            <div style={{ padding: '8px', width: '100%' }} key={team.id}>
               <Typography>{team.teamName}</Typography>
             </div>
           ))}

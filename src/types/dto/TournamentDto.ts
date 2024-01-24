@@ -2,6 +2,7 @@ import { GameSettings } from 'types/GameSettings';
 import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentState from 'types/TournamentState';
 import { PouchDBDto } from './PouchDBDto';
+import { TournamentScheduleDto } from './TournamentScheduleDto';
 
 export interface TournamentDto extends PouchDBDto {
   id: string;
@@ -24,5 +25,5 @@ export interface TournamentDto extends PouchDBDto {
 
   leaderboardTeamIds: string[];
 
-  scheduleIds?: string[];
+  schedule?: TournamentScheduleDto[];
 }

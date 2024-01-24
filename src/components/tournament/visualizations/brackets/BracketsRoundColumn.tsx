@@ -84,12 +84,13 @@ const BracketsRoundColumn: React.FC<IProps> = ({
           flexDirection="column"
           padding={`${getContainerPadding(round)}px 0px 0px 0px`}
         >
-          {pairedCurrentRoundGames.map((games) => {
+          {pairedCurrentRoundGames.map((games, index) => {
             const isGame1Bye = games[0]?.bracketProperties?.bye === true;
             const isGame2Bye = games[1]?.bracketProperties?.bye === true;
 
             return (
               <FlexContainer
+                key={index}
                 flexDirection="row"
                 style={{
                   marginBottom: getContainerMargin(round),
