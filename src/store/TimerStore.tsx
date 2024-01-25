@@ -11,7 +11,7 @@ interface TimerStoreState {
     delayInMs: number,
     duration: number,
     useAddition?: boolean,
-    timerFn?: Function,
+    onFinishCallback?: (hasFinished: boolean) => void,
   ) => void;
   stopTimer: () => void;
 }
@@ -21,10 +21,15 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
   startTimer: (delayInMs, duration, useAddition, callback) => {
     set(() => ({ timerFn: callback, duration }));
     const interval = setInterval(() => {
-      callback?.();
-      set((state) => ({
-        duration: state.duration + delayInMs * (useAddition ? 1 : -1),
-      }));
+      set((state) => {
+        if (state.duration + delayInMs * (useAddition ? 1 : -1) === 0) {
+          callback?.(true);
+        }
+
+        return {
+          duration: state.duration + delayInMs * (useAddition ? 1 : -1),
+        };
+      });
     }, delayInMs);
     set(() => ({ timerRef: interval }));
   },

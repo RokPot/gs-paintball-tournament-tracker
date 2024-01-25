@@ -1,10 +1,8 @@
 import { Button, Card, Typography, alpha, styled } from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
-import useTournamentFlow from 'hooks/tournament/useTournamentFlow';
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
-import useTimerStore from 'store/TimerStore';
 import Game from 'types/Game';
 import { TournamentStatus } from 'types/TournamentStatus';
 import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
@@ -17,54 +15,39 @@ interface IProps {
   className?: string;
   startStopMatch: () => void;
   isMatchInProgress: boolean;
-  game?: Game;
+  currentGame?: Game;
 }
 
 const DesktopScoreboard: React.FC<IProps> = ({
   className,
   startStopMatch,
   isMatchInProgress,
+  currentGame,
 }) => {
   const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
-  const tournament = activeLeague?.activeTournament;
-  const { beginTournament } = useTournamentFlow(tournament);
-  const { setDuration } = useTimerStore();
   const [showFinishMatchPopup, setShowFinishMatchPopup] = useState(false);
-  const [firstLoad, setFirstLoad] = useState(false);
+  // const [firstLoad, setFirstLoad] = useState(false);
+  const tournament = useMemo(
+    () => activeLeague?.activeTournament,
+    [activeLeague?.activeTournament],
+  );
   console.log(tournament);
   const isTournamentNotStartedYet = ![
     TournamentStatus.inProgress,
     TournamentStatus.finished,
   ].includes(tournament?.state?.status || TournamentStatus.created);
+  // const { setDuration } = useTimerStore();
 
-  const currentGroup = useMemo(() => {
-    if (!tournament) {
-      return undefined;
-    }
-    return tournament.groups.find(
-      (group) => tournament.state.currentGroupId === group.id,
-    );
-  }, [tournament]);
-
-  const currentGame = useMemo(() => {
-    if (!currentGroup || !tournament) {
-      return undefined;
-    }
-    return currentGroup?.games.find(
-      (game) => tournament.state.currentGameId === game.id,
-    );
-  }, [currentGroup, tournament]);
-
-  // Set the initial state
-  useEffect(() => {
-    if (!currentGame || firstLoad) {
-      return;
-    }
-    if (!isMatchInProgress) {
-      setDuration(currentGame.gameTime || 0);
-      setFirstLoad(true);
-    }
-  }, [currentGame, firstLoad, isMatchInProgress, setDuration]);
+  // // Set the initial state
+  // // useEffect(() => {
+  // //   if (!currentGame || firstLoad) {
+  // //     return;
+  // //   }
+  // //   if (!isMatchInProgress) {
+  // //     setDuration(currentGame.gameTime || 0);
+  // //     setFirstLoad(true);
+  // //   }
+  // // }, [currentGame, firstLoad, isMatchInProgress, setDuration]);
 
   return (
     <FlexContainer
@@ -203,7 +186,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
       >
         <StartTournament
           onTournamentStart={async () => {
-            await beginTournament();
+            // await beginTournament();
           }}
         />
       </CustomModal>
@@ -211,7 +194,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
   );
 };
 
-export default styled(DesktopScoreboard)(
+export default styled(memo(DesktopScoreboard))(
   (props) => `
     height: 100%;
 

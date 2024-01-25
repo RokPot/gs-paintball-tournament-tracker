@@ -8,6 +8,29 @@ const useTournamentFlow = (tournament?: Tournament) => {
   const { updateTournament } = useUpdateTournament();
   const { invalidateSelectedLeague } = useLeagueInvalidations();
 
+  const currentStage = useMemo(
+    () => tournament?.state?.stage,
+    [tournament?.state?.stage],
+  );
+
+  const currentGroup = useMemo(() => {
+    if (!tournament) {
+      return undefined;
+    }
+    return tournament.groups.find(
+      (group) => tournament.state.currentGroupId === group.id,
+    );
+  }, [tournament]);
+
+  const currentGame = useMemo(() => {
+    if (!currentGroup || !tournament) {
+      return undefined;
+    }
+    return currentGroup?.games.find(
+      (game) => tournament.state.currentGameId === game.id,
+    );
+  }, [currentGroup, tournament]);
+
   const beginTournament = useCallback(async () => {
     if (!tournament) {
       return;
@@ -25,11 +48,21 @@ const useTournamentFlow = (tournament?: Tournament) => {
   const finishGame = useCallback(() => {}, []);
   return useMemo(() => {
     return {
+      currentStage,
+      currentGame,
+      currentGroup,
       beginTournament,
       onMatchFinished,
       finishGame,
     };
-  }, [beginTournament, finishGame, onMatchFinished]);
+  }, [
+    beginTournament,
+    currentGame,
+    currentGroup,
+    currentStage,
+    finishGame,
+    onMatchFinished,
+  ]);
 };
 
 export default useTournamentFlow;
