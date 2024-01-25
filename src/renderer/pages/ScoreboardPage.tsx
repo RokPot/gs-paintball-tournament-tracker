@@ -32,7 +32,10 @@ const ScoreboardPage: React.FC = () => {
 
   return (
     <PageContainer padding="0px">
-      <DesktopScoreboard startStopMatch={startStopMatch} />
+      <DesktopScoreboard
+        startStopMatch={startStopMatch}
+        isMatchInProgress={isMatchInProgress}
+      />
     </PageContainer>
   );
 };

@@ -1,32 +1,36 @@
 import { Button, Card, Typography, alpha, styled } from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
-import QuickAddTeam from 'components/teams/QuickAddTeam';
+import useTournamentFlow from 'hooks/tournament/useTournamentFlow';
 import { useEffect, useMemo, useState } from 'react';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
-import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
-import useUpdateTournament from 'services/queries/tournament/useUpdateTournament';
 import useTimerStore from 'store/TimerStore';
 import Game from 'types/Game';
 import { TournamentStatus } from 'types/TournamentStatus';
 import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
 import GameTimerStoreRenderComponent from '../GameTimerStoreRenderComponent';
 import TeamScoreCard from '../TeamScoreCard';
+import FinishMatch from './FinishMatch';
 import StartTournament from './StartTournament';
 
 interface IProps {
   className?: string;
   startStopMatch: () => void;
+  isMatchInProgress: boolean;
   game?: Game;
 }
 
-const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
-  const { activeLeague } = useActiveLeague();
-  const { updateTournament } = useUpdateTournament();
-  const { invalidateSelectedLeague } = useLeagueInvalidations();
+const DesktopScoreboard: React.FC<IProps> = ({
+  className,
+  startStopMatch,
+  isMatchInProgress,
+}) => {
+  const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
   const tournament = activeLeague?.activeTournament;
+  const { beginTournament } = useTournamentFlow(tournament);
   const { setDuration } = useTimerStore();
-  const [isTeamUpsertModalOpen, setIsTeamUpsertModalOpen] = useState(false);
+  const [showFinishMatchPopup, setShowFinishMatchPopup] = useState(false);
+  const [firstLoad, setFirstLoad] = useState(false);
   console.log(tournament);
   const isTournamentNotStartedYet = ![
     TournamentStatus.inProgress,
@@ -51,12 +55,16 @@ const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
     );
   }, [currentGroup, tournament]);
 
+  // Set the initial state
   useEffect(() => {
-    if (!currentGame) {
+    if (!currentGame || firstLoad) {
       return;
     }
-    setDuration(currentGame.gameTime || 0);
-  }, [currentGame]);
+    if (!isMatchInProgress) {
+      setDuration(currentGame.gameTime || 0);
+      setFirstLoad(true);
+    }
+  }, [currentGame, firstLoad, isMatchInProgress, setDuration]);
 
   return (
     <FlexContainer
@@ -150,9 +158,11 @@ const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
                 color="secondary"
                 fullWidth
                 size="large"
-                onClick={() => setIsTeamUpsertModalOpen(true)}
+                onClick={() => setShowFinishMatchPopup(true)}
               >
-                <Typography variant="h3Medium">Finish Match</Typography>
+                <Typography variant="h3Medium">
+                  {isMatchInProgress ? 'Finish Match' : 'Reset Match'}
+                </Typography>
               </Button>
               <Button
                 variant="contained"
@@ -161,7 +171,9 @@ const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
                 fullWidth
                 onClick={startStopMatch}
               >
-                <Typography variant="h3Medium">Start Game</Typography>
+                <Typography variant="h3Medium">
+                  {isMatchInProgress ? 'Pause Game' : 'Start Game'}
+                </Typography>
               </Button>
             </FlexContainer>
             <FlexContainer flexDirection="column" gap={8}>
@@ -173,29 +185,25 @@ const DesktopScoreboard: React.FC<IProps> = ({ className, startStopMatch }) => {
         </Card>
       </FlexContainer>
       <CustomModal
-        isModalOpen={isTeamUpsertModalOpen}
-        onClose={() => setIsTeamUpsertModalOpen(false)}
+        isModalOpen={showFinishMatchPopup}
+        onClose={() => setShowFinishMatchPopup(false)}
         width={600}
       >
-        <QuickAddTeam
-          team={undefined}
-          onAccept={() => {}}
-          onCancel={() => setIsTeamUpsertModalOpen(false)}
+        <FinishMatch
+          game={currentGame}
+          sizeOfTeams={tournament?.settings?.numberOfTeamSize}
+          onMatchFinished={(match) => {
+            console.log(match);
+          }}
         />
       </CustomModal>
-      <CustomModal isModalOpen={isTournamentNotStartedYet} width={600}>
+      <CustomModal
+        isModalOpen={isTournamentNotStartedYet && !isFetchingActiveLeague}
+        width={600}
+      >
         <StartTournament
           onTournamentStart={async () => {
-            if (!tournament) {
-              return;
-            }
-            tournament.state.status = TournamentStatus.inProgress;
-            const newCurrentGroup = tournament.groups[0];
-            const newCurrentGame = newCurrentGroup.games[0];
-            tournament.state.currentGameId = newCurrentGame.id;
-            tournament.state.currentGroupId = newCurrentGroup.id;
-            await updateTournament(tournament);
-            await invalidateSelectedLeague();
+            await beginTournament();
           }}
         />
       </CustomModal>

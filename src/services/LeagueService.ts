@@ -3,16 +3,13 @@ import { useCallback } from 'react';
 import League from 'types/League';
 import { LeagueDto } from 'types/dto/LeagueDto';
 import { getLeaguesList } from 'utils/PouchDBUtils';
-import { TournamentSchedule } from 'types/TournamentSchedule';
 import usePouchDB, { DocType, pouchDbName } from './pouchDB';
 
 import useTournamentService from './TournamentService';
-import useGroupService from './GroupService';
 
 const useLeagueService = () => {
   const db = usePouchDB(pouchDbName);
   const { getTournament } = useTournamentService();
-  const { getGroups } = useGroupService();
 
   const addNewLeague = useCallback(
     async (league: League) => {
@@ -95,33 +92,9 @@ const useLeagueService = () => {
       activeLeague.activeTournament._id,
     );
 
-    if (activeTournament?.groups) {
-      const groups = await getGroups(
-        activeTournament.groups.map((group) => group._id),
-      );
-      activeTournament.groups = groups;
-    }
-    if (activeTournament?.schedule) {
-      const schedule: TournamentSchedule[] = [];
-      activeTournament?.schedule.forEach((scheduledGame) => {
-        const scheduledGameDto = scheduledGame as any;
-        const scheduledGameGroup = activeTournament?.groups.find(
-          (group) => group.id === scheduledGameDto.groupId,
-        );
-        const scheduledActiveGame = scheduledGameGroup?.games.find(
-          (game) => game.id === scheduledGameDto.gameId,
-        );
-        schedule.push({
-          ...scheduledGame,
-          group: scheduledGameGroup!,
-          game: scheduledActiveGame!,
-        });
-      });
-      activeTournament.schedule = schedule;
-    }
     activeLeague.activeTournament = activeTournament || undefined;
     return activeLeague;
-  }, [db, getGroups, getTournament]);
+  }, [db, getTournament]);
 
   const getLeagues = useCallback(async () => {
     const myMapFunction = (doc: any, emit: any) => {

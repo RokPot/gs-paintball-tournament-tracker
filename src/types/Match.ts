@@ -8,4 +8,6 @@ export interface Match {
   team1Margin: number;
 
   team2Margin: number;
+
+  matchDurationInSeconds: number;
 }
