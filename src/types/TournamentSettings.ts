@@ -4,13 +4,14 @@ import { TournamentType } from './TournamentType';
 export interface TournamentSettings {
   id: string;
   numberOfWinsRequired: number;
+  numberOfTeamSize: number;
   twoWinsDifference: boolean;
   switchGroups: boolean;
   switchGames: boolean;
   numberOfGroups: number;
   type: TournamentType;
   secondStageType?: TournamentType;
-  numberOfTeamSize: number;
+  shouldInsertMatchMargins: boolean;
 }
 
 export const DefaultTournamentSettings: TournamentSettings = {
@@ -23,4 +24,5 @@ export const DefaultTournamentSettings: TournamentSettings = {
   type: TournamentType.roundRobin,
   secondStageType: TournamentType.singleElimination,
   numberOfTeamSize: 3,
+  shouldInsertMatchMargins: true,
 };

@@ -1,9 +1,10 @@
 import { Button, Card, Typography, alpha, styled } from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
-import { memo, useMemo, useState } from 'react';
+import { memo, useMemo } from 'react';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
 import Game from 'types/Game';
+import { Match } from 'types/Match';
 import { TournamentStatus } from 'types/TournamentStatus';
 import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
 import GameTimerStoreRenderComponent from '../GameTimerStoreRenderComponent';
@@ -13,41 +14,38 @@ import StartTournament from './StartTournament';
 
 interface IProps {
   className?: string;
-  startStopMatch: () => void;
   isMatchInProgress: boolean;
   currentGame?: Game;
+  hasGameTimeRanOut: boolean;
+  showFinishMatchPopup: boolean;
+  beginTournament: () => Promise<void>;
+  startStopMatch: () => void;
+  finishMatch: (match: Match) => Promise<void>;
+  setShowFinishMatchPopup: (showFinishPopup: boolean) => void;
 }
 
 const DesktopScoreboard: React.FC<IProps> = ({
   className,
-  startStopMatch,
   isMatchInProgress,
   currentGame,
+  hasGameTimeRanOut,
+  showFinishMatchPopup,
+  beginTournament,
+  startStopMatch,
+  finishMatch,
+  setShowFinishMatchPopup,
 }) => {
   const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
-  const [showFinishMatchPopup, setShowFinishMatchPopup] = useState(false);
-  // const [firstLoad, setFirstLoad] = useState(false);
   const tournament = useMemo(
     () => activeLeague?.activeTournament,
     [activeLeague?.activeTournament],
   );
-  console.log(tournament);
+
   const isTournamentNotStartedYet = ![
     TournamentStatus.inProgress,
     TournamentStatus.finished,
   ].includes(tournament?.state?.status || TournamentStatus.created);
-  // const { setDuration } = useTimerStore();
-
-  // // Set the initial state
-  // // useEffect(() => {
-  // //   if (!currentGame || firstLoad) {
-  // //     return;
-  // //   }
-  // //   if (!isMatchInProgress) {
-  // //     setDuration(currentGame.gameTime || 0);
-  // //     setFirstLoad(true);
-  // //   }
-  // // }, [currentGame, firstLoad, isMatchInProgress, setDuration]);
+  console.log(hasGameTimeRanOut);
 
   return (
     <FlexContainer
@@ -169,15 +167,27 @@ const DesktopScoreboard: React.FC<IProps> = ({
       </FlexContainer>
       <CustomModal
         isModalOpen={showFinishMatchPopup}
-        onClose={() => setShowFinishMatchPopup(false)}
+        onClose={() => {
+          if (hasGameTimeRanOut) {
+            return;
+          }
+          setShowFinishMatchPopup(false);
+        }}
         width={600}
+        title="Finish Match"
+        showHeader
+        canClose={!hasGameTimeRanOut}
       >
         <FinishMatch
           game={currentGame}
           sizeOfTeams={tournament?.settings?.numberOfTeamSize}
-          onMatchFinished={(match) => {
-            console.log(match);
+          shouldInsertTeamsMargins={
+            tournament?.settings?.shouldInsertMatchMargins
+          }
+          onMatchFinished={async (match) => {
+            await finishMatch(match);
           }}
+          forceInsert={hasGameTimeRanOut}
         />
       </CustomModal>
       <CustomModal
@@ -186,7 +196,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
       >
         <StartTournament
           onTournamentStart={async () => {
-            // await beginTournament();
+            await beginTournament();
           }}
         />
       </CustomModal>

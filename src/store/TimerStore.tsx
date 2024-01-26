@@ -5,8 +5,10 @@ interface TimerStoreState {
   timerRef?: number;
   timerFn?: Function;
   duration: number;
+  currentDuration: number;
   setTimerRef: (timer: number) => void;
   setDuration: (duration: number) => void;
+  getDuration: () => { duration: number; currentDuration: number };
   startTimer: (
     delayInMs: number,
     duration: number,
@@ -18,16 +20,18 @@ interface TimerStoreState {
 
 const useTimerStore = create<TimerStoreState>((set, get) => ({
   duration: 0,
+  currentDuration: 0,
   startTimer: (delayInMs, duration, useAddition, callback) => {
-    set(() => ({ timerFn: callback, duration }));
+    set(() => ({ timerFn: callback, duration, currentDuration: 0 }));
     const interval = setInterval(() => {
       set((state) => {
         if (state.duration + delayInMs * (useAddition ? 1 : -1) === 0) {
           callback?.(true);
+          state.stopTimer();
         }
-
         return {
           duration: state.duration + delayInMs * (useAddition ? 1 : -1),
+          currentDuration: state.currentDuration + delayInMs,
         };
       });
     }, delayInMs);
@@ -45,6 +49,9 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
   },
   setDuration: (duration) => {
     set(() => ({ duration }));
+  },
+  getDuration: () => {
+    return { duration: get().duration, currentDuration: get().currentDuration };
   },
 }));
 

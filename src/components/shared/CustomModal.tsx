@@ -27,6 +27,7 @@ interface IProps {
   fullScreen?: boolean;
   title?: string;
   showHeader?: boolean;
+  canClose?: boolean;
 }
 const style = {
   position: 'absolute' as 'absolute',
@@ -46,6 +47,7 @@ const CustomModal = ({
   fullScreen,
   title,
   showHeader = false,
+  canClose = true,
 }: IProps) => {
   const theme = useTheme();
   return (
@@ -74,9 +76,11 @@ const CustomModal = ({
             >
               <Typography variant="h1">{title}</Typography>
 
-              <Button onClick={onClose}>
-                <FontAwesomeIcon icon={faClose} />
-              </Button>
+              {canClose && (
+                <Button onClick={onClose}>
+                  <FontAwesomeIcon icon={faClose} />
+                </Button>
+              )}
             </FlexContainer>
           )}
 

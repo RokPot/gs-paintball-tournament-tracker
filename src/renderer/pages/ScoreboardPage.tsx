@@ -6,16 +6,52 @@ import { useIsResponsive } from 'hooks/ui/useIsResponsive';
 import { useCallback, useEffect, useState } from 'react';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
 import useTimerStore from 'store/TimerStore';
+import { Match } from 'types/Match';
 
 const ScoreboardPage: React.FC = () => {
   const startTimer = useTimerStore((state) => state.startTimer);
   const stopTimer = useTimerStore((state) => state.stopTimer);
   const [isMatchInProgress, setIsMatchInProgress] = useState(false);
-  const { setDuration } = useTimerStore();
+  const [hasGameTimeRanOut, setHasGameTimeRanOut] = useState(false);
+  const [showFinishMatchPopup, setShowFinishMatchPopup] = useState(false);
+  const { isMobile } = useIsResponsive();
+
+  const { setDuration, getDuration } = useTimerStore();
   const [firstLoad, setFirstLoad] = useState(false);
   const { activeLeague } = useActiveLeague();
   const tournament = activeLeague?.activeTournament;
-  const { beginTournament, currentGame } = useTournamentFlow(tournament);
+  const { beginTournament, currentGame, finishMatch } =
+    useTournamentFlow(tournament);
+
+  const setFinishMatchModal = useCallback(
+    (shouldShowFinishMatchModal: boolean) => {
+      stopTimer();
+      setShowFinishMatchPopup(shouldShowFinishMatchModal);
+    },
+    [stopTimer],
+  );
+  const finishMatchInternal = useCallback(
+    async (match: Match) => {
+      const { currentDuration, duration } = getDuration();
+      match.matchDurationInSeconds = currentDuration;
+      await finishMatch(match, duration);
+      setShowFinishMatchPopup(false);
+      setIsMatchInProgress(false);
+    },
+    [finishMatch, getDuration],
+  );
+  const startStopMatch = useCallback(() => {
+    if (isMatchInProgress) {
+      stopTimer();
+      setIsMatchInProgress(false);
+      return;
+    }
+    setIsMatchInProgress(true);
+    startTimer(100, currentGame?.gameTime!, false, (hasFinished) => {
+      setHasGameTimeRanOut(hasFinished);
+      setShowFinishMatchPopup(hasFinished);
+    });
+  }, [currentGame?.gameTime, isMatchInProgress, startTimer, stopTimer]);
 
   // Set the initial state
   useEffect(() => {
@@ -25,20 +61,6 @@ const ScoreboardPage: React.FC = () => {
     setDuration(currentGame.gameTime || 0);
     setFirstLoad(true);
   }, [currentGame, firstLoad, setDuration]);
-
-  const startStopMatch = useCallback(() => {
-    if (isMatchInProgress) {
-      stopTimer();
-      setIsMatchInProgress(false);
-      return;
-    }
-    setIsMatchInProgress(true);
-    startTimer(100, 300000, false, (hasFinished) => {
-      console.log(hasFinished);
-    });
-  }, [isMatchInProgress]);
-
-  const { isMobile } = useIsResponsive();
 
   if (isMobile) {
     return (
@@ -54,6 +76,11 @@ const ScoreboardPage: React.FC = () => {
         startStopMatch={startStopMatch}
         isMatchInProgress={isMatchInProgress}
         currentGame={currentGame}
+        beginTournament={beginTournament}
+        finishMatch={finishMatchInternal}
+        hasGameTimeRanOut={hasGameTimeRanOut}
+        setShowFinishMatchPopup={setFinishMatchModal}
+        showFinishMatchPopup={showFinishMatchPopup}
       />
     </PageContainer>
   );

@@ -349,6 +349,17 @@ const AddOrEditTournament = ({
               tooltip="If this is checked, then group will rotate after every finished game."
             />
           )}
+          <CustomCheckbox
+            onChange={(checked) =>
+              formik.setFieldValue('settings', {
+                ...formik.values.settings,
+                shouldInsertMatchMargins: checked,
+              } as TournamentSettings)
+            }
+            checked={formik.values.settings?.shouldInsertMatchMargins}
+            label="Include match margins"
+            tooltip="If this is checked, then each match will need match margins (+1/-1) inserted."
+          />
           <Typography variant="h3">Game settings</Typography>
 
           <TimePicker

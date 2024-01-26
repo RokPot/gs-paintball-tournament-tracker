@@ -1,6 +1,6 @@
 import { Button, Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Game from 'types/Game';
 import { Match } from 'types/Match';
 import MatchState from 'types/MatchState';
@@ -23,7 +23,18 @@ const FinishMatch: React.FC<IProps> = ({
   const [matchState, setMatchState] = useState<MatchState>();
   const [team1Margin, setTeam1Margin] = useState(0);
   const [team2Margin, setTeam2Margin] = useState(0);
+  const [availableTeam1Margins, setAvailableTeam1Margins] =
+    useState<number[]>();
+  const [availableTeam2Margins, setAvailableTeam2Margins] =
+    useState<number[]>();
   console.log(sizeOfTeams);
+
+  const onMatchStateChanged = (newMatchState: MatchState) => {
+    setMatchState(newMatchState);
+    setTeam1Margin(0);
+    setTeam2Margin(0);
+  };
+
   const finishMatch = useCallback(() => {
     if (!matchState) {
       return;
@@ -37,6 +48,55 @@ const FinishMatch: React.FC<IProps> = ({
     };
     onMatchFinished(newMatchFinished);
   }, [matchState, onMatchFinished, team1Margin, team2Margin]);
+
+  useEffect(() => {
+    if (matchState === MatchState.team1Win) {
+      const team1MarginsList = [];
+      for (let i = sizeOfTeams || 3; i > 0; i -= 1) {
+        team1MarginsList.push(i);
+      }
+      setAvailableTeam1Margins(team1MarginsList);
+      const team2MarginsList = [];
+      for (let i = -1 * (sizeOfTeams || 3); i < 0; i += 1) {
+        team2MarginsList.push(i);
+      }
+      setAvailableTeam2Margins(team2MarginsList);
+      return;
+    }
+    if (matchState === MatchState.team2Win) {
+      const team2MarginsList = [];
+      for (let i = sizeOfTeams || 3; i > 0; i -= 1) {
+        team2MarginsList.push(i);
+      }
+      setAvailableTeam2Margins(team2MarginsList);
+      const team1MarginsList = [];
+      for (let i = -1 * (sizeOfTeams || 3); i < 0; i += 1) {
+        team1MarginsList.push(i);
+      }
+      setAvailableTeam1Margins(team1MarginsList);
+      return;
+    }
+    if (matchState === MatchState.draw) {
+      const team1MarginsList = [];
+      for (let i = sizeOfTeams || 3; i > 0; i -= 1) {
+        team1MarginsList.push(i);
+      }
+      for (let i = -1; i >= (sizeOfTeams || 3) * -1; i -= 1) {
+        team1MarginsList.push(i);
+      }
+      setAvailableTeam1Margins(team1MarginsList);
+      const team2MarginsList = [];
+      for (let i = sizeOfTeams || 3; i > 0; i -= 1) {
+        team2MarginsList.push(i);
+      }
+      for (let i = -1; i >= (sizeOfTeams || 3) * -1; i -= 1) {
+        team2MarginsList.push(i);
+      }
+      setAvailableTeam2Margins(team2MarginsList);
+    }
+  }, [matchState]);
+
+  const areValuesValid = matchState && team1Margin && team2Margin;
 
   if (!game) {
     return (
@@ -60,7 +120,6 @@ const FinishMatch: React.FC<IProps> = ({
       alignItems="flex-start"
       gap={16}
     >
-      <Typography variant="h4">Finish Match</Typography>
       <FlexContainer flexDirection="row" gap={8} width="100%">
         <Button
           variant={
@@ -68,7 +127,7 @@ const FinishMatch: React.FC<IProps> = ({
           }
           color={matchState === MatchState.team1Win ? 'warning' : 'primary'}
           style={{ width: '100%' }}
-          onClick={() => setMatchState(MatchState.team1Win)}
+          onClick={() => onMatchStateChanged(MatchState.team1Win)}
         >
           <Typography variant="p1Medium">
             <Typography
@@ -83,7 +142,7 @@ const FinishMatch: React.FC<IProps> = ({
         <Button
           variant={matchState === MatchState.draw ? 'contained' : 'outlined'}
           color={matchState === MatchState.draw ? 'warning' : 'primary'}
-          onClick={() => setMatchState(MatchState.draw)}
+          onClick={() => onMatchStateChanged(MatchState.draw)}
         >
           <Typography variant="p1Medium">Draw</Typography>
         </Button>
@@ -93,7 +152,7 @@ const FinishMatch: React.FC<IProps> = ({
           }
           color={matchState === MatchState.team2Win ? 'warning' : 'primary'}
           style={{ width: '100%' }}
-          onClick={() => setMatchState(MatchState.team2Win)}
+          onClick={() => onMatchStateChanged(MatchState.team2Win)}
         >
           <Typography variant="p1Medium">
             <Typography
@@ -106,54 +165,57 @@ const FinishMatch: React.FC<IProps> = ({
           </Typography>
         </Button>
       </FlexContainer>
-      <FlexContainer flexDirection="row" width="100%" justifyContent="center">
-        <FlexContainer flexDirection="column">
-          <Typography variant="p1Medium">Team 1 Margin</Typography>
-          {[MatchState.draw, MatchState.team1Win].includes(
-            matchState || MatchState.team2Win,
-          ) &&
-            [...Array(sizeOfTeams)].map((_, index) => (
+      {shouldInsertTeamsMargins && matchState && (
+        <FlexContainer
+          flexDirection="row"
+          width="100%"
+          justifyContent="center"
+          gap={8}
+        >
+          <FlexContainer flexDirection="column">
+            <Typography variant="p1Medium">Team 1 Margin</Typography>
+            {availableTeam1Margins?.map((margin, index) => (
               <Button
                 key={index}
-                variant={team1Margin === index + 1 ? 'contained' : 'text'}
-                color={team1Margin === index + 1 ? 'warning' : 'primary'}
-                onClick={() => setTeam1Margin(index + 1)}
+                variant={team1Margin === margin ? 'contained' : 'text'}
+                color={team1Margin === margin ? 'warning' : 'primary'}
+                onClick={() => setTeam1Margin(margin)}
               >
-                + {index + 1}
+                {margin > 0 ? `+${margin}` : margin}
               </Button>
             ))}
-          {[MatchState.draw, MatchState.team2Win].includes(
-            matchState || MatchState.team1Win,
-          ) &&
-            [...Array(sizeOfTeams)].map((_, index) => (
+          </FlexContainer>
+          <Typography variant="h4Bold">VS</Typography>
+          <FlexContainer flexDirection="column">
+            <Typography variant="p1Medium">Team 2 Margin</Typography>
+            {availableTeam2Margins?.map((margin, index) => (
               <Button
                 key={index}
-                variant={team1Margin === index + 1 ? 'contained' : 'text'}
-                color={team1Margin === index + 1 ? 'warning' : 'primary'}
-                onClick={() => setTeam1Margin(index + 1)}
+                variant={team2Margin === margin ? 'contained' : 'text'}
+                color={team2Margin === margin ? 'warning' : 'primary'}
+                onClick={() => setTeam2Margin(margin)}
               >
-                - {index + 1}
+                {margin > 0 ? `+${margin}` : margin}
               </Button>
             ))}
+          </FlexContainer>
         </FlexContainer>
-        <Typography variant="h4Bold">VS</Typography>
-        <FlexContainer flexDirection="column">
-          <Typography variant="p1Medium">Team 2 Margin</Typography>
-
-          {[...Array(sizeOfTeams)].map((_, index) => (
-            <Button
-              key={index}
-              variant={team2Margin === index + 1 ? 'contained' : 'text'}
-              color={team2Margin === index + 1 ? 'warning' : 'primary'}
-              onClick={() => setTeam2Margin(index + 1)}
-            >
-              - {index + 1}
-            </Button>
-          ))}
-        </FlexContainer>
-      </FlexContainer>
-      <Button variant="contained" style={{ width: '150px' }}>
-        Confirm Match
+      )}
+      {forceInsert && (
+        <Typography
+          variant="subtitle1"
+          color={(theme) => theme.palette.text.disabled}
+        >
+          Game has ran out of time.
+        </Typography>
+      )}
+      <Button
+        variant="contained"
+        style={{ width: '150px' }}
+        disabled={!areValuesValid}
+        onClick={finishMatch}
+      >
+        Finish Match
       </Button>
     </FlexContainer>
   );

@@ -9,10 +9,12 @@ const preventPropagationAndPreventDefault = (event: any) => {
   try {
     event.preventDefault();
     event.nativeEvent?.stopImmediatePropagation();
-  } catch {}
+  } catch (e) {
+    console.error(e);
+  }
 };
 
-const ConfirmationModal: FunctionComponent<any> = (props) => {
+const ConfirmationModal: FunctionComponent<any> = () => {
   const { Confirmation, ...confirmationModalStore } =
     useConfirmationModalStore();
 

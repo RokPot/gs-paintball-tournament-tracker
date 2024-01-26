@@ -100,14 +100,7 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
   const theme = useTheme();
   const switchGroups = true;
   const switchGames = false;
-  console.log(selectedTournament);
-  console.log(
-    'group1 games',
-    selectedTournament.groups[0].games.map(
-      (game) => `${game.team1.teamName}VS${game.team2.teamName}`,
-    ),
-  );
-  console.log(schedule);
+
   const getGameStatusColor = (gameState: GameState) => {
     switch (gameState) {
       case GameState.finished:
