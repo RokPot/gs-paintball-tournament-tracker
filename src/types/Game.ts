@@ -1,6 +1,6 @@
 import { DocType } from 'services/pouchDB';
 import { BracketProperties } from './BracketProperties';
-import { GameState } from './GameState';
+import { GameState, GameWinner } from './GameState';
 import { Match } from './Match';
 import Team from './Team';
 import { GameDto } from './dto/GameDto';
@@ -17,6 +17,8 @@ export default class Game extends IPouchDB {
   matches: Match[];
 
   gameState: GameState;
+
+  gameWinner: GameWinner;
 
   team1Wins: number;
 
@@ -38,6 +40,7 @@ export default class Game extends IPouchDB {
     this.team2Wins = props.team2Wins || 0;
     this.bracketProperties = props.bracketProperties;
     this.gameTime = props.gameTime;
+    this.gameWinner = props.gameWinner || GameWinner.notYet;
   }
 
   public toDto = (): GameDto => {
@@ -54,6 +57,7 @@ export default class Game extends IPouchDB {
       team1Wins: this.team1Wins,
       team2Wins: this.team2Wins,
       gameTime: this.gameTime,
+      gameWinner: this.gameWinner,
     };
   };
 }

@@ -222,7 +222,6 @@ export const getTeamsSeeding = (numPlayers: number) => {
   }
   return teamSeeds;
 };
-//
 
 export const generateFillerGame = (
   team1: Team,
@@ -449,10 +448,7 @@ const generateRoundRobinSchedule = (
   if (!groups?.length) {
     return [];
   }
-  console.log(settings);
-  // const { switchGames, switchGroups } = settings;
-  const switchGames = true;
-  const switchGroups = true;
+  const { switchGames, switchGroups } = settings;
 
   const innerGroups = [
     ...(JSON.parse(
@@ -493,9 +489,6 @@ const generateRoundRobinSchedule = (
   ]);
   currentGameNumber = scheduledGames.length + 1;
   while (scheduledGames.length < totalGames) {
-    if (scheduledGames.length > 34 && scheduledGames.length < 37) {
-      console.log('i am hir');
-    }
     const newGroup = getNextGroup(
       mostCurrentGroup,
       innerGroups,

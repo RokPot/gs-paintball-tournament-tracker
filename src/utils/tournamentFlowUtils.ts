@@ -9,13 +9,15 @@ export const getNextGroup = (
   currentStage: number,
   switchGroups: boolean,
 ) => {
-  if (
-    !switchGroups &&
-    currentGroup.games.some(
-      (game) => ![GameState.finished].includes(game.gameState),
-    )
-  ) {
-    return currentGroup;
+  if (!switchGroups) {
+    if (
+      currentGroup.games.some(
+        (game) => ![GameState.finished].includes(game.gameState),
+      )
+    ) {
+      return currentGroup;
+    }
+    console.log('Aj am hir');
   }
 
   const currentStageGroups = groups.filter(
@@ -56,18 +58,22 @@ export const getNextGroup = (
 export const checkIfCurrentGamesAreFinished = (
   pairedGame1: Game,
   pairedGame2?: Game,
-): { switchToNewPair?: boolean; newActiveGameId?: string } => {
+): {
+  shouldSwitchToNewPair?: boolean;
+  game1Available?: boolean;
+  game2Available?: boolean;
+} => {
   if (
     (pairedGame1.gameState === GameState.finished &&
       pairedGame2?.gameState === GameState.finished) ||
     (!pairedGame2 && pairedGame1.gameState === GameState.finished)
   ) {
-    return { switchToNewPair: true };
+    return { shouldSwitchToNewPair: true };
   }
-  if (pairedGame1.gameState === GameState.playing && pairedGame2) {
-    return { newActiveGameId: pairedGame2.id };
-  }
-  return { newActiveGameId: pairedGame1.id };
+  return {
+    game1Available: pairedGame1?.gameState !== GameState.finished,
+    game2Available: pairedGame2?.gameState !== GameState.finished,
+  };
 };
 
 export const getNextGame = (currentGroup: TournamentGroup) => {
@@ -83,7 +89,10 @@ export const getNextGamePair = (currentGroup: TournamentGroup) => {
   const availableGroupGames = currentGroup.games.filter(
     (game) => game.gameState === GameState.created,
   );
-  return { game1: availableGroupGames[0], game2: availableGroupGames[1] };
+  return {
+    game1: availableGroupGames.length > 0 ? availableGroupGames[0] : undefined,
+    game2: availableGroupGames.length > 1 ? availableGroupGames[1] : undefined,
+  };
 };
 
 export const switchGames = (
@@ -91,32 +100,104 @@ export const switchGames = (
   settings: TournamentSettings,
   currentStage: number,
   activeGroupId: string,
-  activeGameId: string,
+  activeGame: Game,
   pairedGame1: Game,
   pairedGame2?: Game,
-) => {
+):
+  | {
+      newActiveGame: Game;
+      newPairedGame1: Game;
+      newPairedGame2?: Game;
+      activeGroup: TournamentGroup;
+    }
+  | 'NoMoreGames' => {
   let activeGroup = groups.find((group) => group.id === activeGroupId);
   if (!activeGroup) {
-    return;
+    return 'NoMoreGames';
   }
-  const { switchToNewPair } = checkIfCurrentGamesAreFinished(
-    pairedGame1,
-    pairedGame2,
+  let newActiveGame: Game = activeGame;
+  let newPairedGame1: Game = pairedGame1;
+  let newPairedGame2: Game | undefined = pairedGame2;
+
+  const {
+    game1Available,
+    game2Available,
+    shouldSwitchToNewPair: switchToNewPair,
+  } = checkIfCurrentGamesAreFinished(pairedGame1, pairedGame2);
+
+  activeGroup = getNextGroup(
+    activeGroup,
+    groups,
+    currentStage,
+    settings.switchGroups,
   );
-  if (switchToNewPair) {
-    if (settings.switchGroups) {
-      // Get new games in a new group
-      activeGroup = getNextGroup(
-        activeGroup,
-        groups,
-        currentStage,
-        settings.switchGroups,
-      );
-    }
+  if (!activeGroup) {
+    return 'NoMoreGames';
+  }
+  if (game1Available || game2Available) {
+    const isGame1Active = pairedGame1.id === activeGame.id;
     if (settings.switchGames) {
-      getNextGamePair(activeGroup!);
-    } else {
-      getNextGame(activeGroup!);
+      if (isGame1Active) {
+        if (game2Available) {
+          // return game 2
+          return {
+            newActiveGame: newPairedGame2!,
+            newPairedGame1,
+            newPairedGame2,
+            activeGroup,
+          };
+        }
+        // return game 1
+        return {
+          newActiveGame: newPairedGame1,
+          newPairedGame1,
+          newPairedGame2,
+          activeGroup,
+        };
+      }
+      if (game1Available) {
+        // return game 1
+        return {
+          newActiveGame: newPairedGame1,
+          newPairedGame1,
+          newPairedGame2,
+          activeGroup,
+        };
+      }
+      // return game 2
+      return {
+        newActiveGame: newPairedGame2!,
+        newPairedGame1,
+        newPairedGame2,
+        activeGroup,
+      };
     }
   }
+
+  if (switchToNewPair) {
+    if (settings.switchGames) {
+      const { game1, game2 } = getNextGamePair(activeGroup!);
+      if (!game1) {
+        return 'NoMoreGames';
+      }
+      newActiveGame = game1;
+      newPairedGame1 = game1;
+      newPairedGame2 = game2;
+    } else {
+      const newNextGame = getNextGame(activeGroup!);
+      if (!newNextGame?.game1) {
+        return 'NoMoreGames';
+      }
+      newActiveGame = newNextGame.game1;
+      newPairedGame1 = newNextGame.game1;
+    }
+  }
+
+  // Not switching games
+  return {
+    newActiveGame,
+    newPairedGame1,
+    newPairedGame2,
+    activeGroup,
+  };
 };

@@ -10,9 +10,13 @@ export default class TournamentState {
 
   status: TournamentStatus;
 
-  currentGameId?: string;
+  activeGameId?: string;
 
-  currentGroupId?: string;
+  pairedGame1Id?: string;
+
+  pairedGame2Id?: string;
+
+  activeGroupId?: string;
 
   stage: number;
 
@@ -22,7 +26,9 @@ export default class TournamentState {
     this.isGameInProgress = props.isGameInProgress;
     this.status = props.status;
     this.stage = props.stage || 0;
-    this.currentGameId = props.currentGameId;
-    this.currentGroupId = props.currentGroupId;
+    this.activeGameId = props.activeGameId;
+    this.pairedGame1Id = props.pairedGame1Id;
+    this.pairedGame2Id = props.pairedGame2Id;
+    this.activeGroupId = props.activeGroupId;
   }
 }

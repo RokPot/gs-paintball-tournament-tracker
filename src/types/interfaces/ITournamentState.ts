@@ -11,7 +11,11 @@ export interface ITournamentState {
 
   stage: number;
 
-  currentGameId?: string;
+  activeGameId?: string;
 
-  currentGroupId?: string;
+  pairedGame1Id?: string;
+
+  pairedGame2Id?: string;
+
+  activeGroupId?: string;
 }

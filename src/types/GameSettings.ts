@@ -5,6 +5,9 @@ export interface GameSettings {
   longBreakTimeInSeconds: number;
   shortBreakTimeInSeconds: number;
   gameTimeInSeconds: number;
+  // todo rokpoto handle this
+  betweenGamePauseTimeInSeconds: number;
+  manualGameStartTimeInSeconds: number;
 }
 
 export const DefaultGameSettings: GameSettings = {
@@ -12,4 +15,6 @@ export const DefaultGameSettings: GameSettings = {
   gameTimeInSeconds: 5 * 60,
   longBreakTimeInSeconds: 1 * 60,
   shortBreakTimeInSeconds: 30,
+  betweenGamePauseTimeInSeconds: 30,
+  manualGameStartTimeInSeconds: 30,
 };

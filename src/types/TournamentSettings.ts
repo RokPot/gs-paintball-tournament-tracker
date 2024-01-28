@@ -11,7 +11,9 @@ export interface TournamentSettings {
   numberOfGroups: number;
   type: TournamentType;
   secondStageType?: TournamentType;
+  // todo rokpot handle and do this
   shouldInsertMatchMargins: boolean;
+  pauseBetweenEachMatch: boolean;
 }
 
 export const DefaultTournamentSettings: TournamentSettings = {
@@ -25,4 +27,5 @@ export const DefaultTournamentSettings: TournamentSettings = {
   secondStageType: TournamentType.singleElimination,
   numberOfTeamSize: 3,
   shouldInsertMatchMargins: true,
+  pauseBetweenEachMatch: true,
 };

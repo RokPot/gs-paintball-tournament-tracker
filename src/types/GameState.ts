@@ -13,3 +13,10 @@ export enum GameStateLabels {
   postponed = 'Game is postponed',
   finished = 'Game is finished',
 }
+
+export enum GameWinner {
+  team1 = 'Team1',
+  team2 = 'Team2',
+  draw = 'Draw',
+  notYet = 'NotYet',
+}

@@ -1,5 +1,5 @@
 import { Match } from 'types/Match';
-import { GameState } from 'types/GameState';
+import { GameState, GameWinner } from 'types/GameState';
 import { BracketProperties } from 'types/BracketProperties';
 import { PouchDBDto } from './PouchDBDto';
 
@@ -21,4 +21,6 @@ export interface GameDto extends PouchDBDto {
   bracketProperties: BracketProperties | null;
 
   gameTime: number;
+
+  gameWinner: GameWinner;
 }

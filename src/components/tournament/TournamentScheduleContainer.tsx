@@ -14,11 +14,9 @@ import {
 } from '@mui/material';
 import CustomDropdownMenu from 'components/shared/CustomDropdownMenu';
 import FlexContainer from 'components/shared/FlexContainer';
-import { useEffect, useState } from 'react';
+import Game from 'types/Game';
 import { GameState, GameStateLabels } from 'types/GameState';
 import League from 'types/League';
-import { TournamentSchedule as Schedule } from 'types/TournamentSchedule';
-import { generateTournamentSchedule } from 'utils/tournamentUtils';
 import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
 
 const StyledGameContainer = styled('div')(
@@ -95,12 +93,11 @@ interface IProps {
 }
 
 const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
-  const selectedTournament = activeLeague?.activeTournament;
-  const [schedule, setSchedule] = useState<Schedule[]>([]);
-  const theme = useTheme();
-  const switchGroups = true;
-  const switchGames = false;
+  const selectedTournament = activeLeague.activeTournament!;
 
+  const theme = useTheme();
+  const { switchGames } = selectedTournament.settings;
+  console.log('unga', selectedTournament.schedule);
   const getGameStatusColor = (gameState: GameState) => {
     switch (gameState) {
       case GameState.finished:
@@ -114,14 +111,13 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
     }
   };
 
-  useEffect(() => {
-    setSchedule(
-      generateTournamentSchedule(
-        selectedTournament?.groups,
-        selectedTournament?.settings,
-      ),
-    );
-  }, []);
+  const onEditGame = (game: Game) => {
+    console.log('edit game', game);
+  };
+
+  const onShowInfo = (game: Game) => {
+    console.log('edit game', game);
+  };
 
   if (!selectedTournament?.groups?.length) {
     return (
@@ -146,11 +142,11 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
       alignItems="flex-start"
       gap={8}
     >
-      {schedule?.map((sched, index) => {
+      {selectedTournament?.schedule?.map((sched, index) => {
         const isPreviousGroupDifferent =
           index > 0 &&
-          schedule[index - 1].group.groupIndex !==
-            schedule[index].group.groupIndex;
+          selectedTournament!.schedule?.[index - 1].group.groupIndex !==
+            selectedTournament.schedule?.[index].group.groupIndex;
 
         const isFirstRow = index === 0;
         const shouldPairGames =
@@ -191,15 +187,21 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
                   {sched.game.team1.teamName}
                 </Typography>
                 <StyledScoreCardContainer>
-                  <Typography variant="p1Bold">
-                    {sched.game.team2Wins}
+                  <Typography
+                    variant="p1Bold"
+                    color={theme.palette.common.white}
+                  >
+                    {sched.game.team1Wins}
                   </Typography>
                 </StyledScoreCardContainer>
 
                 <Typography variant="p2Medium">VS</Typography>
 
                 <StyledScoreCardContainer>
-                  <Typography variant="p1Bold">
+                  <Typography
+                    variant="p1Bold"
+                    color={theme.palette.common.white}
+                  >
                     {sched.game.team2Wins}
                   </Typography>
                 </StyledScoreCardContainer>
@@ -229,7 +231,7 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
                         label: 'Edit game',
                         icon: faEdit,
                         onClick: () => {
-                          console.log('edit game', sched);
+                          onEditGame(sched.game);
                         },
                         visible: true,
                       },
@@ -237,7 +239,7 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
                         label: 'Info',
                         icon: faInfo,
                         onClick: () => {
-                          console.log('Game info', sched);
+                          onShowInfo(sched.game);
                         },
                         visible: true,
                       },

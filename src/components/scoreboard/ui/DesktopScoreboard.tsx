@@ -18,6 +18,7 @@ interface IProps {
   currentGame?: Game;
   hasGameTimeRanOut: boolean;
   showFinishMatchPopup: boolean;
+  isCurrentlyInCountdown: boolean;
   beginTournament: () => Promise<void>;
   startStopMatch: () => void;
   finishMatch: (match: Match) => Promise<void>;
@@ -34,6 +35,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
   startStopMatch,
   finishMatch,
   setShowFinishMatchPopup,
+  isCurrentlyInCountdown,
 }) => {
   const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
   const tournament = useMemo(
@@ -45,7 +47,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
     TournamentStatus.inProgress,
     TournamentStatus.finished,
   ].includes(tournament?.state?.status || TournamentStatus.created);
-  console.log(hasGameTimeRanOut);
+  console.log(hasGameTimeRanOut, currentGame);
 
   return (
     <FlexContainer
@@ -140,10 +142,9 @@ const DesktopScoreboard: React.FC<IProps> = ({
                 fullWidth
                 size="large"
                 onClick={() => setShowFinishMatchPopup(true)}
+                disabled={!isMatchInProgress || isCurrentlyInCountdown}
               >
-                <Typography variant="h3Medium">
-                  {isMatchInProgress ? 'Finish Match' : 'Reset Match'}
-                </Typography>
+                <Typography variant="h3Medium">Finish Match</Typography>
               </Button>
               <Button
                 variant="contained"
