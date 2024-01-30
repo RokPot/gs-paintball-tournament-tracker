@@ -11,7 +11,6 @@ export interface TournamentSettings {
   numberOfGroups: number;
   type: TournamentType;
   secondStageType?: TournamentType;
-  // todo rokpot handle and do this
   shouldInsertMatchMargins: boolean;
   pauseBetweenEachMatch: boolean;
 }

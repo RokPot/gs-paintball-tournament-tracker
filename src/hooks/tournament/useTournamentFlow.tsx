@@ -1,7 +1,8 @@
 import useGameQueries from 'hooks/game/useGameQueries';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
 import useUpdateTournament from 'services/queries/tournament/useUpdateTournament';
+import useTimerStore from 'store/TimerStore';
 import Game from 'types/Game';
 import { GameState, GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
@@ -12,12 +13,26 @@ import { TournamentStatus } from 'types/TournamentStatus';
 import { switchGames } from 'utils/tournamentFlowUtils';
 
 const useTournamentFlow = (tournament?: Tournament) => {
+  const {
+    setDuration,
+    setBreakDuration,
+    getDuration,
+    timingBreak,
+    timingGame,
+    startTimer,
+    stopTimer,
+  } = useTimerStore();
   const { updateTournament } = useUpdateTournament();
   const { invalidateSelectedLeague } = useLeagueInvalidations();
   const { updateGameData } = useGameQueries();
 
   const [currentGame1, setCurrentGame1] = useState<Game>();
   const [currentGame2, setCurrentGame2] = useState<Game>();
+  const [isMatchInProgress, setIsMatchInProgress] = useState(false);
+  const [firstLoad, setFirstLoad] = useState(false);
+  const [hasGameTimeRanOut, setHasGameTimeRanOut] = useState(false);
+  const [showFinishMatchPopup, setShowFinishMatchPopup] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const currentStage = useMemo(
     () => tournament?.state?.stage,
@@ -63,7 +78,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
       await updateTournament(tournament);
       await invalidateSelectedLeague();
     },
-    [invalidateSelectedLeague, tournament, updateTournament],
+    [invalidateSelectedLeague, tournament, updateGameData, updateTournament],
   );
 
   const beginTournament = useCallback(async () => {
@@ -149,7 +164,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
   );
 
   const onAfterFinishedMatchProcedure = useCallback(
-    (game: Game, timeLeft: number) => {
+    async (game: Game, timeLeft: number) => {
       const isGame1ActiveGame = activeGame?.id === game.id;
 
       let currentTmpGame1 = isGame1ActiveGame ? game : currentGame1;
@@ -184,7 +199,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
       if (newGroupAndGames === 'NoMoreGames') {
         return;
       }
-      setNewActiveGroupAndGames(
+      await setNewActiveGroupAndGames(
         newGroupAndGames.newActiveGame,
         newGroupAndGames.activeGroup,
         newGroupAndGames.newPairedGame1,
@@ -206,24 +221,79 @@ const useTournamentFlow = (tournament?: Tournament) => {
   );
 
   const finishMatch = useCallback(
-    async (match: Match, timeLeft: number) => {
+    async (match: Match) => {
       if (!activeGame) {
         return;
       }
-      if (activeGame?.matches?.length > 0) {
-        activeGame.matches.push(match);
-      } else {
-        activeGame.matches = [match];
+      try {
+        setIsProcessing(true);
+        const { currentDuration, duration: timeLeft } = getDuration();
+        match.matchDurationInSeconds = currentDuration;
+        if (activeGame?.matches?.length > 0) {
+          activeGame.matches.push(match);
+        } else {
+          activeGame.matches = [match];
+        }
+
+        activeGame.gameTime = timeLeft / 1000;
+        activeGame.team1Wins +=
+          match.matchState === MatchState.team1Win ? 1 : 0;
+        activeGame.team2Wins +=
+          match.matchState === MatchState.team2Win ? 1 : 0;
+        await onAfterFinishedMatchProcedure(activeGame, timeLeft);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setShowFinishMatchPopup(false);
+        setIsMatchInProgress(false);
+        setIsProcessing(false);
       }
-      activeGame.gameTime = timeLeft / 1000;
-      activeGame.team1Wins += match.matchState === MatchState.team1Win ? 1 : 0;
-      activeGame.team2Wins += match.matchState === MatchState.team2Win ? 1 : 0;
-      onAfterFinishedMatchProcedure(activeGame, timeLeft);
     },
-    [activeGame, onAfterFinishedMatchProcedure, updateGameData],
+    [activeGame, getDuration, onAfterFinishedMatchProcedure],
   );
 
   const finishGame = useCallback(() => {}, []);
+
+  const startStopMatch = useCallback(() => {
+    if (isMatchInProgress) {
+      stopTimer();
+      setIsMatchInProgress(false);
+      return;
+    }
+    setIsMatchInProgress(true);
+    if (!activeGame || !tournament || isMatchInProgress) {
+      return;
+    }
+
+    startTimer(100, activeGame.gameTime * 1000, 10000, false, (hasFinished) => {
+      setHasGameTimeRanOut(hasFinished);
+      setShowFinishMatchPopup(hasFinished);
+    });
+  }, [activeGame, isMatchInProgress, startTimer, stopTimer, tournament]);
+
+  const setFinishMatchModal = useCallback(
+    (shouldShowFinishMatchModal: boolean) => {
+      stopTimer();
+      setShowFinishMatchPopup(shouldShowFinishMatchModal);
+    },
+    [stopTimer],
+  );
+  console.log(timingGame);
+  useEffect(() => {
+    setIsMatchInProgress(timingGame);
+  }, [timingGame]);
+
+  useEffect(() => {
+    if (!activeGame || firstLoad || !tournament || isMatchInProgress) {
+      return;
+    }
+    setDuration(activeGame.gameTime * 1000 || 0);
+    setBreakDuration(
+      tournament.gameSettings.shortBreakTimeInSeconds * 1000 || 0,
+    );
+    setFirstLoad(true);
+  }, [activeGame, firstLoad, isMatchInProgress]);
+
   return useMemo(() => {
     return {
       currentStage,
@@ -232,14 +302,28 @@ const useTournamentFlow = (tournament?: Tournament) => {
       beginTournament,
       finishMatch,
       finishGame,
+      timingBreak,
+      isMatchInProgress,
+      startStopMatch,
+      hasGameTimeRanOut,
+      showFinishMatchPopup,
+      setFinishMatchModal,
+      isProcessing,
     };
   }, [
-    beginTournament,
+    currentStage,
     activeGame,
     activeGroup,
-    currentStage,
-    finishGame,
+    beginTournament,
     finishMatch,
+    finishGame,
+    timingBreak,
+    isMatchInProgress,
+    startStopMatch,
+    hasGameTimeRanOut,
+    showFinishMatchPopup,
+    setFinishMatchModal,
+    isProcessing,
   ]);
 };
 

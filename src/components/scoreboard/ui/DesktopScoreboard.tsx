@@ -47,7 +47,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
     TournamentStatus.inProgress,
     TournamentStatus.finished,
   ].includes(tournament?.state?.status || TournamentStatus.created);
-  console.log(hasGameTimeRanOut, currentGame);
+  console.log(isMatchInProgress, isCurrentlyInCountdown);
 
   return (
     <FlexContainer

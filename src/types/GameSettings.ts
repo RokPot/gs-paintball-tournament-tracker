@@ -5,7 +5,6 @@ export interface GameSettings {
   longBreakTimeInSeconds: number;
   shortBreakTimeInSeconds: number;
   gameTimeInSeconds: number;
-  // todo rokpoto handle this
   betweenGamePauseTimeInSeconds: number;
   manualGameStartTimeInSeconds: number;
 }

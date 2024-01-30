@@ -1,81 +1,58 @@
+import { alpha, css, styled } from '@mui/material';
 import DesktopScoreboard from 'components/scoreboard/ui/DesktopScoreboard';
 import MobileScoreboard from 'components/scoreboard/ui/MobileScoreboard';
+import LoadingIndicator from 'components/shared/LoadingIndicator';
 import PageContainer from 'components/shared/PageContainer';
 import useTournamentFlow from 'hooks/tournament/useTournamentFlow';
 import { useIsResponsive } from 'hooks/ui/useIsResponsive';
-import { useCallback, useEffect, useState } from 'react';
+import { memo, useCallback } from 'react';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
-import useTimerStore from 'store/TimerStore';
 import { Match } from 'types/Match';
 
-const ScoreboardPage: React.FC = () => {
-  const startTimer = useTimerStore((state) => state.startTimer);
-  const stopTimer = useTimerStore((state) => state.stopTimer);
-  const [isMatchInProgress, setIsMatchInProgress] = useState(false);
-  console.log('isMatchInProgress', isMatchInProgress);
-  const [hasGameTimeRanOut, setHasGameTimeRanOut] = useState(false);
-  const [showFinishMatchPopup, setShowFinishMatchPopup] = useState(false);
+const StyledLoadingContainer = styled('div')(
+  (props) => css`
+    display: flex;
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    padding: 16px 16px;
+    overflow: auto;
+    z-index: 12;
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    left: 0px;
+    background: ${alpha(props.theme.palette.grey[200], 0.7)};
+    transition: all 0.5s ease-in;
+  `,
+);
+
+interface IProps {}
+const ScoreboardPage: React.FC<IProps> = () => {
   const { isMobile } = useIsResponsive();
-  const {
-    setDuration,
-    setBreakDuration,
-    getDuration,
-    timingBreak,
-    timingGame,
-  } = useTimerStore();
-  const [firstLoad, setFirstLoad] = useState(false);
-  const { activeLeague } = useActiveLeague();
+
+  const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
   const tournament = activeLeague?.activeTournament;
-  const { beginTournament, activeGame, finishMatch } =
-    useTournamentFlow(tournament);
-  const setFinishMatchModal = useCallback(
-    (shouldShowFinishMatchModal: boolean) => {
-      stopTimer();
-      setShowFinishMatchPopup(shouldShowFinishMatchModal);
-    },
-    [stopTimer],
-  );
+  const {
+    finishMatch,
+    beginTournament,
+    activeGame,
+    timingBreak,
+    isMatchInProgress,
+    startStopMatch,
+    hasGameTimeRanOut,
+    showFinishMatchPopup,
+    setFinishMatchModal,
+    isProcessing,
+  } = useTournamentFlow(tournament);
+
   const finishMatchInternal = useCallback(
     async (match: Match) => {
-      const { currentDuration, duration } = getDuration();
-      match.matchDurationInSeconds = currentDuration;
-      await finishMatch(match, duration);
-      setShowFinishMatchPopup(false);
-      setIsMatchInProgress(false);
+      await finishMatch(match);
     },
-    [finishMatch, getDuration],
+    [finishMatch],
   );
-  const startStopMatch = useCallback(() => {
-    if (isMatchInProgress) {
-      stopTimer();
-      setIsMatchInProgress(false);
-      return;
-    }
-    setIsMatchInProgress(true);
-    if (!activeGame || !tournament || isMatchInProgress) {
-      return;
-    }
-    startTimer(100, activeGame.gameTime * 1000, 10000, false, (hasFinished) => {
-      setHasGameTimeRanOut(hasFinished);
-      setShowFinishMatchPopup(hasFinished);
-    });
-  }, [activeGame, isMatchInProgress, startTimer, stopTimer, tournament]);
-
-  useEffect(() => {
-    setIsMatchInProgress(timingGame);
-  }, [timingGame]);
-
-  // Set the initial state
-  useEffect(() => {
-    if (!activeGame || firstLoad || !tournament || isMatchInProgress) {
-      return;
-    }
-    setDuration(activeGame.gameTime * 1000 || 0);
-    setBreakDuration(
-      tournament.gameSettings.shortBreakTimeInSeconds * 1000 || 0,
-    );
-    setFirstLoad(true);
-  }, [activeGame, firstLoad, setDuration, isMatchInProgress]);
 
   if (isMobile) {
     return (
@@ -87,6 +64,11 @@ const ScoreboardPage: React.FC = () => {
 
   return (
     <PageContainer padding="0px">
+      {(isProcessing || isFetchingActiveLeague) && (
+        <StyledLoadingContainer>
+          <LoadingIndicator height="100%" />
+        </StyledLoadingContainer>
+      )}
       <DesktopScoreboard
         startStopMatch={startStopMatch}
         isMatchInProgress={isMatchInProgress}
@@ -102,4 +84,4 @@ const ScoreboardPage: React.FC = () => {
   );
 };
 
-export default ScoreboardPage;
+export default memo(ScoreboardPage);

@@ -54,6 +54,8 @@ interface AddTournament {
     longBreakTimeInSeconds: Dayjs;
     shortBreakTimeInSeconds: Dayjs;
     gameTimeInSeconds: Dayjs;
+    manualGameStartTimeInSeconds: Dayjs;
+    betweenGamePauseTimeInSeconds: Dayjs;
   };
   settings: TournamentSettings;
   teams: Team[];
@@ -94,6 +96,14 @@ const AddOrEditTournament = ({
           tournament?.gameSettings?.gameTimeInSeconds ||
             DefaultGameSettings.gameTimeInSeconds,
         ),
+        manualGameStartTimeInSeconds: convertFromSecondsDayjs(
+          tournament?.gameSettings?.manualGameStartTimeInSeconds ||
+            DefaultGameSettings.manualGameStartTimeInSeconds,
+        ),
+        betweenGamePauseTimeInSeconds: convertFromSecondsDayjs(
+          tournament?.gameSettings?.betweenGamePauseTimeInSeconds ||
+            DefaultGameSettings.betweenGamePauseTimeInSeconds,
+        ),
       },
       settings: tournament?.settings || DefaultTournamentSettings,
     },
@@ -115,6 +125,12 @@ const AddOrEditTournament = ({
             ),
             gameTimeInSeconds: fromDayjsToSeconds(
               values.gameSettings.gameTimeInSeconds,
+            ),
+            betweenGamePauseTimeInSeconds: fromDayjsToSeconds(
+              values.gameSettings.betweenGamePauseTimeInSeconds,
+            ),
+            manualGameStartTimeInSeconds: fromDayjsToSeconds(
+              values.gameSettings.manualGameStartTimeInSeconds,
             ),
           },
           settings: values.settings,
@@ -360,6 +376,17 @@ const AddOrEditTournament = ({
             label="Include match margins"
             tooltip="If this is checked, then each match will need match margins (+1/-1) inserted."
           />
+          <CustomCheckbox
+            onChange={(checked) =>
+              formik.setFieldValue('settings', {
+                ...formik.values.settings,
+                pauseBetweenEachMatch: checked,
+              } as TournamentSettings)
+            }
+            checked={formik.values.settings?.pauseBetweenEachMatch}
+            label="Pause between matches"
+            tooltip="If this is checked, then timer will be stopped after each match and manual start will be required."
+          />
           <Typography variant="h3">Game settings</Typography>
 
           <TimePicker
@@ -399,6 +426,36 @@ const AddOrEditTournament = ({
                 formik.setFieldValue('gameSettings', {
                   ...formik.values.gameSettings,
                   longBreakTimeInSeconds: newTime,
+                } as AddGameSettings)
+              }
+            />
+          </FlexContainer>
+          <FlexContainer width="100%" gap={8}>
+            <TimePicker
+              sx={{ width: '100%' }}
+              label="Countdown time between games"
+              views={['minutes', 'seconds']}
+              format="mm:ss"
+              value={
+                formik?.values?.gameSettings?.betweenGamePauseTimeInSeconds
+              }
+              onChange={(newTime) =>
+                formik.setFieldValue('gameSettings', {
+                  ...formik.values.gameSettings,
+                  betweenGamePauseTimeInSeconds: newTime,
+                } as AddGameSettings)
+              }
+            />
+            <TimePicker
+              sx={{ width: '100%' }}
+              label="Countdown time for manual game start"
+              views={['minutes', 'seconds']}
+              format="mm:ss"
+              value={formik?.values?.gameSettings?.manualGameStartTimeInSeconds}
+              onChange={(newTime) =>
+                formik.setFieldValue('gameSettings', {
+                  ...formik.values.gameSettings,
+                  manualGameStartTimeInSeconds: newTime,
                 } as AddGameSettings)
               }
             />

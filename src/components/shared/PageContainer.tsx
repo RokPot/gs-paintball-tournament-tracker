@@ -17,7 +17,7 @@ interface IProps {
   padding?: string;
   flexWrap?: 'nowrap' | 'wrap';
 }
-function PageContainer({ children, padding, flexWrap }: IProps) {
+const PageContainer = ({ children, padding, flexWrap }: IProps) => {
   return (
     <Container maxWidth={false} style={{ overflow: 'auto', padding: '0px' }}>
       <StyledRootContainer style={{ padding, flexWrap }}>
@@ -25,6 +25,6 @@ function PageContainer({ children, padding, flexWrap }: IProps) {
       </StyledRootContainer>
     </Container>
   );
-}
+};
 
 export default PageContainer;
