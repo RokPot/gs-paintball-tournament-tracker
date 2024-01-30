@@ -15,5 +15,5 @@ export const DefaultGameSettings: GameSettings = {
   longBreakTimeInSeconds: 1 * 60,
   shortBreakTimeInSeconds: 30,
   betweenGamePauseTimeInSeconds: 30,
-  manualGameStartTimeInSeconds: 30,
+  manualGameStartTimeInSeconds: 10,
 };

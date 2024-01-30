@@ -4,6 +4,7 @@ import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidatio
 import useUpdateTournament from 'services/queries/tournament/useUpdateTournament';
 import useTimerStore from 'store/TimerStore';
 import Game from 'types/Game';
+import { DefaultGameSettings } from 'types/GameSettings';
 import { GameState, GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
 import MatchState from 'types/MatchState';
@@ -57,12 +58,28 @@ const useTournamentFlow = (tournament?: Tournament) => {
     );
   }, [tournament, activeGroup]);
 
+  const tournamentSettings = useMemo(() => {
+    if (!tournament) {
+      return undefined;
+    }
+    return tournament?.settings;
+  }, [tournament]);
+
+  const gameSettings = useMemo(() => {
+    if (!tournament) {
+      return undefined;
+    }
+    return tournament?.gameSettings;
+  }, [tournament]);
+
   const setNewActiveGroupAndGames = useCallback(
     async (
       newActiveGame: Game,
       newActiveGroup: TournamentGroup,
       newGame1: Game,
       newGame2?: Game,
+      oldGame1?: Game,
+      oldGame2?: Game,
     ) => {
       if (!tournament) {
         return;
@@ -71,9 +88,17 @@ const useTournamentFlow = (tournament?: Tournament) => {
       tournament.state.pairedGame1Id = newGame1.id;
       tournament.state.pairedGame2Id = newGame2?.id;
       tournament.state.activeGroupId = newActiveGroup.id;
-      await updateGameData(newGame1);
+      if (newGame1) {
+        await updateGameData(newGame1);
+      }
       if (newGame2) {
         await updateGameData(newGame2);
+      }
+      if (oldGame1) {
+        await updateGameData(oldGame1);
+      }
+      if (oldGame2) {
+        await updateGameData(oldGame2);
       }
       await updateTournament(tournament);
       await invalidateSelectedLeague();
@@ -189,7 +214,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
       }
       const newGroupAndGames = switchGames(
         tournament?.groups!,
-        tournament?.settings!,
+        tournamentSettings!,
         tournament?.state.stage!,
         activeGroup?.id!,
         isGame1ActiveGame ? currentTmpGame1! : currentTmpGame2!,
@@ -204,19 +229,21 @@ const useTournamentFlow = (tournament?: Tournament) => {
         newGroupAndGames.activeGroup,
         newGroupAndGames.newPairedGame1,
         newGroupAndGames.newPairedGame2,
+        currentTmpGame1,
+        currentTmpGame2,
       );
     },
     [
       activeGame?.id,
-      activeGroup,
+      activeGroup?.id,
       checkIfGameIsFinished,
       currentGame1,
       currentGame2,
       onGameFinishedProcedure,
       setNewActiveGroupAndGames,
       tournament?.groups,
-      tournament?.settings,
       tournament?.state.stage,
+      tournamentSettings,
     ],
   );
 
@@ -255,21 +282,36 @@ const useTournamentFlow = (tournament?: Tournament) => {
   const finishGame = useCallback(() => {}, []);
 
   const startStopMatch = useCallback(() => {
+    if (!activeGame || !tournament || !gameSettings) {
+      return;
+    }
     if (isMatchInProgress) {
       stopTimer();
       setIsMatchInProgress(false);
       return;
     }
-    setIsMatchInProgress(true);
-    if (!activeGame || !tournament || isMatchInProgress) {
-      return;
-    }
 
-    startTimer(100, activeGame.gameTime * 1000, 10000, false, (hasFinished) => {
-      setHasGameTimeRanOut(hasFinished);
-      setShowFinishMatchPopup(hasFinished);
-    });
-  }, [activeGame, isMatchInProgress, startTimer, stopTimer, tournament]);
+    setIsMatchInProgress(true);
+
+    startTimer(
+      100,
+      activeGame.gameTime * 1000,
+      (gameSettings.manualGameStartTimeInSeconds ||
+        DefaultGameSettings.manualGameStartTimeInSeconds) * 1000,
+      false,
+      (hasFinished) => {
+        setHasGameTimeRanOut(hasFinished);
+        setShowFinishMatchPopup(hasFinished);
+      },
+    );
+  }, [
+    activeGame,
+    gameSettings,
+    isMatchInProgress,
+    startTimer,
+    stopTimer,
+    tournament,
+  ]);
 
   const setFinishMatchModal = useCallback(
     (shouldShowFinishMatchModal: boolean) => {
@@ -278,21 +320,29 @@ const useTournamentFlow = (tournament?: Tournament) => {
     },
     [stopTimer],
   );
-  console.log(timingGame);
   useEffect(() => {
-    setIsMatchInProgress(timingGame);
+    setIsMatchInProgress(timingGame || timingBreak);
   }, [timingGame]);
 
   useEffect(() => {
-    if (!activeGame || firstLoad || !tournament || isMatchInProgress) {
+    const isCurrentMatchInProgress =
+      timingGame || timingBreak || isMatchInProgress;
+    if (
+      !activeGame ||
+      !tournament ||
+      !gameSettings ||
+      firstLoad ||
+      isCurrentMatchInProgress
+    ) {
       return;
     }
     setDuration(activeGame.gameTime * 1000 || 0);
     setBreakDuration(
-      tournament.gameSettings.shortBreakTimeInSeconds * 1000 || 0,
+      (gameSettings.manualGameStartTimeInSeconds ||
+        DefaultGameSettings.manualGameStartTimeInSeconds) * 1000 || 0,
     );
     setFirstLoad(true);
-  }, [activeGame, firstLoad, isMatchInProgress]);
+  }, [activeGame, firstLoad, tournament]);
 
   return useMemo(() => {
     return {

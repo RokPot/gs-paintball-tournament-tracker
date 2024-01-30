@@ -37,13 +37,13 @@ const ScoreboardPage: React.FC<IProps> = () => {
   const {
     finishMatch,
     beginTournament,
+    startStopMatch,
+    setFinishMatchModal,
     activeGame,
     timingBreak,
     isMatchInProgress,
-    startStopMatch,
     hasGameTimeRanOut,
     showFinishMatchPopup,
-    setFinishMatchModal,
     isProcessing,
   } = useTournamentFlow(tournament);
 

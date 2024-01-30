@@ -46,6 +46,11 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
       timingBreak: true,
       timingGame: false,
     }));
+    const timer = get().timerRef;
+    if (timer) {
+      clearInterval(timer);
+    }
+
     const interval = setInterval(() => {
       set((state) => {
         if (state.duration + delayInMs * (useAddition ? 1 : -1) === 0) {
@@ -77,6 +82,7 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
       return;
     }
     clearInterval(timer);
+    set({ timerRef: undefined, timerFn: undefined });
   },
   setTimerRef: (timer) => {
     set(() => ({ timerRef: timer }));
