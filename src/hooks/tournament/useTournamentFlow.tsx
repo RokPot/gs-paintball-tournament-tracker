@@ -94,12 +94,12 @@ const useTournamentFlow = (tournament?: Tournament) => {
       if (newGame2) {
         await updateGameData(newGame2);
       }
-      if (oldGame1) {
-        await updateGameData(oldGame1);
-      }
-      if (oldGame2) {
-        await updateGameData(oldGame2);
-      }
+      // if (oldGame1) {
+      //   await updateGameData(oldGame1);
+      // }
+      // if (oldGame2) {
+      //   await updateGameData(oldGame2);
+      // }
       await updateTournament(tournament);
       await invalidateSelectedLeague();
     },
@@ -130,13 +130,14 @@ const useTournamentFlow = (tournament?: Tournament) => {
     setCurrentGame2(newPairedGame2);
   }, [setNewActiveGroupAndGames, tournament]);
 
-  const onGameFinishedProcedure = useCallback(
-    (game: Game, gameWinner: GameWinner) => {
+  const finishGame = useCallback(
+    async (game: Game, gameWinner: GameWinner) => {
       game.gameState = GameState.finished;
       game.gameWinner = gameWinner;
+      await updateGameData(game);
       return game;
     },
-    [],
+    [updateGameData],
   );
 
   const checkIfGameIsFinished = useCallback(
@@ -201,15 +202,9 @@ const useTournamentFlow = (tournament?: Tournament) => {
       if (gameWinner !== GameWinner.notYet) {
         // Complete game
         if (isGame1ActiveGame) {
-          currentTmpGame1 = onGameFinishedProcedure(
-            currentTmpGame1!,
-            gameWinner,
-          );
+          currentTmpGame1 = await finishGame(currentTmpGame1!, gameWinner);
         } else {
-          currentTmpGame2 = onGameFinishedProcedure(
-            currentTmpGame2!,
-            gameWinner,
-          );
+          currentTmpGame2 = await finishGame(currentTmpGame2!, gameWinner);
         }
       }
       const newGroupAndGames = switchGames(
@@ -239,7 +234,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
       checkIfGameIsFinished,
       currentGame1,
       currentGame2,
-      onGameFinishedProcedure,
+      finishGame,
       setNewActiveGroupAndGames,
       tournament?.groups,
       tournament?.state.stage,
@@ -278,8 +273,6 @@ const useTournamentFlow = (tournament?: Tournament) => {
     },
     [activeGame, getDuration, onAfterFinishedMatchProcedure],
   );
-
-  const finishGame = useCallback(() => {}, []);
 
   const startStopMatch = useCallback(() => {
     if (!activeGame || !tournament || !gameSettings) {

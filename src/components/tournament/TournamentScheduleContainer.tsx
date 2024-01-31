@@ -58,10 +58,16 @@ const StyledGameStatusCircle = styled('div')(
     border-radius: 10px;
     height: 13px;
     width: 13px;
-    -webkit-animation: glow linear 5s infinite;
-    animation: glow linear 5s infinite;
+
     background-color: ${props.color};
     margin: 4px;
+  `,
+);
+
+const StyledAnimatedGameStatusCircle = styled(StyledGameStatusCircle)(
+  (props: IStyledGameStatusCircleProps & { theme?: Theme }) => css`
+    -webkit-animation: glow linear 5s infinite;
+    animation: glow linear 5s infinite;
     ${props.shouldAnimate &&
     `@-webkit-keyframes glow {
       0% {
@@ -208,18 +214,24 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
                 <Typography variant="p1">
                   {sched.game.team2.teamName}
                 </Typography>
+                {sched.game.gameState}
+                {sched.game.gameState === GameState.finished ? 'true' : 'false'}
                 {[
                   GameState.finished,
                   GameState.playing,
                   GameState.waiting,
                 ].includes(sched.game.gameState) && (
                   <Tooltip title={GameStateLabels[sched.game.gameState]} arrow>
-                    <StyledGameStatusCircle
-                      shouldAnimate={
-                        sched.game.gameState !== GameState.finished
-                      }
-                      color={getGameStatusColor(sched.game.gameState)}
-                    />
+                    {sched.game.gameState === GameState.finished ? (
+                      <StyledGameStatusCircle
+                        color={theme.palette.error.main}
+                      />
+                    ) : (
+                      <StyledAnimatedGameStatusCircle
+                        shouldAnimate
+                        color={getGameStatusColor(sched.game.gameState)}
+                      />
+                    )}
                   </Tooltip>
                 )}
 
