@@ -41,7 +41,7 @@ import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidatio
 import Game from 'types/Game';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
-import { TournamentSchedule } from 'types/TournamentSchedule';
+import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentStatus } from 'types/TournamentStatus';
 
@@ -118,7 +118,7 @@ const TournamentPage = () => {
   const initializeTournament = async (
     groups: TournamentGroup[],
     settings: TournamentSettings,
-    schedule: TournamentSchedule[],
+    schedule: TournamentScheduleGame[],
   ) => {
     if (!selectedTournament) {
       return;

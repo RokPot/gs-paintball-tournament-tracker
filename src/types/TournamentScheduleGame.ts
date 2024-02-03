@@ -1,7 +1,7 @@
 import Game from './Game';
 import TournamentGroup from './TournamentGroup';
 
-export interface TournamentSchedule {
+export interface TournamentScheduleGame {
   id: string;
 
   gameNumber: number;

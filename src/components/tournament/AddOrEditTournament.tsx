@@ -31,6 +31,7 @@ import {
 import TournamentState from 'types/TournamentState';
 import { TournamentStatus } from 'types/TournamentStatus';
 import { TournamentType, TournamentTypeLabels } from 'types/TournamentType';
+import { convertFromSecondsDayjs, fromDayjsToSeconds } from 'utils/dateUtils';
 import { v4 } from 'uuid';
 
 interface IProps {
@@ -60,16 +61,6 @@ interface AddTournament {
   settings: TournamentSettings;
   teams: Team[];
 }
-
-const convertFromSecondsDayjs = (seconds: number) => {
-  return dayjs()
-    .minute(Math.floor(seconds / 60))
-    .second(seconds % 60);
-};
-
-const fromDayjsToSeconds = (time: Dayjs) => {
-  return (time.minute() || 1) * (time.second() || 60);
-};
 
 const AddOrEditTournament = ({
   onAccept,

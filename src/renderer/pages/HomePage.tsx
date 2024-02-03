@@ -20,10 +20,16 @@ const StyledStackingContainer = styled('div')(
   `,
 );
 const HomePage: React.FC = () => {
+  const asd = () => {
+    // SerialPPP.SerialPort.list()
+    //   .then((e) => console.log(e))
+    //   .catch((e) => console.log(e));
+  };
+
   return (
     <PageContainer>
       <Typography variant="h6">Leagues</Typography>
-      <StyledStackingContainer>
+      <StyledStackingContainer onClick={asd}>
         <Card style={{ width: '400px' }}>
           <CardHeader
             action={

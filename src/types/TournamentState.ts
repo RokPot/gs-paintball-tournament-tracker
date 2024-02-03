@@ -16,8 +16,6 @@ export default class TournamentState {
 
   pairedGame2Id?: string;
 
-  activeGroupId?: string;
-
   stage: number;
 
   constructor(props: ITournamentState) {
@@ -29,6 +27,5 @@ export default class TournamentState {
     this.activeGameId = props.activeGameId;
     this.pairedGame1Id = props.pairedGame1Id;
     this.pairedGame2Id = props.pairedGame2Id;
-    this.activeGroupId = props.activeGroupId;
   }
 }

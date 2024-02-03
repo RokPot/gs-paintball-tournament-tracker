@@ -1,26 +1,13 @@
 import { Typography } from '@mui/material';
 import { memo } from 'react';
+import { millisecondsToTime } from 'utils/dateUtils';
 
 interface IProps {
   duration: number;
 }
 
 const TimerStoreRenderComponent: React.FC<IProps> = ({ duration }) => {
-  const milisecondsToTime = (duration: number) => {
-    var miliseconds = (duration % 1000) / 100,
-      seconds = Math.floor((duration / 1000) % 60),
-      minutes = Math.floor((duration / (1000 * 60)) % 60);
-
-    const minutesString = minutes < 10 ? '0' + minutes : minutes;
-    const secondsString = seconds < 10 ? '0' + seconds : seconds;
-    const milisecondsString = miliseconds;
-
-    return {
-      formatted: minutesString + ':' + secondsString,
-      milisecondsString,
-    };
-  };
-  const formattedDuration = milisecondsToTime(duration);
+  const formattedDuration = millisecondsToTime(duration);
   return (
     <Typography variant="h3Medium" fontSize={150} lineHeight="normal">
       {formattedDuration.formatted}

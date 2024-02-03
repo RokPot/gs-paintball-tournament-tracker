@@ -1,6 +1,7 @@
 import Game from 'types/Game';
 import { GameState } from 'types/GameState';
 import TournamentGroup from 'types/TournamentGroup';
+import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
 
 export const getNextGroup = (
@@ -92,6 +93,48 @@ export const getNextGamePair = (currentGroup: TournamentGroup) => {
   return {
     game1: availableGroupGames.length > 0 ? availableGroupGames[0] : undefined,
     game2: availableGroupGames.length > 1 ? availableGroupGames[1] : undefined,
+  };
+};
+
+export const getNextScheduledGame = (
+  schedule: TournamentScheduleGame[],
+  currentScheduleGameIndex: number,
+) => {
+  if (schedule.length < currentScheduleGameIndex) {
+    return {
+      game1: undefined,
+      game2: undefined,
+    };
+  }
+
+  return {
+    game1:
+      schedule.length > currentScheduleGameIndex
+        ? schedule[currentScheduleGameIndex]
+        : undefined,
+  };
+};
+
+export const getNextScheduledGamePair = (
+  schedule: TournamentScheduleGame[],
+  currentScheduleGameIndex: number,
+) => {
+  if (schedule.length < currentScheduleGameIndex) {
+    return {
+      game1: undefined,
+      game2: undefined,
+    };
+  }
+
+  return {
+    game1:
+      schedule.length > currentScheduleGameIndex
+        ? schedule[currentScheduleGameIndex]
+        : undefined,
+    game2:
+      schedule.length > currentScheduleGameIndex + 1
+        ? schedule[currentScheduleGameIndex + 1]
+        : undefined,
   };
 };
 
@@ -199,5 +242,86 @@ export const switchGames = (
     newPairedGame1,
     newPairedGame2,
     activeGroup,
+  };
+};
+
+export const switchToNextScheduledGames = (
+  schedule: TournamentScheduleGame[],
+  settings: TournamentSettings,
+  activeGame: TournamentScheduleGame,
+  pairedScheduledGame1: TournamentScheduleGame,
+  pairedScheduledGame2?: TournamentScheduleGame,
+):
+  | {
+      newActiveGame: TournamentScheduleGame;
+      newPairedGame1: TournamentScheduleGame;
+      newPairedGame2?: TournamentScheduleGame;
+    }
+  | 'NoMoreGames' => {
+  const availableScheduledGames = schedule?.filter(
+    (scheduledGame) => scheduledGame.game.gameState !== GameState.finished,
+  );
+  if (!availableScheduledGames?.length) {
+    return 'NoMoreGames';
+  }
+  let newActiveGame: TournamentScheduleGame = activeGame;
+  let newPairedGame1: TournamentScheduleGame = pairedScheduledGame1;
+  let newPairedGame2: TournamentScheduleGame | undefined = pairedScheduledGame2;
+
+  const {
+    game1Available,
+    game2Available,
+    shouldSwitchToNewPair: switchToNewPair,
+  } = checkIfCurrentGamesAreFinished(newPairedGame1.game, newPairedGame2?.game);
+
+  if (game1Available || game2Available) {
+    const isGame1Active = pairedScheduledGame1.id === activeGame.id;
+    if (settings.switchGames) {
+      if (isGame1Active) {
+        // If Game 1 is active, set game 2 as active game if its available
+        return {
+          newActiveGame: game2Available ? newPairedGame2! : newPairedGame1,
+          newPairedGame1,
+          newPairedGame2,
+        };
+      }
+      if (!isGame1Active) {
+        // If Game 2 is active, set game 1 as active game if its available
+        return {
+          newActiveGame: game1Available ? newPairedGame1 : newPairedGame2!,
+          newPairedGame1,
+          newPairedGame2,
+        };
+      }
+    }
+  }
+
+  if (switchToNewPair) {
+    if (settings.switchGames) {
+      const { game1, game2 } = getNextScheduledGamePair(
+        schedule,
+        activeGame.gameNumber,
+      );
+      if (!game1) {
+        return 'NoMoreGames';
+      }
+      newActiveGame = game1;
+      newPairedGame1 = game1;
+      newPairedGame2 = game2;
+    } else {
+      const newNextGame = getNextScheduledGame(schedule, activeGame.gameNumber);
+      if (!newNextGame?.game1) {
+        return 'NoMoreGames';
+      }
+      newActiveGame = newNextGame.game1;
+      newPairedGame1 = newNextGame.game1;
+    }
+  }
+
+  // Not switching games
+  return {
+    newActiveGame,
+    newPairedGame1,
+    newPairedGame2,
   };
 };

@@ -10,7 +10,7 @@ import {
 import { TournamentDto } from './dto/TournamentDto';
 import { IPouchDB } from './interfaces/IPouchDB';
 import { ITournament } from './interfaces/ITournament';
-import { TournamentSchedule } from './TournamentSchedule';
+import { TournamentScheduleGame } from './TournamentScheduleGame';
 import TournamentState from './TournamentState';
 import TournamentGroup from './TournamentGroup';
 import { TournamentScheduleDto } from './dto/TournamentScheduleDto';
@@ -36,7 +36,7 @@ export default class Tournament extends IPouchDB {
 
   leaderboard?: LeaderboardTeam[];
 
-  schedule?: TournamentSchedule[];
+  schedule?: TournamentScheduleGame[];
 
   constructor(props: ITournament) {
     super(props._id, props._rev, props.docType || DocType.Tournament);

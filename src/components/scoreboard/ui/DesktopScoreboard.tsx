@@ -3,8 +3,8 @@ import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import { memo, useMemo } from 'react';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
-import Game from 'types/Game';
 import { Match } from 'types/Match';
+import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentStatus } from 'types/TournamentStatus';
 import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
 import GameTimerStoreRenderComponent from '../GameTimerStoreRenderComponent';
@@ -15,7 +15,7 @@ import StartTournament from './StartTournament';
 interface IProps {
   className?: string;
   isMatchInProgress: boolean;
-  currentGame?: Game;
+  activeScheduledGame?: TournamentScheduleGame;
   hasGameTimeRanOut: boolean;
   showFinishMatchPopup: boolean;
   isCurrentlyInCountdown: boolean;
@@ -28,7 +28,7 @@ interface IProps {
 const DesktopScoreboard: React.FC<IProps> = ({
   className,
   isMatchInProgress,
-  currentGame,
+  activeScheduledGame,
   hasGameTimeRanOut,
   showFinishMatchPopup,
   beginTournament,
@@ -38,10 +38,13 @@ const DesktopScoreboard: React.FC<IProps> = ({
   isCurrentlyInCountdown,
 }) => {
   const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
+
   const tournament = useMemo(
     () => activeLeague?.activeTournament,
     [activeLeague?.activeTournament],
   );
+
+  const currentGame = activeScheduledGame?.game;
 
   const isTournamentNotStartedYet = ![
     TournamentStatus.inProgress,

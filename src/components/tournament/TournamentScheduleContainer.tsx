@@ -12,8 +12,11 @@ import {
   styled,
   useTheme,
 } from '@mui/material';
+import AddOrEditGame from 'components/game/AddOrEditGame';
 import CustomDropdownMenu from 'components/shared/CustomDropdownMenu';
+import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
+import { useState } from 'react';
 import Game from 'types/Game';
 import { GameState, GameStateLabels } from 'types/GameState';
 import League from 'types/League';
@@ -100,10 +103,10 @@ interface IProps {
 
 const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
   const selectedTournament = activeLeague.activeTournament!;
-
+  const [gameForEditModal, setGameForEditModal] = useState<Game>();
+  const [gameForInfoModal, setGameForInfoModal] = useState<Game>();
   const theme = useTheme();
   const { switchGames } = selectedTournament.settings;
-  console.log('unga', selectedTournament.schedule);
   const getGameStatusColor = (gameState: GameState) => {
     switch (gameState) {
       case GameState.finished:
@@ -119,10 +122,12 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
 
   const onEditGame = (game: Game) => {
     console.log('edit game', game);
+    setGameForEditModal(game);
   };
 
   const onShowInfo = (game: Game) => {
     console.log('edit game', game);
+    setGameForInfoModal(game);
   };
 
   if (!selectedTournament?.groups?.length) {
@@ -158,9 +163,17 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
         const shouldPairGames =
           !isPreviousGroupDifferent && index % (switchGames ? 2 : 1) === 0;
         return (
-          <>
+          <FlexContainer
+            flexDirection="column"
+            width="100%"
+            justifyContent="flex-start"
+            alignItems="flex-start"
+            gap={8}
+            key={sched.id}
+          >
             {index > 0 && index % 2 === 0 && (
               <div
+                key={`${index}1`}
                 style={{
                   borderBottom: `0.5px solid ${theme.palette.primary.light}`,
                   width: '100%',
@@ -169,12 +182,16 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
               />
             )}
             {(isPreviousGroupDifferent || isFirstRow || shouldPairGames) && (
-              <Typography variant="p1Medium" textAlign="start">
+              <Typography
+                variant="p1Medium"
+                textAlign="start"
+                key={`${index}2`}
+              >
                 {(isPreviousGroupDifferent || isFirstRow) &&
                   `Group${sched.group.groupIndex}`}
               </Typography>
             )}
-            <StyledGameContainer>
+            <StyledGameContainer key={`${index}3`}>
               <FlexContainer
                 alignItems="center"
                 width="100%"
@@ -214,8 +231,6 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
                 <Typography variant="p1">
                   {sched.game.team2.teamName}
                 </Typography>
-                {sched.game.gameState}
-                {sched.game.gameState === GameState.finished ? 'true' : 'false'}
                 {[
                   GameState.finished,
                   GameState.playing,
@@ -260,9 +275,20 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
                 </div>
               </FlexContainer>
             </StyledGameContainer>
-          </>
+          </FlexContainer>
         );
       })}
+      <CustomModal isModalOpen={!!gameForEditModal} width={600}>
+        {gameForEditModal && (
+          <AddOrEditGame
+            game={gameForEditModal}
+            onConfirm={(a) => {
+              console.log(a);
+            }}
+            onClose={() => setGameForEditModal(undefined)}
+          />
+        )}
+      </CustomModal>
     </FlexContainer>
   );
 };

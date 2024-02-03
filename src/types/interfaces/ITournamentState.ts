@@ -16,6 +16,4 @@ export interface ITournamentState {
   pairedGame1Id?: string;
 
   pairedGame2Id?: string;
-
-  activeGroupId?: string;
 }

@@ -4,7 +4,7 @@ import { GameSettings } from 'types/GameSettings';
 import { GameState } from 'types/GameState';
 import Team from 'types/Team';
 import TournamentGroup from 'types/TournamentGroup';
-import { TournamentSchedule } from 'types/TournamentSchedule';
+import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentType } from 'types/TournamentType';
 import { v4 } from 'uuid';
@@ -471,21 +471,21 @@ const generateRoundRobinSchedule = (
     pairedGame2.gameState = GameState.finished;
   }
 
-  const scheduledGames: TournamentSchedule[] = compact([
+  const scheduledGames: TournamentScheduleGame[] = compact([
     pairedGame1 &&
       ({
         game: pairedGame1,
         gameNumber: 1,
         group: mostCurrentGroup,
         id: v4(),
-      } as TournamentSchedule),
+      } as TournamentScheduleGame),
     pairedGame2 &&
       ({
         game: pairedGame2,
         gameNumber: 2,
         group: mostCurrentGroup,
         id: v4(),
-      } as TournamentSchedule),
+      } as TournamentScheduleGame),
   ]);
   currentGameNumber = scheduledGames.length + 1;
   while (scheduledGames.length < totalGames) {

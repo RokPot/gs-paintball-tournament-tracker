@@ -72,7 +72,7 @@ const ScoreboardPage: React.FC<IProps> = () => {
       <DesktopScoreboard
         startStopMatch={startStopMatch}
         isMatchInProgress={isMatchInProgress}
-        currentGame={activeGame}
+        activeScheduledGame={activeGame}
         beginTournament={beginTournament}
         finishMatch={finishMatchInternal}
         hasGameTimeRanOut={hasGameTimeRanOut}

@@ -67,7 +67,9 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
           duration: !state.timingBreak
             ? state.duration + delayInMs * (useAddition ? 1 : -1)
             : state.duration,
-          currentDuration: state.currentDuration + delayInMs,
+          currentDuration: !state.timingBreak
+            ? state.currentDuration + delayInMs
+            : state.currentDuration,
           breakDuration: state.timingBreak
             ? state.breakDuration + delayInMs * (useAddition ? 1 : -1)
             : state.breakDuration,

@@ -3,7 +3,7 @@ import { omit } from 'lodash';
 import { useCallback } from 'react';
 import Tournament from 'types/Tournament';
 import { TournamentDto } from 'types/dto/TournamentDto';
-import { TournamentSchedule } from 'types/TournamentSchedule';
+import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import usePouchDB, { DocType, pouchDbName } from './pouchDB';
 import useGroupService from './GroupService';
 
@@ -92,7 +92,7 @@ const useTournamentService = () => {
       }
 
       if (tournament?.schedule) {
-        const schedule: TournamentSchedule[] = [];
+        const schedule: TournamentScheduleGame[] = [];
         tournament?.schedule.forEach((scheduledGame) => {
           const scheduledGameDto = scheduledGame as any;
           const scheduledGameGroup = tournament?.groups.find(

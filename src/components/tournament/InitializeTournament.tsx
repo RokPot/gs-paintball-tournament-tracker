@@ -13,7 +13,7 @@ import Game from 'types/Game';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
-import { TournamentSchedule } from 'types/TournamentSchedule';
+import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentType, TournamentTypeLabels } from 'types/TournamentType';
 import { shuffleArray } from 'utils/arrayUtils';
@@ -39,7 +39,7 @@ interface IProps {
   onConfirm: (
     groups: TournamentGroup[],
     settings: TournamentSettings,
-    schedule: TournamentSchedule[],
+    schedule: TournamentScheduleGame[],
   ) => void;
 }
 
