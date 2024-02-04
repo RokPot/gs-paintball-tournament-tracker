@@ -10,6 +10,7 @@ import {
   css,
 } from '@mui/material';
 import PageContainer from 'components/shared/PageContainer';
+import { PortInfo } from 'main/serialPortListener/serialPortListener';
 
 const StyledStackingContainer = styled('div')(
   () => css`
@@ -20,16 +21,23 @@ const StyledStackingContainer = styled('div')(
   `,
 );
 const HomePage: React.FC = () => {
-  const asd = () => {
-    // SerialPPP.SerialPort.list()
-    //   .then((e) => console.log(e))
-    //   .catch((e) => console.log(e));
+  const tryyy = () => {
+    window.electron.ipcRenderer.sendMessage('get-ports-list');
+    window.electron.ipcRenderer.once('get-ports-list-response', (result) => {
+      console.log(result);
+      const ports = result as unknown as PortInfo[];
+      window.electron.ipcRenderer.sendMessage('select-serial-port', ports[1]);
+    });
   };
+
+  window.electron.ipcRenderer.on('buttons-response', (result) => {
+    console.log(result);
+  });
 
   return (
     <PageContainer>
       <Typography variant="h6">Leagues</Typography>
-      <StyledStackingContainer onClick={asd}>
+      <StyledStackingContainer onClick={tryyy}>
         <Card style={{ width: '400px' }}>
           <CardHeader
             action={
