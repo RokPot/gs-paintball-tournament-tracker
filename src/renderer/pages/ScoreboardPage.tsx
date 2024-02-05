@@ -70,7 +70,9 @@ const ScoreboardPage: React.FC<IProps> = () => {
         </StyledLoadingContainer>
       )}
       <DesktopScoreboard
-        startStopMatch={startStopMatch}
+        startStopMatch={() => {
+          startStopMatch();
+        }}
         isMatchInProgress={isMatchInProgress}
         activeScheduledGame={activeGame}
         beginTournament={beginTournament}

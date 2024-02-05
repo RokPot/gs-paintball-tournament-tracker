@@ -20,6 +20,7 @@ interface TimerStoreState {
     useAddition?: boolean,
     onFinishCallback?: (hasFinished: boolean) => void,
     onBreakFinishCallback?: (hasFinished: boolean) => void,
+    onStartCountdown?: () => void,
   ) => void;
   stopTimer: () => void;
 }
@@ -37,6 +38,7 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
     useAddition,
     callback,
     onBreakFinishCallback,
+    onStartCountdown,
   ) => {
     set(() => ({
       timerFn: callback,
@@ -62,6 +64,9 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
         if (state.breakDuration + delayInMs * (useAddition ? 1 : -1) === 0) {
           onBreakFinishCallback?.(true);
           set({ timingBreak: false, timingGame: true });
+        }
+        if (state.breakDuration + delayInMs * (useAddition ? 1 : -1) === 5000) {
+          onStartCountdown?.();
         }
         return {
           duration: !state.timingBreak

@@ -1,4 +1,5 @@
 import useGameQueries from 'hooks/game/useGameQueries';
+import useCountdownSound from 'hooks/sounds/useCountdownSound';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
 import useUpdateTournament from 'services/queries/tournament/useUpdateTournament';
@@ -23,6 +24,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
     startTimer,
     stopTimer,
   } = useTimerStore();
+  const { playCountdown } = useCountdownSound();
   const { updateTournament } = useUpdateTournament();
   const { invalidateSelectedLeague } = useLeagueInvalidations();
   const { updateGameData } = useGameQueries();
@@ -297,11 +299,16 @@ const useTournamentFlow = (tournament?: Tournament) => {
         setHasGameTimeRanOut(true);
         setShowFinishMatchPopup(true);
       },
+      undefined,
+      () => {
+        playCountdown();
+      },
     );
   }, [
     activeScheduledGame,
     gameSettings,
     isMatchInProgress,
+    playCountdown,
     startTimer,
     stopTimer,
     tournament,
