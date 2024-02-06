@@ -6,11 +6,11 @@ import {
   Select,
   Typography,
 } from '@mui/material';
-import CustomTextField from 'components/shared/CustomTextField';
 import FlexContainer from 'components/shared/FlexContainer';
 import { useFormik } from 'formik';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Game from 'types/Game';
+import { GameState } from 'types/GameState';
 import { Match } from 'types/Match';
 import MatchState from 'types/MatchState';
 import { millisecondsToTime } from 'utils/dateUtils';
@@ -18,36 +18,109 @@ import { LeagueDetailsSchema } from 'utils/schemes';
 
 interface IProps {
   game: Game;
+  sizeOfTeams: number;
   onConfirm: (game: Game, isEdit: boolean) => void;
   onClose: () => void;
 }
 
-const AddOrEditGame = ({ game, onClose, onConfirm }: IProps) => {
+interface EditMatch {
+  team1Margin: number;
+  team2Margin: number;
+  matchState: MatchState;
+}
+
+interface EditGame {
+  team1Wins: number;
+  team2Wins: number;
+  gameState: GameState;
+  gameTime: number;
+}
+
+const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
   const [selectedMatch, setSelectedMatch] = useState<Match>();
-  const formik = useFormik<Game>({
+  const [availableTeam1Margins, setAvailableTeam1Margins] =
+    useState<number[]>();
+  const [availableTeam2Margins, setAvailableTeam2Margins] =
+    useState<number[]>();
+
+  const gameFormik = useFormik<EditGame>({
     initialValues: {
       ...game,
     },
     validationSchema: LeagueDetailsSchema,
-    onSubmit: (values: Game) => {
-      console.log(values);
-      onConfirm(values, true);
-    },
+    onSubmit: () => {},
+  });
+
+  const matchFormik = useFormik<EditMatch>({
+    initialValues: { ...game?.matches[0] },
+    onSubmit: () => {},
   });
 
   const onMatchSelected = (match: Match) => {
     setSelectedMatch(match);
+    matchFormik.setValues({ ...match });
   };
 
-  const matchFormik = useFormik<Match>({
-    initialValues: { ...game?.matches[0] },
-    onSubmit: (editedMatch: Match) => {
-      console.log(editedMatch);
-    },
-  });
+  const onGameConfirm = useCallback(() => {
+    game.gameState = gameFormik.values.gameState;
+    game.team1Wins = gameFormik.values.team1Wins;
+    game.team2Wins = gameFormik.values.team2Wins;
+    game.gameTime = gameFormik.values.gameTime || game.gameTime;
+    onConfirm(game, true);
+  }, [game, gameFormik, onConfirm]);
+
+  const updateMatch = useCallback((matchId: string) => {
+    console.log(matchId);
+  }, []);
+
+  useEffect(() => {
+    if (matchFormik?.values?.matchState === MatchState.team1Win) {
+      const team1MarginsList = [];
+      for (let i = sizeOfTeams || 3; i > 0; i -= 1) {
+        team1MarginsList.push(i);
+      }
+      setAvailableTeam1Margins(team1MarginsList);
+      const team2MarginsList = [];
+      for (let i = -1 * (sizeOfTeams || 3); i < 0; i += 1) {
+        team2MarginsList.push(i);
+      }
+      setAvailableTeam2Margins(team2MarginsList);
+      return;
+    }
+    if (matchFormik?.values?.matchState === MatchState.team2Win) {
+      const team2MarginsList = [];
+      for (let i = sizeOfTeams || 3; i > 0; i -= 1) {
+        team2MarginsList.push(i);
+      }
+      setAvailableTeam2Margins(team2MarginsList);
+      const team1MarginsList = [];
+      for (let i = -1 * (sizeOfTeams || 3); i < 0; i += 1) {
+        team1MarginsList.push(i);
+      }
+      setAvailableTeam1Margins(team1MarginsList);
+      return;
+    }
+    if (matchFormik?.values?.matchState === MatchState.draw) {
+      const team1MarginsList = [];
+      for (let i = sizeOfTeams || 3; i > 0; i -= 1) {
+        team1MarginsList.push(i);
+      }
+      for (let i = -1; i >= (sizeOfTeams || 3) * -1; i -= 1) {
+        team1MarginsList.push(i);
+      }
+      setAvailableTeam1Margins(team1MarginsList);
+      const team2MarginsList = [];
+      for (let i = sizeOfTeams || 3; i > 0; i -= 1) {
+        team2MarginsList.push(i);
+      }
+      for (let i = -1; i >= (sizeOfTeams || 3) * -1; i -= 1) {
+        team2MarginsList.push(i);
+      }
+      setAvailableTeam2Margins(team2MarginsList);
+    }
+  }, [matchFormik?.values?.matchState]);
 
   const formattedGameTime = millisecondsToTime(game.gameTime);
-  console.log(game.gameTime);
   return (
     <FlexContainer
       padding="16px"
@@ -72,19 +145,33 @@ const AddOrEditGame = ({ game, onClose, onConfirm }: IProps) => {
             .{formattedGameTime.milisecondsString}
           </Typography>
         </Typography>
-        <FlexContainer width="100%" flexDirection="row" gap={8}>
-          <Typography variant="p1">
-            <Typography variant="p1Medium">{game.team1.teamName}</Typography>{' '}
+        <FlexContainer
+          width="100%"
+          flexDirection="row"
+          gap={8}
+          justifyContent="center"
+        >
+          <Typography variant="h5" display="inline-block">
+            <Typography variant="h5Medium" display="inline-block">
+              {game.team1.teamName}
+            </Typography>{' '}
             {game.team1Wins}
           </Typography>
           <Typography>VS</Typography>
-          <Typography variant="p1">
-            <Typography variant="p1Medium">{game.team2.teamName}</Typography>{' '}
-            {game.team2Wins}
+          <Typography variant="h5" display="inline-block">
+            {game.team2Wins}{' '}
+            <Typography variant="h5Medium" display="inline-block">
+              {game.team2.teamName}
+            </Typography>
           </Typography>
         </FlexContainer>
       </FlexContainer>
-      <FlexContainer flexDirection="row" gap={8}>
+      <FlexContainer
+        flexDirection="row"
+        gap={8}
+        width="100%"
+        justifyContent="space-between"
+      >
         <FlexContainer
           width="100%"
           flexDirection="column"
@@ -103,6 +190,8 @@ const AddOrEditGame = ({ game, onClose, onConfirm }: IProps) => {
                 padding="8px"
                 key={index}
                 width="100%"
+                cursor="pointer"
+                onClick={() => onMatchSelected(match)}
               >
                 <FlexContainer
                   flexDirection="row"
@@ -164,9 +253,6 @@ const AddOrEditGame = ({ game, onClose, onConfirm }: IProps) => {
                   >
                     {game.team2.teamName}
                   </Typography>
-                  {/* <IconButton onClick={() => onMatchSelected(match)}>
-                    <FontAwesomeIcon icon={faEdit} width={15} />
-                  </IconButton> */}
                 </FlexContainer>
                 <Typography
                   color={(theme) => theme.palette.text.disabled}
@@ -191,9 +277,11 @@ const AddOrEditGame = ({ game, onClose, onConfirm }: IProps) => {
           })}
         </FlexContainer>
         <FlexContainer flexDirection="column" gap={8}>
-          Selected Match{' '}
           {selectedMatch
-            ? game.matches.findIndex((match) => match.id === selectedMatch?.id)
+            ? `Selected Match ` +
+              `${game.matches.findIndex(
+                (match) => match.id === selectedMatch?.id,
+              )} + 1`
             : ''}
           <FormControl fullWidth>
             <InputLabel>Match state</InputLabel>
@@ -202,7 +290,10 @@ const AddOrEditGame = ({ game, onClose, onConfirm }: IProps) => {
               value={matchFormik.values.matchState}
               label="Match state"
               onChange={(e) => {
-                console.log(e.target.value);
+                matchFormik.setFieldValue(
+                  'matchState',
+                  e.target.value as MatchState,
+                );
               }}
             >
               <MenuItem value={MatchState.draw}>Draw</MenuItem>
@@ -214,16 +305,74 @@ const AddOrEditGame = ({ game, onClose, onConfirm }: IProps) => {
               </MenuItem>
             </Select>
           </FormControl>
-          <CustomTextField label="Team 1 margin" />
-          <CustomTextField label="Team 2 margin" />
+          <FlexContainer
+            flexDirection="row"
+            width="100%"
+            justifyContent="center"
+            gap={8}
+          >
+            <FlexContainer flexDirection="column">
+              <Typography variant="p1Medium">Team 1 Margin</Typography>
+              {availableTeam1Margins?.map((margin, index) => (
+                <Button
+                  key={index}
+                  variant={
+                    matchFormik.values.team1Margin === margin
+                      ? 'contained'
+                      : 'text'
+                  }
+                  color={
+                    matchFormik.values.team1Margin === margin
+                      ? 'warning'
+                      : 'primary'
+                  }
+                  onClick={() =>
+                    matchFormik.setFieldValue('team1Margin', margin)
+                  }
+                >
+                  {margin > 0 ? `+${margin}` : margin}
+                </Button>
+              ))}
+            </FlexContainer>
+            <Typography variant="h4Bold">VS</Typography>
+            <FlexContainer flexDirection="column">
+              <Typography variant="p1Medium">Team 2 Margin</Typography>
+              {availableTeam2Margins?.map((margin, index) => (
+                <Button
+                  key={index}
+                  variant={
+                    matchFormik.values.team2Margin === margin
+                      ? 'contained'
+                      : 'text'
+                  }
+                  color={
+                    matchFormik.values.team2Margin === margin
+                      ? 'warning'
+                      : 'primary'
+                  }
+                  onClick={() =>
+                    matchFormik.setFieldValue('team2Margin', margin)
+                  }
+                >
+                  {margin > 0 ? `+${margin}` : margin}
+                </Button>
+              ))}
+            </FlexContainer>
+          </FlexContainer>
+          <Button
+            variant="contained"
+            onClick={() => updateMatch(selectedMatch?.id || '')}
+          >
+            <Typography variant="p1">Update Match</Typography>
+          </Button>
         </FlexContainer>
       </FlexContainer>
 
       <FlexContainer flexDirection="row" gap={16}>
         <Button
           variant="contained"
-          onClick={formik.submitForm}
-          disabled={!formik.isValid || !formik.dirty}
+          onClick={onGameConfirm}
+          disabled={!gameFormik.isValid || !gameFormik.dirty}
         >
           <Typography variant="p1">Confirm</Typography>
         </Button>

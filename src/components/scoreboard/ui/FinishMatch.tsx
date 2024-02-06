@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Game from 'types/Game';
 import { Match } from 'types/Match';
 import MatchState from 'types/MatchState';
+import { v4 } from 'uuid';
 
 interface IProps {
   game?: Game;
@@ -27,7 +28,6 @@ const FinishMatch: React.FC<IProps> = ({
     useState<number[]>();
   const [availableTeam2Margins, setAvailableTeam2Margins] =
     useState<number[]>();
-  console.log(sizeOfTeams);
 
   const onMatchStateChanged = (newMatchState: MatchState) => {
     setMatchState(newMatchState);
@@ -40,7 +40,7 @@ const FinishMatch: React.FC<IProps> = ({
       return;
     }
     const newMatchFinished: Match = {
-      id: 'asd',
+      id: v4(),
       matchState,
       team1Margin,
       team2Margin,

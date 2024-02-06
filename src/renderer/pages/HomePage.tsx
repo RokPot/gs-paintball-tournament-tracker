@@ -22,7 +22,7 @@ const StyledStackingContainer = styled('div')(
   `,
 );
 const HomePage: React.FC = () => {
-  const { playCountdown } = useCountdownSound();
+  const { playCountdown, stopCountdown } = useCountdownSound();
   const tryyy = () => {
     window.electron.ipcRenderer.sendMessage('get-ports-list');
     window.electron.ipcRenderer.once('get-ports-list-response', (result) => {
@@ -66,7 +66,7 @@ const HomePage: React.FC = () => {
             subheader="September 14, 2016"
           />
         </Card>
-        <Card>
+        <Card onClick={stopCountdown}>
           <CardHeader
             avatar={
               <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe">

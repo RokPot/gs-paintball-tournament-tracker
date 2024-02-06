@@ -61,6 +61,7 @@ interface FlexContainerProps {
   onMouseLeave?: (e: MouseEvent<HTMLDivElement>) => void;
   title?: string;
   highlightRowOnHover?: boolean;
+  cursor?: 'pointer';
 }
 
 const FlexContainer: FunctionComponent<FlexContainerProps> = memo(
@@ -175,5 +176,6 @@ export default styled(FlexContainer)(
         : ''
     }
   }
+  ${props.cursor ? `cursor: ${props.cursor}` : ''}
 `,
 );

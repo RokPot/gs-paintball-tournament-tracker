@@ -106,7 +106,7 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
   const [gameForInfoModal, setGameForInfoModal] = useState<Game>();
   const theme = useTheme();
-  const { switchGames } = selectedTournament.settings;
+  const { switchGames, numberOfTeamSize } = selectedTournament.settings;
   const getGameStatusColor = (gameState: GameState) => {
     switch (gameState) {
       case GameState.finished:
@@ -285,6 +285,7 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
             onConfirm={(a) => {
               console.log(a);
             }}
+            sizeOfTeams={numberOfTeamSize}
             onClose={() => setGameForEditModal(undefined)}
           />
         )}
