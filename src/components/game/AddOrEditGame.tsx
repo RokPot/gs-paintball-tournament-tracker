@@ -10,7 +10,7 @@ import FlexContainer from 'components/shared/FlexContainer';
 import { useFormik } from 'formik';
 import { useCallback, useEffect, useState } from 'react';
 import Game from 'types/Game';
-import { GameState } from 'types/GameState';
+import { GameState, GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
 import MatchState from 'types/MatchState';
 import { millisecondsToTime } from 'utils/dateUtils';
@@ -19,7 +19,7 @@ import { LeagueDetailsSchema } from 'utils/schemes';
 interface IProps {
   game: Game;
   sizeOfTeams: number;
-  onConfirm: (game: Game, isEdit: boolean) => void;
+  onConfirm: (game: Game) => void;
   onClose: () => void;
 }
 
@@ -66,12 +66,68 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
     game.team1Wins = gameFormik.values.team1Wins;
     game.team2Wins = gameFormik.values.team2Wins;
     game.gameTime = gameFormik.values.gameTime || game.gameTime;
-    onConfirm(game, true);
+    onConfirm(game);
   }, [game, gameFormik, onConfirm]);
 
-  const updateMatch = useCallback((matchId: string) => {
-    console.log(matchId);
-  }, []);
+  const updateMatch = useCallback(() => {
+    if (!game || !selectedMatch) {
+      return;
+    }
+    const gameMatch = game.matches.find(
+      (match) => match.id === selectedMatch.id,
+    );
+    if (!gameMatch) {
+      return;
+    }
+
+    switch (gameMatch.matchState) {
+      case MatchState.draw: {
+        break;
+      }
+      case MatchState.team1Win: {
+        // If previously team 1 won, we need to revert team score
+        game.team1Wins -= 1;
+        break;
+      }
+      case MatchState.team2Win: {
+        // If previously team 2 won, we need to revert team score
+        game.team2Wins -= 1;
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+
+    switch (matchFormik.values.matchState) {
+      case MatchState.draw: {
+        break;
+      }
+      case MatchState.team1Win: {
+        // If previously team 1 won, we need to revert team score
+        game.team1Wins += 1;
+        break;
+      }
+      case MatchState.team2Win: {
+        // If previously team 2 won, we need to revert team score
+        game.team2Wins += 1;
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+    if (game.team1Wins === game.team2Wins) {
+      game.gameWinner = GameWinner.draw;
+    } else if (game.team1Wins > game.team2Wins) {
+      game.gameWinner = GameWinner.team1;
+    } else {
+      game.gameWinner = GameWinner.team2;
+    }
+    gameMatch.matchState = matchFormik.values.matchState;
+    gameMatch.team1Margin = matchFormik.values.team1Margin;
+    gameMatch.team2Margin = matchFormik.values.team2Margin;
+  }, [game, matchFormik?.values, selectedMatch]);
 
   useEffect(() => {
     if (matchFormik?.values?.matchState === MatchState.team1Win) {
@@ -359,10 +415,7 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
               ))}
             </FlexContainer>
           </FlexContainer>
-          <Button
-            variant="contained"
-            onClick={() => updateMatch(selectedMatch?.id || '')}
-          >
+          <Button variant="contained" onClick={updateMatch}>
             <Typography variant="p1">Update Match</Typography>
           </Button>
         </FlexContainer>

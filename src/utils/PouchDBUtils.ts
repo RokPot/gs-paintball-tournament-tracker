@@ -174,7 +174,11 @@ export const getTournamentsList = (result: PouchDB.Query.Response<any>) => {
     if (!rootDoc) {
       return;
     }
-    const newTournament: Tournament = new Tournament(rootDoc);
+    // todo rokpot
+    const newTournament: Tournament = new Tournament({
+      ...rootDoc,
+      schedule: rootDoc.schedule as any,
+    });
 
     const teams = mapTeamsFromResponse(
       rootDoc?.teamIds,

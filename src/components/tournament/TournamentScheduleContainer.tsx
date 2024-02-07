@@ -1,8 +1,4 @@
-import {
-  faEdit,
-  faEllipsisVertical,
-  faInfo,
-} from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons';
 import {
   Theme,
   Tooltip,
@@ -16,6 +12,7 @@ import AddOrEditGame from 'components/game/AddOrEditGame';
 import CustomDropdownMenu from 'components/shared/CustomDropdownMenu';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
+import useGameQueries from 'hooks/game/useGameQueries';
 import { useState } from 'react';
 import Game from 'types/Game';
 import { GameState, GameStateLabels } from 'types/GameState';
@@ -103,8 +100,8 @@ interface IProps {
 
 const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
   const selectedTournament = activeLeague.activeTournament!;
+  const { updateGameWithMatchesAndRecalculate } = useGameQueries();
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
-  const [gameForInfoModal, setGameForInfoModal] = useState<Game>();
   const theme = useTheme();
   const { switchGames, numberOfTeamSize } = selectedTournament.settings;
   const getGameStatusColor = (gameState: GameState) => {
@@ -121,13 +118,12 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
   };
 
   const onEditGame = (game: Game) => {
-    console.log('edit game', game);
     setGameForEditModal(game);
   };
 
-  const onShowInfo = (game: Game) => {
-    console.log('edit game', game);
-    setGameForInfoModal(game);
+  const closeModal = () => {
+    setGameForEditModal(undefined);
+    setGameForEditModal(undefined);
   };
 
   if (!selectedTournament?.groups?.length) {
@@ -262,14 +258,6 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
                         },
                         visible: true,
                       },
-                      {
-                        label: 'Info',
-                        icon: faInfo,
-                        onClick: () => {
-                          onShowInfo(sched.game);
-                        },
-                        visible: true,
-                      },
                     ]}
                   />
                 </div>
@@ -282,11 +270,12 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
         {gameForEditModal && (
           <AddOrEditGame
             game={gameForEditModal}
-            onConfirm={(a) => {
-              console.log(a);
+            onConfirm={(updatedGame) => {
+              console.log(updatedGame);
+              updateGameWithMatchesAndRecalculate(updatedGame);
             }}
             sizeOfTeams={numberOfTeamSize}
-            onClose={() => setGameForEditModal(undefined)}
+            onClose={closeModal}
           />
         )}
       </CustomModal>
