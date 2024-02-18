@@ -11,7 +11,11 @@ export default class LeaderboardTeam extends IPouchDB {
 
   totalLosses: number;
 
+  totalDraws: number;
+
   totalPoints: number;
+
+  margin: number;
 
   rank: number;
 
@@ -25,9 +29,11 @@ export default class LeaderboardTeam extends IPouchDB {
     this.team = props.team;
     this.totalWins = props.totalWins;
     this.totalLosses = props.totalLosses;
+    this.totalDraws = props.totalDraws;
     this.totalPoints = props.totalPoints;
     this.rank = props.rank;
     this.previousRank = props.previousRank;
+    this.margin = 0;
   }
 
   public toDto = (): LeaderboardTeamDto => {
@@ -38,6 +44,7 @@ export default class LeaderboardTeam extends IPouchDB {
       id: this.id,
       totalWins: this.totalWins,
       totalLosses: this.totalLosses,
+      totalDraws: this.totalDraws,
       totalPoints: this.totalPoints,
       rank: this.rank,
       previousRank: this.previousRank,

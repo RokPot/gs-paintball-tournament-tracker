@@ -1,9 +1,11 @@
 import { faAdd } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { LoadingButton } from '@mui/lab';
 import { Badge, Button, IconButton, Typography, useTheme } from '@mui/material';
 import CustomTextField from 'components/shared/CustomTextField';
 import FlexContainer from 'components/shared/FlexContainer';
 import { useFormik } from 'formik';
+import { useState } from 'react';
 import Team from 'types/Team';
 import { TeamMember } from 'types/TeamMember';
 import { TeamRole } from 'types/TeamRole';
@@ -29,7 +31,8 @@ interface AddTeam {
   members: TeamMember[];
 }
 
-const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
+const AddOrEditTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
+  const [isProcessing, setIsProcessing] = useState(false);
   const theme = useTheme();
   const formik = useFormik<AddTeam>({
     initialValues: {
@@ -38,18 +41,25 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
       teamTag: team?.teamTag || '',
     },
     validationSchema: QuickAddTeamSchema,
-    onSubmit: (values: AddTeam) => {
-      const newId = v4();
-      onAccept(
-        new Team({
-          _id: newId,
-          id: newId,
-          color: randomColor(),
-          ...team,
-          ...values,
-        }),
-        !!team,
-      );
+    onSubmit: async (values: AddTeam) => {
+      try {
+        setIsProcessing(true);
+        const newId = v4();
+        onAccept(
+          new Team({
+            _id: newId,
+            id: newId,
+            color: randomColor(),
+            ...team,
+            ...values,
+          }),
+          !!team,
+        );
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsProcessing(false);
+      }
     },
   });
 
@@ -179,13 +189,14 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
       </FlexContainer>
 
       <FlexContainer flexDirection="row" gap={16}>
-        <Button
+        <LoadingButton
           variant="contained"
           onClick={formik.submitForm}
           disabled={!formik.isValid}
+          loading={isProcessing}
         >
           <Typography variant="p1">Confirm</Typography>
-        </Button>
+        </LoadingButton>
         <Button variant="outlined" onClick={onCancel}>
           <Typography variant="p1">Cancel</Typography>
         </Button>
@@ -194,4 +205,4 @@ const QuickAddTeam: React.FC<IProps> = ({ onAccept, onCancel, team }) => {
   );
 };
 
-export default QuickAddTeam;
+export default AddOrEditTeam;

@@ -14,7 +14,7 @@ import CustomDataTable from 'components/shared/CustomDataTable';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
-import QuickAddTeam from 'components/teams/QuickAddTeam';
+import AddOrEditTeam from 'components/teams/AddOrEditTeam';
 import useTeamQueries from 'hooks/team/useTeamQueries';
 import { useState } from 'react';
 import useDeleteTeam from 'services/queries/team/useDeleteTeam';
@@ -173,7 +173,7 @@ const TeamsPage = () => {
         onClose={closeModal}
         width={600}
       >
-        <QuickAddTeam
+        <AddOrEditTeam
           team={teamToUpsert}
           onAccept={addNewTeam}
           onCancel={closeModal}

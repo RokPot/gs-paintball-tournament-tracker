@@ -1,3 +1,4 @@
+import { LoadingButton } from '@mui/lab';
 import {
   Button,
   FormControl,
@@ -20,6 +21,7 @@ import TeamsShortList from 'components/teams/TeamShortList';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/sl';
 import { useFormik } from 'formik';
+import { useState } from 'react';
 import { DefaultGameSettings } from 'types/GameSettings';
 import League from 'types/League';
 import Team from 'types/Team';
@@ -35,7 +37,7 @@ import { convertFromSecondsDayjs, fromDayjsToSeconds } from 'utils/dateUtils';
 import { v4 } from 'uuid';
 
 interface IProps {
-  onAccept: (tournament: Tournament, isEdit: boolean) => void;
+  onAccept: (tournament: Tournament, isEdit: boolean) => Promise<void>;
   onCancel: () => void;
   league?: League;
   tournament?: Tournament;
@@ -68,6 +70,8 @@ const AddOrEditTournament = ({
   league,
   tournament,
 }: IProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const formik = useFormik<AddTournament>({
     initialValues: {
       name: tournament?.name || '',
@@ -98,51 +102,58 @@ const AddOrEditTournament = ({
       },
       settings: tournament?.settings || DefaultTournamentSettings,
     },
-    onSubmit: (values: AddTournament) => {
-      const tournamentId = tournament?._id || v4();
+    onSubmit: async (values: AddTournament) => {
+      try {
+        setIsProcessing(true);
+        const tournamentId = tournament?._id || v4();
 
-      onAccept(
-        new Tournament({
-          id: tournamentId,
-          _id: tournamentId,
-          name: values.name,
-          gameSettings: {
-            id: tournament?.gameSettings?.id || v4(),
-            longBreakTimeInSeconds: fromDayjsToSeconds(
-              values.gameSettings.longBreakTimeInSeconds,
-            ),
-            shortBreakTimeInSeconds: fromDayjsToSeconds(
-              values.gameSettings.shortBreakTimeInSeconds,
-            ),
-            gameTimeInSeconds: fromDayjsToSeconds(
-              values.gameSettings.gameTimeInSeconds,
-            ),
-            betweenGamePauseTimeInSeconds: fromDayjsToSeconds(
-              values.gameSettings.betweenGamePauseTimeInSeconds,
-            ),
-            manualGameStartTimeInSeconds: fromDayjsToSeconds(
-              values.gameSettings.manualGameStartTimeInSeconds,
-            ),
-          },
-          settings: values.settings,
-          endDate: values.endDate.toISOString(),
-          startDate: values.startDate.toISOString(),
+        await onAccept(
+          new Tournament({
+            id: tournamentId,
+            _id: tournamentId,
+            name: values.name,
+            gameSettings: {
+              id: tournament?.gameSettings?.id || v4(),
+              longBreakTimeInSeconds: fromDayjsToSeconds(
+                values.gameSettings.longBreakTimeInSeconds,
+              ),
+              shortBreakTimeInSeconds: fromDayjsToSeconds(
+                values.gameSettings.shortBreakTimeInSeconds,
+              ),
+              gameTimeInSeconds: fromDayjsToSeconds(
+                values.gameSettings.gameTimeInSeconds,
+              ),
+              betweenGamePauseTimeInSeconds: fromDayjsToSeconds(
+                values.gameSettings.betweenGamePauseTimeInSeconds,
+              ),
+              manualGameStartTimeInSeconds: fromDayjsToSeconds(
+                values.gameSettings.manualGameStartTimeInSeconds,
+              ),
+            },
+            settings: values.settings,
+            endDate: values.endDate.toISOString(),
+            startDate: values.startDate.toISOString(),
 
-          groups: tournament?.groups || [],
+            groups: tournament?.groups || [],
 
-          state: new TournamentState({
-            id: tournament?.state?.id || v4(),
-            isGameInProgress: tournament?.state?.isGameInProgress || false,
-            isTournamentFinished:
-              tournament?.state?.isTournamentFinished || false,
-            status: tournament?.state?.status || TournamentStatus.created,
-            stage: tournament?.state?.stage || 0,
+            state: new TournamentState({
+              id: tournament?.state?.id || v4(),
+              isGameInProgress: tournament?.state?.isGameInProgress || false,
+              isTournamentFinished:
+                tournament?.state?.isTournamentFinished || false,
+              status: tournament?.state?.status || TournamentStatus.created,
+              stage: tournament?.state?.stage || 0,
+            }),
+            teams: values.teams,
+            leaderboard: tournament?.leaderboard || [],
           }),
-          teams: values.teams,
-          leaderboard: tournament?.leaderboard || [],
-        }),
-        !!tournament,
-      );
+          !!tournament,
+        );
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsProcessing(false);
+      }
     },
   });
 
@@ -454,13 +465,14 @@ const AddOrEditTournament = ({
         </LocalizationProvider>
       </FlexContainer>
       <FlexContainer flexDirection="row" gap={16} padding="16px">
-        <Button
+        <LoadingButton
           variant="contained"
           onClick={formik.submitForm}
           disabled={!formik.isValid}
+          loading={isProcessing}
         >
           <Typography variant="p1">Confirm</Typography>
-        </Button>
+        </LoadingButton>
         <Button variant="outlined" onClick={onCancel}>
           <Typography variant="p1">Cancel</Typography>
         </Button>

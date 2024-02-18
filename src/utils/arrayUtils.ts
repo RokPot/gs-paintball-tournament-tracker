@@ -10,3 +10,12 @@ export const shuffleArray = <T>(array: T[]): T[] => {
 export const getItem = <T>(array: T[], index: number) => {
   return array[index];
 };
+export const swapElements = <T>(
+  array: T[],
+  index1: number,
+  index2: number,
+): T[] => {
+  // eslint-disable-next-line prefer-destructuring
+  array[index1] = array.splice(index2, 1, array[index1])[0];
+  return array;
+};

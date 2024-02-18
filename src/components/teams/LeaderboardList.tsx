@@ -19,11 +19,11 @@ const LeaderboardList: React.FC<IProps> = ({
 }) => {
   const getColor = (index: number) => {
     switch (index) {
-      case 0:
-        return '#FFD700';
       case 1:
-        return '#c0c0c0';
+        return '#FFD700';
       case 2:
+        return '#c0c0c0';
+      case 3:
         return '#CD7F32';
       default:
         return '#172032';
@@ -38,7 +38,7 @@ const LeaderboardList: React.FC<IProps> = ({
       renderCell: (params) => {
         return (
           <Typography variant="p1Medium" width={30} textAlign="center">
-            {[0, 1, 2].includes(params.row.rank) ? (
+            {[1, 2, 3].includes(params.row.rank) ? (
               <FontAwesomeIcon
                 icon={faTrophy}
                 color={getColor(params?.row?.rank)}

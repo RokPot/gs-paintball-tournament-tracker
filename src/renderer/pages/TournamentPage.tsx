@@ -30,6 +30,7 @@ import TournamentActivity from 'components/tournament/TournamentActivity';
 import TournamentBrackets from 'components/tournament/TournamentBrackets';
 import TournamentDetails from 'components/tournament/TournamentDetails';
 import TournamentGroups from 'components/tournament/TournamentGroups';
+import TournamentResults from 'components/tournament/TournamentResults';
 import TournamentScheduleContainer from 'components/tournament/TournamentScheduleContainer';
 import useLeagueQueries from 'hooks/league/useLeagueQueries';
 import useTournamentQueries from 'hooks/tournament/useTournamentQueries';
@@ -69,6 +70,7 @@ enum TournamentTabs {
   brackets = 'brackets',
   groups = 'groups',
   schedule = 'schedule',
+  results = 'results',
   activity = 'activity',
 }
 enum TournamentTabsLabel {
@@ -77,6 +79,7 @@ enum TournamentTabsLabel {
   groups = 'Groups',
   schedule = 'Schedule',
   activity = 'Activity',
+  results = 'Results',
 }
 
 const TournamentPage = () => {
@@ -101,6 +104,7 @@ const TournamentPage = () => {
   const setSelectedTournament = useCallback(
     async (tournament?: Tournament) => {
       await setSelectedLeagueTournament(tournament, activeLeague);
+      setActiveTab(TournamentTabs.tournamentDetails);
     },
     [activeLeague, setSelectedLeagueTournament],
   );
@@ -298,6 +302,9 @@ const TournamentPage = () => {
           )}
           {activeTab === TournamentTabs.brackets && (
             <TournamentBrackets activeLeague={activeLeague} />
+          )}
+          {activeTab === TournamentTabs.results && (
+            <TournamentResults activeLeague={activeLeague} />
           )}
           {activeTab === TournamentTabs.activity && (
             <TournamentActivity activeLeague={activeLeague} />

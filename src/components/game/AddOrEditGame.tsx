@@ -1,25 +1,46 @@
+import { LoadingButton } from '@mui/lab';
 import {
   Button,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
+  Theme,
   Typography,
+  css,
+  styled,
+  useTheme,
 } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import { useFormik } from 'formik';
 import { useCallback, useEffect, useState } from 'react';
 import Game from 'types/Game';
-import { GameState, GameWinner } from 'types/GameState';
+import { GameState, GameStateLabels, GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
 import MatchState from 'types/MatchState';
 import { millisecondsToTime } from 'utils/dateUtils';
 import { LeagueDetailsSchema } from 'utils/schemes';
 
+interface IStyledGameStatusCircleProps {
+  color?: string;
+  shouldAnimate?: boolean;
+}
+
+const StyledGameStatusCircle = styled('div')(
+  (props: IStyledGameStatusCircleProps & { theme?: Theme }) => css`
+    border-radius: 10px;
+    height: 13px;
+    width: 13px;
+
+    background-color: ${props.color};
+    margin: 4px;
+  `,
+);
+
 interface IProps {
   game: Game;
   sizeOfTeams: number;
-  onConfirm: (game: Game) => void;
+  onConfirm: (game: Game) => Promise<void>;
   onClose: () => void;
 }
 
@@ -37,11 +58,15 @@ interface EditGame {
 }
 
 const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match>();
+  const [matches, setMatches] = useState<Match[]>(game?.matches || []);
   const [availableTeam1Margins, setAvailableTeam1Margins] =
     useState<number[]>();
   const [availableTeam2Margins, setAvailableTeam2Margins] =
     useState<number[]>();
+
+  const theme = useTheme();
 
   const gameFormik = useFormik<EditGame>({
     initialValues: {
@@ -61,21 +86,26 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
     matchFormik.setValues({ ...match });
   };
 
-  const onGameConfirm = useCallback(() => {
-    game.gameState = gameFormik.values.gameState;
-    game.team1Wins = gameFormik.values.team1Wins;
-    game.team2Wins = gameFormik.values.team2Wins;
-    game.gameTime = gameFormik.values.gameTime || game.gameTime;
-    onConfirm(game);
+  const onGameConfirm = useCallback(async () => {
+    try {
+      setIsProcessing(true);
+      game.gameState = gameFormik.values.gameState;
+      game.team1Wins = gameFormik.values.team1Wins;
+      game.team2Wins = gameFormik.values.team2Wins;
+      game.gameTime = gameFormik.values.gameTime || game.gameTime;
+      await onConfirm(game);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsProcessing(false);
+    }
   }, [game, gameFormik, onConfirm]);
 
   const updateMatch = useCallback(() => {
     if (!game || !selectedMatch) {
       return;
     }
-    const gameMatch = game.matches.find(
-      (match) => match.id === selectedMatch.id,
-    );
+    const gameMatch = matches.find((match) => match.id === selectedMatch.id);
     if (!gameMatch) {
       return;
     }
@@ -127,7 +157,15 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
     gameMatch.matchState = matchFormik.values.matchState;
     gameMatch.team1Margin = matchFormik.values.team1Margin;
     gameMatch.team2Margin = matchFormik.values.team2Margin;
-  }, [game, matchFormik?.values, selectedMatch]);
+    setMatches([...matches]);
+  }, [
+    game,
+    matchFormik.values.matchState,
+    matchFormik.values.team1Margin,
+    matchFormik.values.team2Margin,
+    matches,
+    selectedMatch,
+  ]);
 
   useEffect(() => {
     if (matchFormik?.values?.matchState === MatchState.team1Win) {
@@ -174,9 +212,21 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
       }
       setAvailableTeam2Margins(team2MarginsList);
     }
-  }, [matchFormik?.values?.matchState]);
+  }, [matchFormik?.values?.matchState, sizeOfTeams]);
 
-  const formattedGameTime = millisecondsToTime(game.gameTime);
+  const formattedGameTime = millisecondsToTime(game.gameTime * 1000);
+  const getGameStatusColor = (gameState: GameState) => {
+    switch (gameState) {
+      case GameState.finished:
+        return theme.palette.error.main;
+      case GameState.playing:
+        return theme.palette.success.main;
+      case GameState.waiting:
+        return theme.palette.warning.main;
+      default:
+        return 'blue';
+    }
+  };
   return (
     <FlexContainer
       padding="16px"
@@ -185,6 +235,7 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
       gap={16}
     >
       <Typography variant="h1">{`${game ? 'Edit' : 'Add'} game`}</Typography>
+
       <FlexContainer
         flexDirection="column"
         width="100%"
@@ -196,7 +247,7 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
           <Typography
             variant="h6Medium"
             display="inline-block"
-            color={(theme) => theme.palette.text.disabled}
+            color={theme.palette.text.disabled}
           >
             .{formattedGameTime.milisecondsString}
           </Typography>
@@ -227,6 +278,7 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
         gap={8}
         width="100%"
         justifyContent="space-between"
+        alignItems="flex-start"
       >
         <FlexContainer
           width="100%"
@@ -235,7 +287,7 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
           alignItems="flex-start"
         >
           <Typography>Matches</Typography>
-          {game?.matches?.map((match, index) => {
+          {matches?.map((match, index) => {
             const formattedMatchTime = millisecondsToTime(
               match.matchDurationInSeconds,
             );
@@ -255,8 +307,10 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
                   width="100%"
                   alignItems="flex-start"
                 >
+                  <Typography variant="p1Bold">{index + 1}.</Typography>
+
                   <Typography
-                    color={(theme) =>
+                    color={
                       match.matchState === MatchState.team1Win
                         ? theme.palette.primary.main
                         : theme.palette.text.primary
@@ -271,7 +325,7 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
                   </Typography>
                   <Typography
                     variant="p1Bold"
-                    color={(theme) =>
+                    color={
                       match.team1Margin > 0
                         ? theme.palette.success.main
                         : theme.palette.error.main
@@ -284,7 +338,7 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
                   <Typography> vs </Typography>
                   <Typography
                     variant="p1Bold"
-                    color={(theme) =>
+                    color={
                       match.team2Margin > 0
                         ? theme.palette.success.main
                         : theme.palette.error.main
@@ -296,7 +350,7 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
                   </Typography>
 
                   <Typography
-                    color={(theme) =>
+                    color={
                       match.matchState === MatchState.team2Win
                         ? theme.palette.primary.main
                         : theme.palette.text.primary
@@ -311,7 +365,7 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
                   </Typography>
                 </FlexContainer>
                 <Typography
-                  color={(theme) => theme.palette.text.disabled}
+                  color={theme.palette.text.disabled}
                   variant="p3"
                   width="100%"
                   textAlign="start"
@@ -322,7 +376,7 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
                     <Typography
                       variant="p2Medium"
                       fontSize={10}
-                      color={(theme) => theme.palette.text.disabled}
+                      color={theme.palette.text.disabled}
                     >
                       .{formattedMatchTime.milisecondsString}
                     </Typography>
@@ -334,10 +388,10 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
         </FlexContainer>
         <FlexContainer flexDirection="column" gap={8}>
           {selectedMatch
-            ? `Selected Match ` +
-              `${game.matches.findIndex(
-                (match) => match.id === selectedMatch?.id,
-              )} + 1`
+            ? `Match ` +
+              `${
+                matches.findIndex((match) => match.id === selectedMatch?.id) + 1
+              } `
             : ''}
           <FormControl fullWidth>
             <InputLabel>Match state</InputLabel>
@@ -421,17 +475,27 @@ const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
         </FlexContainer>
       </FlexContainer>
 
-      <FlexContainer flexDirection="row" gap={16}>
-        <Button
+      <FlexContainer flexDirection="row" gap={16} width="100%">
+        <LoadingButton
           variant="contained"
           onClick={onGameConfirm}
-          disabled={!gameFormik.isValid || !gameFormik.dirty}
+          loading={isProcessing}
         >
           <Typography variant="p1">Confirm</Typography>
-        </Button>
+        </LoadingButton>
         <Button variant="outlined" onClick={onClose}>
           <Typography variant="p1">Cancel</Typography>
         </Button>
+        <FlexContainer style={{ marginLeft: 'auto' }}>
+          <Typography
+            variant="p2"
+            color={theme.palette.text.disabled}
+            lineHeight={0}
+          >
+            {GameStateLabels[game.gameState]}
+          </Typography>
+          <StyledGameStatusCircle color={getGameStatusColor(game.gameState)} />
+        </FlexContainer>
       </FlexContainer>
     </FlexContainer>
   );

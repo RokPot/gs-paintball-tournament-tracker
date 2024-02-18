@@ -18,8 +18,8 @@ import CustomDataTable from 'components/shared/CustomDataTable';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
+import AddOrEditTeam from 'components/teams/AddOrEditTeam';
 import LeaderboardList from 'components/teams/LeaderboardList';
-import QuickAddTeam from 'components/teams/QuickAddTeam';
 import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
 import TournamentShortList from 'components/tournament/TournamentListShort';
 import useLeagueQueries from 'hooks/league/useLeagueQueries';
@@ -341,7 +341,7 @@ const LeaguesPage = () => {
           />
         )}
         {isTeamAddModalOpen && (
-          <QuickAddTeam
+          <AddOrEditTeam
             onAccept={addNewTeamInternal}
             onCancel={() => setIsTeamAddModalOpen(false)}
           />

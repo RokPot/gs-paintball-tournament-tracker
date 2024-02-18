@@ -141,6 +141,19 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
     );
   }
 
+  if (!selectedTournament?.schedule?.length) {
+    return (
+      <FlexContainer
+        justifyContent="center"
+        alignItems="center"
+        flexDirection="column"
+      >
+        <EmptyState />
+        <Typography variant="h3">No schedule.</Typography>
+      </FlexContainer>
+    );
+  }
+
   return (
     <FlexContainer
       flexDirection="column"
@@ -246,21 +259,23 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
                   </Tooltip>
                 )}
 
-                <div style={{ marginLeft: 'auto' }}>
-                  <CustomDropdownMenu
-                    icon={faEllipsisVertical}
-                    actions={[
-                      {
-                        label: 'Edit game',
-                        icon: faEdit,
-                        onClick: () => {
-                          onEditGame(sched.game);
+                {sched?.game?.gameState === GameState.finished && (
+                  <div style={{ marginLeft: 'auto' }}>
+                    <CustomDropdownMenu
+                      icon={faEllipsisVertical}
+                      actions={[
+                        {
+                          label: 'Edit game',
+                          icon: faEdit,
+                          onClick: () => {
+                            onEditGame(sched.game);
+                          },
+                          visible: true,
                         },
-                        visible: true,
-                      },
-                    ]}
-                  />
-                </div>
+                      ]}
+                    />
+                  </div>
+                )}
               </FlexContainer>
             </StyledGameContainer>
           </FlexContainer>
@@ -270,9 +285,9 @@ const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
         {gameForEditModal && (
           <AddOrEditGame
             game={gameForEditModal}
-            onConfirm={(updatedGame) => {
-              console.log(updatedGame);
-              updateGameWithMatchesAndRecalculate(updatedGame);
+            onConfirm={async (updatedGame) => {
+              await updateGameWithMatchesAndRecalculate(updatedGame);
+              closeModal();
             }}
             sizeOfTeams={numberOfTeamSize}
             onClose={closeModal}

@@ -106,7 +106,10 @@ export const sortTeamIndicesIntoGameIndices = (
 
   while (retries < 100) {
     const game1Indices = indices[indicesIndexesFree[firstGameIndex]];
-    let game2Indices = indices[indicesIndexesFree[secondGameIndex]];
+    let game2Indices =
+      secondGameIndex !== firstGameIndex
+        ? indices[indicesIndexesFree[secondGameIndex]]
+        : [];
 
     if (indicesIndexesFree.length <= 3) {
       gameIndicesWithSortedTeams.push({

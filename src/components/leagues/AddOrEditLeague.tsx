@@ -1,9 +1,10 @@
+import { LoadingButton } from '@mui/lab';
 import { Button, Typography } from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import CustomTextField from 'components/shared/CustomTextField';
 import FlexContainer from 'components/shared/FlexContainer';
 import TeamMultiSelect from 'components/shared/multiselect/TeamMultiSelect';
-import QuickAddTeam from 'components/teams/QuickAddTeam';
+import AddOrEditTeam from 'components/teams/AddOrEditTeam';
 import TeamsShortList from 'components/teams/TeamShortList';
 import { useFormik } from 'formik';
 import { useState } from 'react';
@@ -22,13 +23,14 @@ interface AddLeague {
 
 interface IProps {
   league?: League;
-  onConfirm: (league: League, isEdit: boolean) => void;
+  onConfirm: (league: League, isEdit: boolean) => Promise<void>;
   onClose: () => void;
 }
 
 const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
   const { addNewTeam } = useTeamService();
   const { teamsList } = useTeamsList();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const formik = useFormik<AddLeague>({
     initialValues: {
@@ -36,30 +38,37 @@ const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
       teams: [...(league?.teams || [])],
     },
     validationSchema: LeagueDetailsSchema,
-    onSubmit: (values: AddLeague) => {
-      const teamId = league?._id || v4();
-      const newTeams = values.teams.filter(
-        (team) =>
-          !league?.leaderboard.some(
-            (leaderboardTeam) => leaderboardTeam.team.id === team.id,
-          ),
-      );
-      onConfirm(
-        new League({
-          ...(league || {}),
-          id: teamId,
-          _id: teamId,
-          leaderboard: [
-            ...(league?.leaderboard || []),
-            ...newTeams.map((team) => {
-              return createNewLeaderboardTeam(team);
-            }),
-          ],
-          name: values.name,
-          teams: values.teams,
-        }),
-        !!league,
-      );
+    onSubmit: async (values: AddLeague) => {
+      try {
+        setIsProcessing(true);
+        const teamId = league?._id || v4();
+        const newTeams = values.teams.filter(
+          (team) =>
+            !league?.leaderboard.some(
+              (leaderboardTeam) => leaderboardTeam.team.id === team.id,
+            ),
+        );
+        await onConfirm(
+          new League({
+            ...(league || {}),
+            id: teamId,
+            _id: teamId,
+            leaderboard: [
+              ...(league?.leaderboard || []),
+              ...newTeams.map((team) => {
+                return createNewLeaderboardTeam(team);
+              }),
+            ],
+            name: values.name,
+            teams: values.teams,
+          }),
+          !!league,
+        );
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsProcessing(false);
+      }
     },
   });
   const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
@@ -128,7 +137,7 @@ const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
         width={600}
         title="Add Team"
       >
-        <QuickAddTeam
+        <AddOrEditTeam
           onAccept={(team) => {
             addNewTeam(team);
             formik.setFieldValue('teams', [
@@ -141,13 +150,14 @@ const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
         />
       </CustomModal>
       <FlexContainer flexDirection="row" gap={16}>
-        <Button
+        <LoadingButton
           variant="contained"
           onClick={formik.submitForm}
+          loading={isProcessing}
           disabled={!formik.isValid || !formik.dirty}
         >
           <Typography variant="p1">Confirm</Typography>
-        </Button>
+        </LoadingButton>
         <Button variant="outlined" onClick={onClose}>
           <Typography variant="p1">Cancel</Typography>
         </Button>
