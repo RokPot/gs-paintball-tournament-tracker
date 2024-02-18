@@ -7,9 +7,23 @@ import { GameState, GameWinner } from 'types/GameState';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import League from 'types/League';
 import TournamentGroup from 'types/TournamentGroup';
-import { swapElements } from 'utils/arrayUtils';
 import { v4 } from 'uuid';
 import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
+
+enum TieBreakCheckings {
+  HeadToHead = 'headToHead',
+  NumberOfPoints = 'numberOfPoints',
+  NumberOfMatchesWon = 'numberOfMatchesWon',
+  MatchMargin = 'matchMargin',
+  GreatestTimeRemainingAmongAllWonGames = 'greatestTimeRemainingAmongAllWonGames',
+  GreatestTimeRemainingAmongTiedWonGames = 'greatestTimeRemainingAmongTiedWonGames',
+  LeastTimeRemainingAmongAllLostGames = 'leastTimeRemainingAmongAllLostGames',
+  LeastTimeRemainingAmongTiedLostGames = 'leastTimeRemainingAmongTiedLostGames',
+}
+enum AvailableTieBreaks {
+  TieBreakerGames = 'tieBreakerGames',
+  Overtime = 'overtime',
+}
 
 interface IProps {
   activeLeague: League;
@@ -95,47 +109,60 @@ const TournamentResults = ({ activeLeague }: IProps) => {
 
     let leaderboardTeamsSorted: LeaderboardTeam[] = [...leaderboardTeams];
     for (let i = 0; i < leaderboardTeams.length; i += 1) {
-      const currentTeam = leaderboardTeams[i];
-      for (let j = i + 1; j < leaderboardTeams.length; j += 1) {
-        const nextTeam = leaderboardTeams[j];
-        if (currentTeam.totalPoints === nextTeam.totalPoints) {
-          const gameWhereTheTwoTeamsMet = finishedGames.find(
-            (game) =>
-              [currentTeam.team.id, nextTeam.team.id].includes(game.team1.id) &&
-              [currentTeam.team.id, nextTeam.team.id].includes(game.team2.id),
-          );
-
-          if (gameWhereTheTwoTeamsMet) {
-            if (gameWhereTheTwoTeamsMet.gameWinner === GameWinner.team1) {
-              // DO nothing team 1 is good
-            } else if (
-              gameWhereTheTwoTeamsMet.gameWinner === GameWinner.team2
-            ) {
-              // Swap
-              leaderboardTeamsSorted = [
-                ...swapElements(leaderboardTeamsSorted, i, j),
-              ];
-            } else if (gameWhereTheTwoTeamsMet.gameWinner === GameWinner.draw) {
-              let team1GameMargin = 0;
-              let team2GameMargin = 0;
-              gameWhereTheTwoTeamsMet.matches.forEach((match) => {
-                team1GameMargin += match.team1Margin;
-                team2GameMargin += match.team2Margin;
-              });
-              if (team2GameMargin > team1GameMargin) {
-                leaderboardTeamsSorted = [
-                  ...swapElements(leaderboardTeamsSorted, i, j),
-                ];
-              }
-            }
-          } else if (nextTeam.margin > currentTeam.margin) {
-            leaderboardTeamsSorted = [
-              ...swapElements(leaderboardTeamsSorted, i, j),
-            ];
-          }
+      const currentLeaderboardTeam = leaderboardTeams[i];
+      const leaderboardTeamsTiedToTheCurrentOne = leaderboardTeams.filter(
+        (leaderboardTeam) =>
+          leaderboardTeam.totalPoints === currentLeaderboardTeam.totalPoints,
+      );
+      if (leaderboardTeamsTiedToTheCurrentOne?.length > 1) {
+        // Check Head-To-Head games
+        for (let j = 0; j < leaderboardTeams.length; j += 1) {
+          const leaderBoardHeadToHeadWins;
         }
       }
     }
+    // for (let i = 0; i < leaderboardTeams.length; i += 1) {
+    //   const currentTeam = leaderboardTeams[i];
+    //   for (let j = i + 1; j < leaderboardTeams.length; j += 1) {
+    //     const nextTeam = leaderboardTeams[j];
+    //     if (currentTeam.totalPoints === nextTeam.totalPoints) {
+    //       const gameWhereTheTwoTeamsMet = finishedGames.find(
+    //         (game) =>
+    //           [currentTeam.team.id, nextTeam.team.id].includes(game.team1.id) &&
+    //           [currentTeam.team.id, nextTeam.team.id].includes(game.team2.id),
+    //       );
+
+    //       if (gameWhereTheTwoTeamsMet) {
+    //         if (gameWhereTheTwoTeamsMet.gameWinner === GameWinner.team1) {
+    //           // DO nothing team 1 is good
+    //         } else if (
+    //           gameWhereTheTwoTeamsMet.gameWinner === GameWinner.team2
+    //         ) {
+    //           // Swap
+    //           leaderboardTeamsSorted = [
+    //             ...swapElements(leaderboardTeamsSorted, i, j),
+    //           ];
+    //         } else if (gameWhereTheTwoTeamsMet.gameWinner === GameWinner.draw) {
+    //           let team1GameMargin = 0;
+    //           let team2GameMargin = 0;
+    //           gameWhereTheTwoTeamsMet.matches.forEach((match) => {
+    //             team1GameMargin += match.team1Margin;
+    //             team2GameMargin += match.team2Margin;
+    //           });
+    //           if (team2GameMargin > team1GameMargin) {
+    //             leaderboardTeamsSorted = [
+    //               ...swapElements(leaderboardTeamsSorted, i, j),
+    //             ];
+    //           }
+    //         }
+    //       } else if (nextTeam.margin > currentTeam.margin) {
+    //         leaderboardTeamsSorted = [
+    //           ...swapElements(leaderboardTeamsSorted, i, j),
+    //         ];
+    //       }
+    //     }
+    //   }
+    // }
 
     // set proper rankings
     const reRankedLeaderboard = leaderboardTeamsSorted.map(

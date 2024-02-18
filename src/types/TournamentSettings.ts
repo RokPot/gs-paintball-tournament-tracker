@@ -1,5 +1,6 @@
 import { v4 } from 'uuid';
 import { TournamentType } from './TournamentType';
+import { DefaultTournamentRules, TournamentRules } from './TournamentRules';
 
 export interface TournamentSettings {
   id: string;
@@ -13,6 +14,8 @@ export interface TournamentSettings {
   secondStageType?: TournamentType;
   shouldInsertMatchMargins: boolean;
   pauseBetweenEachMatch: boolean;
+
+  rules: TournamentRules;
 }
 
 export const DefaultTournamentSettings: TournamentSettings = {
@@ -27,4 +30,5 @@ export const DefaultTournamentSettings: TournamentSettings = {
   numberOfTeamSize: 3,
   shouldInsertMatchMargins: true,
   pauseBetweenEachMatch: true,
+  rules: DefaultTournamentRules,
 };
