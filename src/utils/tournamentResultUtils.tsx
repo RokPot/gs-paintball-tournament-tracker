@@ -26,6 +26,12 @@ const tieBreakChecks: TieBreakCheckings[] = [
   TieBreakCheckings.LeastTimeRemainingAmongAllLostGames,
   TieBreakCheckings.LeastTimeRemainingAmongTiedLostGames,
 ];
+
+interface ResolvedTiedTeam {
+  rank: number;
+  teamId: string;
+}
+
 export const recalculateRankings = (leaderboardTeams: LeaderboardTeam[]) => {
   return leaderboardTeams.map(
     (leaderboardTeam, index) =>
@@ -35,6 +41,44 @@ export const recalculateRankings = (leaderboardTeams: LeaderboardTeam[]) => {
         previousRank: leaderboardTeam.rank,
       }),
   );
+};
+
+export const reorderSortedTiedTeams = (
+  currentRank: number,
+  resolvedTiedTeams: 'notViableTieBreaker' | ResolvedTiedTeam[],
+  tiedLeaderboardTeams: LeaderboardTeam[],
+  leaderboardTeams: LeaderboardTeam[],
+) => {
+  if (resolvedTiedTeams === 'notViableTieBreaker') {
+    return {
+      teamsLeft: tiedLeaderboardTeams,
+      sortedLeaderboardTeam: leaderboardTeams,
+    };
+  }
+  let currentIndex = currentRank;
+  const teamsTiedLeft = [];
+  for (
+    let currentIndexToReplace = currentIndex, t = 0;
+    t < resolvedTiedTeams.length;
+    t += 1, currentIndexToReplace += 1
+  ) {
+    if (resolvedTiedTeams[t].rank !== -1) {
+      const teamToBeReplaced = tiedLeaderboardTeams.find(
+        (leaderboardTeam) => leaderboardTeam.id === resolvedTiedTeams[t].teamId,
+      )!;
+      leaderboardTeams.splice(currentIndexToReplace, 1, teamToBeReplaced);
+      currentIndex += 1;
+    } else {
+      const teamNotResolved = tiedLeaderboardTeams.find(
+        (leaderboardTeam) => leaderboardTeam.id === resolvedTiedTeams[t].teamId,
+      )!;
+      teamsTiedLeft.push(teamNotResolved);
+    }
+  }
+  return {
+    teamsLeft: teamsTiedLeft,
+    sortedLeaderboardTeam: tiedLeaderboardTeams,
+  };
 };
 
 export const checkForNumberOfMatchesWonTiebreaker = (
@@ -139,16 +183,22 @@ export const checkForHeadToHeadTiebreaker = (
       const currentHeadToHeadWins = leaderBoardHeadToHeadWins[i];
       const nextHeadToHeadWins = leaderBoardHeadToHeadWins[i + 1];
       if (
-        ((!previousHeadToHeadWins ||
+        (!previousHeadToHeadWins ||
           previousHeadToHeadWins?.numberOfWins !==
             currentHeadToHeadWins.numberOfWins) &&
-          !nextHeadToHeadWins) ||
-        nextHeadToHeadWins?.numberOfWins !== currentHeadToHeadWins.numberOfWins
+        (!nextHeadToHeadWins ||
+          nextHeadToHeadWins?.numberOfWins !==
+            currentHeadToHeadWins.numberOfWins)
       ) {
         sortedTeams.push({ rank: i, teamId: currentHeadToHeadWins.teamId });
       } else {
         sortedTeams.push({ rank: -1, teamId: currentHeadToHeadWins.teamId });
       }
+    } else {
+      sortedTeams.push({
+        rank: -1,
+        teamId: leaderBoardHeadToHeadWins[i].teamId,
+      });
     }
   }
 
@@ -242,35 +292,18 @@ export const calculateTournamentGroupLeaderboard = (
       let teamsTiedLeft = [...leaderboardTeamsTiedToTheCurrentOne];
 
       for (let j = 0; j < tieBreakChecks.length; j += 1) {
-        const tieBreakCheck = tieBreakChecks[i];
+        const tieBreakCheck = tieBreakChecks[j];
         if (tieBreakCheck === TieBreakCheckings.HeadToHead) {
           const headForHeadResolved = checkForHeadToHeadTiebreaker(
             teamsTiedLeft,
             finishedGames,
           );
+          const {} = reorderSortedTiedTeams(
+            i,
+            headForHeadResolved,
+            leaderboardTeams,
+          );
           if (headForHeadResolved !== NotViableTiebreaker) {
-            teamsTiedLeft = [];
-            for (
-              let currentIndexToReplace = i, t = 0;
-              t < headForHeadResolved.length;
-              t += 1, currentIndexToReplace += 1
-            ) {
-              if (headForHeadResolved[t].rank !== -1) {
-                const teamToBeReplaced =
-                  leaderboardTeamsTiedToTheCurrentOne.find(
-                    (leaderboardTeam) =>
-                      leaderboardTeam.id === headForHeadResolved[t].teamId,
-                  )!;
-                leaderboardTeamsSorted.splice(i, 1, teamToBeReplaced);
-              } else {
-                const teamNotResolved =
-                  leaderboardTeamsTiedToTheCurrentOne.find(
-                    (leaderboardTeam) =>
-                      leaderboardTeam.id === headForHeadResolved[t].teamId,
-                  )!;
-                teamsTiedLeft.push(teamNotResolved);
-              }
-            }
             if (teamsTiedLeft?.length <= 0) {
               break;
             }

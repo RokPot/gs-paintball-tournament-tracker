@@ -67,6 +67,20 @@ const useTournamentFlow = (tournament?: Tournament) => {
     return tournament?.gameSettings;
   }, [tournament]);
 
+  const setGameAndBreakDuration = useCallback(
+    (newScheduledGame?: TournamentScheduleGame) => {
+      if (!newScheduledGame) {
+        return;
+      }
+      setDuration(newScheduledGame.game.gameTime * 1000 || 0);
+      setBreakDuration(
+        (gameSettings?.manualGameStartTimeInSeconds ||
+          DefaultGameSettings.manualGameStartTimeInSeconds) * 1000 || 0,
+      );
+    },
+    [gameSettings?.manualGameStartTimeInSeconds, setBreakDuration, setDuration],
+  );
+
   const setNewActiveGroupAndGames = useCallback(
     async (
       newActiveGame: TournamentScheduleGame,
@@ -210,11 +224,13 @@ const useTournamentFlow = (tournament?: Tournament) => {
       if (newGroupAndGames === 'NoMoreGames') {
         return;
       }
+
       await setNewActiveGroupAndGames(
         newGroupAndGames.newActiveGame,
         newGroupAndGames.newPairedGame1,
         newGroupAndGames.newPairedGame2,
       );
+      setGameAndBreakDuration(newGroupAndGames.newActiveGame);
     },
     [
       activeScheduledGame?.id,
@@ -224,6 +240,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
       tournament?.schedule,
       tournamentSettings,
       setNewActiveGroupAndGames,
+      setGameAndBreakDuration,
       finishGame,
     ],
   );
@@ -289,13 +306,11 @@ const useTournamentFlow = (tournament?: Tournament) => {
     setIsMatchInProgress(true);
 
     startTimer(
-      100,
+      200,
       activeScheduledGame.game.gameTime * 1000,
       (gameSettings.manualGameStartTimeInSeconds ||
         DefaultGameSettings.manualGameStartTimeInSeconds) * 1000,
-      false,
-      (hasFinished) => {
-        console.log('hasFinished', hasFinished);
+      () => {
         setHasGameTimeRanOut(true);
         setShowFinishMatchPopup(true);
       },
@@ -337,11 +352,8 @@ const useTournamentFlow = (tournament?: Tournament) => {
     ) {
       return;
     }
-    setDuration(activeScheduledGame.game.gameTime * 1000 || 0);
-    setBreakDuration(
-      (gameSettings.manualGameStartTimeInSeconds ||
-        DefaultGameSettings.manualGameStartTimeInSeconds) * 1000 || 0,
-    );
+    setGameAndBreakDuration(activeScheduledGame);
+
     setFirstLoad(true);
   }, [activeScheduledGame, firstLoad, tournament]);
 
