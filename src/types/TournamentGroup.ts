@@ -1,8 +1,7 @@
-import { DocType } from 'services/pouchDB';
 import Game from './Game';
 import Team from './Team';
 import { TournamentType } from './TournamentType';
-import { IPouchDB } from './interfaces/IPouchDB';
+import { DocType, IPouchDB } from './interfaces/IPouchDB';
 import { ITournamentGroup } from './interfaces/ITournamentGroup';
 import { TournamentGroupDto } from './dto/TournamentGroupDto';
 

@@ -1,8 +1,7 @@
-import { DocType } from 'services/pouchDB';
 import Team from './Team';
 import { LeaderboardTeamDto } from './dto/LeaderboardTeamDto';
 import { ILeaderboardTeam } from './interfaces/ILeaderboardTeam';
-import { IPouchDB } from './interfaces/IPouchDB';
+import { DocType, IPouchDB } from './interfaces/IPouchDB';
 
 export default class LeaderboardTeam extends IPouchDB {
   id: string;

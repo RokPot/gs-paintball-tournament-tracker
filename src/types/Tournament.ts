@@ -1,5 +1,4 @@
 import dayjs, { Dayjs } from 'dayjs';
-import { DocType } from 'services/pouchDB';
 import { DefaultGameSettings, GameSettings } from './GameSettings';
 import LeaderboardTeam from './LeadeboardTeam';
 import Team from './Team';
@@ -8,7 +7,7 @@ import {
   TournamentSettings,
 } from './TournamentSettings';
 import { TournamentDto } from './dto/TournamentDto';
-import { IPouchDB } from './interfaces/IPouchDB';
+import { DocType, IPouchDB } from './interfaces/IPouchDB';
 import { ITournament } from './interfaces/ITournament';
 import { TournamentScheduleGame } from './TournamentScheduleGame';
 import TournamentState from './TournamentState';

@@ -1,8 +1,9 @@
 import { omit } from 'lodash';
 import { useCallback } from 'react';
 import { GameDto } from 'types/dto/GameDto';
+import { DocType } from 'types/interfaces/IPouchDB';
 import { getGamesList } from 'utils/PouchDBUtils';
-import usePouchDB, { DocType, pouchDbName } from './pouchDB';
+import usePouchDB, { pouchDbName } from './pouchDB';
 
 const useGameService = () => {
   const db = usePouchDB(pouchDbName);

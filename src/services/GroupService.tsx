@@ -2,8 +2,9 @@ import { omit } from 'lodash';
 import { useCallback } from 'react';
 import { TournamentDto } from 'types/dto/TournamentDto';
 import { TournamentGroupDto } from 'types/dto/TournamentGroupDto';
+import { DocType } from 'types/interfaces/IPouchDB';
 import { getGroupsList } from 'utils/PouchDBUtils';
-import usePouchDB, { DocType, pouchDbName } from './pouchDB';
+import usePouchDB, { pouchDbName } from './pouchDB';
 
 const useGroupService = () => {
   const db = usePouchDB(pouchDbName);

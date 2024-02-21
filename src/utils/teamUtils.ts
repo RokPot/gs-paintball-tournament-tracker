@@ -13,6 +13,7 @@ export const createNewLeaderboardTeam = (team: Team) => {
     totalPoints: 0,
     totalWins: 0,
     previousRank: 0,
+    totalDraws: 0,
   });
 };
 

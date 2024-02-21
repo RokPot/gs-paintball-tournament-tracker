@@ -4,7 +4,8 @@ import { useCallback } from 'react';
 import Tournament from 'types/Tournament';
 import { TournamentDto } from 'types/dto/TournamentDto';
 import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
-import usePouchDB, { DocType, pouchDbName } from './pouchDB';
+import { DocType } from 'types/interfaces/IPouchDB';
+import usePouchDB, { pouchDbName } from './pouchDB';
 import useGroupService from './GroupService';
 
 const useTournamentService = () => {

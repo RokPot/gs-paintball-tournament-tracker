@@ -1,11 +1,10 @@
-import { DocType } from 'services/pouchDB';
 import { BracketProperties } from './BracketProperties';
 import { GameState, GameWinner } from './GameState';
 import { Match } from './Match';
 import Team from './Team';
 import { GameDto } from './dto/GameDto';
 import { IGame } from './interfaces/IGame';
-import { IPouchDB } from './interfaces/IPouchDB';
+import { DocType, IPouchDB } from './interfaces/IPouchDB';
 
 export default class Game extends IPouchDB {
   id: string;

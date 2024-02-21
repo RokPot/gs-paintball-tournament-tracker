@@ -1,5 +1,4 @@
 import { groupBy } from 'lodash';
-import { DocType } from 'services/pouchDB';
 import Game from 'types/Game';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import League from 'types/League';
@@ -12,6 +11,7 @@ import { LeagueDto } from 'types/dto/LeagueDto';
 import { TeamDto } from 'types/dto/TeamDto';
 import { TournamentDto } from 'types/dto/TournamentDto';
 import { TournamentGroupDto } from 'types/dto/TournamentGroupDto';
+import { DocType } from 'types/interfaces/IPouchDB';
 
 interface PouchDBResponse<T> {
   id: any;

@@ -3,7 +3,8 @@ import { useCallback } from 'react';
 import League from 'types/League';
 import { LeagueDto } from 'types/dto/LeagueDto';
 import { getLeaguesList } from 'utils/PouchDBUtils';
-import usePouchDB, { DocType, pouchDbName } from './pouchDB';
+import { DocType } from 'types/interfaces/IPouchDB';
+import usePouchDB, { pouchDbName } from './pouchDB';
 
 import useTournamentService from './TournamentService';
 

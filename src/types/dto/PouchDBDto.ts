@@ -1,4 +1,4 @@
-import { DocType } from 'services/pouchDB';
+import { DocType } from 'types/interfaces/IPouchDB';
 
 export interface PouchDBDto {
   _id: string;

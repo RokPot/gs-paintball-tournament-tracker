@@ -1,8 +1,7 @@
-import { DocType } from 'services/pouchDB';
 import dayjs, { Dayjs } from 'dayjs';
 import { TeamMember } from './TeamMember';
 import { TeamDto } from './dto/TeamDto';
-import { IPouchDB } from './interfaces/IPouchDB';
+import { DocType, IPouchDB } from './interfaces/IPouchDB';
 import { ITeam } from './interfaces/ITeam';
 
 export default class Team extends IPouchDB {
