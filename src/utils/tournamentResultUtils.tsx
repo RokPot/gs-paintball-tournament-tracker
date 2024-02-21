@@ -49,80 +49,38 @@ export const reorderSortedTiedTeams = (
   currentRank: number,
   resolvedTiedTeams: 'notViableTieBreaker' | ResolvedTiedTeam[],
   tiedLeaderboardTeams: LeaderboardTeam[],
-  leaderboardTeams: LeaderboardTeam[],
 ) => {
   if (resolvedTiedTeams === 'notViableTieBreaker') {
     return {
       teamsLeft: tiedLeaderboardTeams,
-      sortedLeaderboardTeam: leaderboardTeams,
+      sortedLeaderboardTeam: [],
     };
   }
-  let currentIndex = currentRank;
-  const teamsTiedLeft = [];
+  const sortedLeaderboardTeam = [...tiedLeaderboardTeams];
+  const teamsLeft = [];
   for (
-    let currentIndexToReplace = currentIndex, t = 0;
+    let currentIndexToReplace = 0, t = 0;
     t < resolvedTiedTeams.length;
     t += 1, currentIndexToReplace += 1
   ) {
     if (resolvedTiedTeams[t].rank !== -1) {
       const teamToBeReplaced = tiedLeaderboardTeams.find(
-        (leaderboardTeam) => leaderboardTeam.id === resolvedTiedTeams[t].teamId,
+        (leaderboardTeam) =>
+          leaderboardTeam.team.id === resolvedTiedTeams[t].teamId,
       )!;
-      leaderboardTeams.splice(currentIndexToReplace, 1, teamToBeReplaced);
-      currentIndex += 1;
+      sortedLeaderboardTeam.splice(currentIndexToReplace, 1, teamToBeReplaced);
     } else {
       const teamNotResolved = tiedLeaderboardTeams.find(
-        (leaderboardTeam) => leaderboardTeam.id === resolvedTiedTeams[t].teamId,
+        (leaderboardTeam) =>
+          leaderboardTeam.team.id === resolvedTiedTeams[t].teamId,
       )!;
-      teamsTiedLeft.push(teamNotResolved);
+      teamsLeft.push(teamNotResolved);
     }
   }
   return {
-    teamsLeft: teamsTiedLeft,
-    sortedLeaderboardTeam: tiedLeaderboardTeams,
+    teamsLeft,
+    sortedLeaderboardTeam,
   };
-};
-
-export const checkForNumberOfMatchesWonTiebreaker = (
-  leaderboardTeamsTied: LeaderboardTeam[],
-  finishedGames: Game[],
-): LeaderboardTeam[] | typeof NotViableTiebreaker => {
-  const leaderboardTeamScores: { teamId: string; numberOfMatchWins: number }[] =
-    [];
-  // TO DO: RokPot - Not sure what to do here.
-  for (let j = 0; j < leaderboardTeamsTied.length; j += 1) {
-    leaderboardTeamScores.push({
-      teamId: leaderboardTeamsTied[j].id,
-      numberOfMatchWins: 0,
-    });
-  }
-  const teamIds = leaderboardTeamsTied.map(
-    (leaderboardTeam) => leaderboardTeam.id,
-  );
-  finishedGames.forEach((finishedGame) => {
-    // If team 1 has won, check if team 1 is in the teamIds
-    if (finishedGame.gameWinner === GameWinner.team1) {
-      if (teamIds.includes(finishedGame.team1.id)) {
-        const leaderboardTeamScore = leaderboardTeamScores.find(
-          (internalLeaderboardTeamScore) =>
-            internalLeaderboardTeamScore.teamId === finishedGame.team1.id,
-        )!;
-        leaderboardTeamScore.numberOfMatchWins =
-          (leaderboardTeamScore.numberOfMatchWins || 0) + 1;
-      }
-    } else if (finishedGame.gameWinner === GameWinner.team2) {
-      if (teamIds.includes(finishedGame.team2.id)) {
-        const leaderboardTeamScore = leaderboardTeamScores.find(
-          (internalLeaderboardTeamScore) =>
-            internalLeaderboardTeamScore.teamId === finishedGame.team2.id,
-        )!;
-        leaderboardTeamScore.numberOfMatchWins =
-          (leaderboardTeamScore.numberOfMatchWins || 0) + 1;
-      }
-    }
-  });
-
-  return NotViableTiebreaker;
 };
 
 export const checkForHeadToHeadTiebreaker = (
@@ -133,7 +91,7 @@ export const checkForHeadToHeadTiebreaker = (
     [];
   for (let j = 0; j < leaderboardTeamsTied.length; j += 1) {
     leaderBoardHeadToHeadWins.push({
-      teamId: leaderboardTeamsTied[j].id,
+      teamId: leaderboardTeamsTied[j].team.id,
       numberOfWins: 0,
     });
   }
@@ -150,30 +108,31 @@ export const checkForHeadToHeadTiebreaker = (
 
       if (gameWhereTheTwoTeamsMet) {
         if (gameWhereTheTwoTeamsMet.gameWinner === GameWinner.team1) {
-          const winningTeam =
-            gameWhereTheTwoTeamsMet.team1.id === currentTeam.id
+          const winningLeaderboardTeam =
+            gameWhereTheTwoTeamsMet.team1.id === currentTeam.team.id
               ? currentTeam
               : nextTeam;
           const currentHeadToHeadTeam = leaderBoardHeadToHeadWins.find(
-            (headToHeadTeam) => headToHeadTeam.teamId === winningTeam.id,
+            (headToHeadTeam) =>
+              headToHeadTeam.teamId === winningLeaderboardTeam.team.id,
           );
-          currentHeadToHeadTeam!.numberOfWins =
-            (currentHeadToHeadTeam?.numberOfWins || 0) + 1;
+          currentHeadToHeadTeam!.numberOfWins += 1;
         } else if (gameWhereTheTwoTeamsMet.gameWinner === GameWinner.team2) {
-          const winningTeam =
-            gameWhereTheTwoTeamsMet.team2.id === currentTeam.id
+          const winningLeaderboardTeam =
+            gameWhereTheTwoTeamsMet.team2.id === currentTeam.team.id
               ? currentTeam
               : nextTeam;
           const currentHeadToHeadTeam = leaderBoardHeadToHeadWins.find(
-            (headToHeadTeam) => headToHeadTeam.teamId === winningTeam.id,
+            (headToHeadTeam) =>
+              headToHeadTeam.teamId === winningLeaderboardTeam.team.id,
           );
           currentHeadToHeadTeam!.numberOfWins =
-            (currentHeadToHeadTeam?.numberOfWins || 0) + 1;
+            currentHeadToHeadTeam!.numberOfWins + 1;
         }
       }
     }
   }
-  leaderBoardHeadToHeadWins.sort((a, b) => a.numberOfWins - b.numberOfWins);
+  leaderBoardHeadToHeadWins.sort((a, b) => b.numberOfWins - a.numberOfWins);
   // to do rok pot this is not correct
   const sortedTeams: { rank: number; teamId: string }[] = [];
   for (let i = 0; i < leaderBoardHeadToHeadWins.length; i += 1) {
@@ -215,12 +174,14 @@ export const checkForLeastTimeRemainingTiebreaker = (
   const leaderBoardTeamGameTimes: {
     teamId: string;
     gameTimeRemaining: number;
+    numberOfGamesPlayed: number;
   }[] = [];
 
   for (let j = 0; j < leaderboardTeamsTied.length; j += 1) {
     leaderBoardTeamGameTimes.push({
-      teamId: leaderboardTeamsTied[j].id,
+      teamId: leaderboardTeamsTied[j].team.id,
       gameTimeRemaining: 0,
+      numberOfGamesPlayed: 0,
     });
   }
   const teamsTiedId = leaderboardTeamsTied.map(
@@ -234,9 +195,11 @@ export const checkForLeastTimeRemainingTiebreaker = (
             (leaderBoardTeamGameTime) =>
               leaderBoardTeamGameTime.teamId === finishedGame.team1.id,
           )!;
+          leaderBoardTeamTime.numberOfGamesPlayed =
+            leaderBoardTeamTime.gameTimeRemaining + 1;
           leaderBoardTeamTime.gameTimeRemaining =
-            (leaderBoardTeamTime.gameTimeRemaining || 0) +
-            finishedGame.gameTime;
+            (leaderBoardTeamTime.gameTimeRemaining + finishedGame.gameTime) /
+            leaderBoardTeamTime.numberOfGamesPlayed;
         }
       }
       if (finishedGame.gameWinner === GameWinner.team1) {
@@ -245,9 +208,11 @@ export const checkForLeastTimeRemainingTiebreaker = (
             (leaderBoardTeamGameTime) =>
               leaderBoardTeamGameTime.teamId === finishedGame.team2.id,
           )!;
+          leaderBoardTeamTime.numberOfGamesPlayed =
+            leaderBoardTeamTime.gameTimeRemaining + 1;
           leaderBoardTeamTime.gameTimeRemaining =
-            (leaderBoardTeamTime.gameTimeRemaining || 0) +
-            finishedGame.gameTime;
+            (leaderBoardTeamTime.gameTimeRemaining + finishedGame.gameTime) /
+            leaderBoardTeamTime.numberOfGamesPlayed;
         }
       }
       return;
@@ -264,9 +229,11 @@ export const checkForLeastTimeRemainingTiebreaker = (
             (leaderBoardTeamGameTime) =>
               leaderBoardTeamGameTime.teamId === finishedGame.team1.id,
           )!;
+          leaderBoardTeamTime.numberOfGamesPlayed =
+            leaderBoardTeamTime.gameTimeRemaining + 1;
           leaderBoardTeamTime.gameTimeRemaining =
-            (leaderBoardTeamTime.gameTimeRemaining || 0) +
-            finishedGame.gameTime;
+            (leaderBoardTeamTime.gameTimeRemaining + finishedGame.gameTime) /
+            leaderBoardTeamTime.numberOfGamesPlayed;
         }
       }
       if (finishedGame.gameWinner === GameWinner.team1) {
@@ -275,16 +242,18 @@ export const checkForLeastTimeRemainingTiebreaker = (
             (leaderBoardTeamGameTime) =>
               leaderBoardTeamGameTime.teamId === finishedGame.team2.id,
           )!;
+          leaderBoardTeamTime.numberOfGamesPlayed =
+            leaderBoardTeamTime.gameTimeRemaining + 1;
           leaderBoardTeamTime.gameTimeRemaining =
-            (leaderBoardTeamTime.gameTimeRemaining || 0) +
-            finishedGame.gameTime;
+            (leaderBoardTeamTime.gameTimeRemaining + finishedGame.gameTime) /
+            leaderBoardTeamTime.numberOfGamesPlayed;
         }
       }
     }
   });
 
   leaderBoardTeamGameTimes.sort(
-    (a, b) => a.gameTimeRemaining - b.gameTimeRemaining,
+    (a, b) => b.gameTimeRemaining - a.gameTimeRemaining,
   );
 
   const sortedTeams: { rank: number; teamId: string }[] = [];
@@ -317,38 +286,80 @@ export const checkForGreatestTimeRemainingTiebreaker = (
   const leaderBoardTeamGameTimes: {
     teamId: string;
     gameTimeRemaining: number;
+    numberOfGamesPlayed: number;
   }[] = [];
 
-  // todo rokpot checkonlytiedGames
-  console.log(checkOnlyTiedGames);
   for (let j = 0; j < leaderboardTeamsTied.length; j += 1) {
     leaderBoardTeamGameTimes.push({
-      teamId: leaderboardTeamsTied[j].id,
+      teamId: leaderboardTeamsTied[j].team.id,
       gameTimeRemaining: 0,
+      numberOfGamesPlayed: 0,
     });
   }
   const teamsTiedId = leaderboardTeamsTied.map(
     (leaderboardTiedTeam) => leaderboardTiedTeam.team.id,
   );
   finishedGames.forEach((finishedGame) => {
-    if (finishedGame.gameWinner === GameWinner.team1) {
-      if (teamsTiedId.includes(finishedGame.team1.id)) {
-        const leaderBoardTeamTime = leaderBoardTeamGameTimes.find(
-          (leaderBoardTeamGameTime) =>
-            leaderBoardTeamGameTime.teamId === finishedGame.team1.id,
-        )!;
-        leaderBoardTeamTime.gameTimeRemaining =
-          (leaderBoardTeamTime.gameTimeRemaining || 0) + finishedGame.gameTime;
+    if (!checkOnlyTiedGames) {
+      if (finishedGame.gameWinner === GameWinner.team1) {
+        if (teamsTiedId.includes(finishedGame.team1.id)) {
+          const leaderBoardTeamTime = leaderBoardTeamGameTimes.find(
+            (leaderBoardTeamGameTime) =>
+              leaderBoardTeamGameTime.teamId === finishedGame.team1.id,
+          )!;
+          leaderBoardTeamTime.numberOfGamesPlayed =
+            leaderBoardTeamTime.gameTimeRemaining + 1;
+          leaderBoardTeamTime.gameTimeRemaining =
+            (leaderBoardTeamTime.gameTimeRemaining + finishedGame.gameTime) /
+            leaderBoardTeamTime.numberOfGamesPlayed;
+        }
       }
+      if (finishedGame.gameWinner === GameWinner.team2) {
+        if (teamsTiedId.includes(finishedGame.team2.id)) {
+          const leaderBoardTeamTime = leaderBoardTeamGameTimes.find(
+            (leaderBoardTeamGameTime) =>
+              leaderBoardTeamGameTime.teamId === finishedGame.team2.id,
+          )!;
+          leaderBoardTeamTime.numberOfGamesPlayed =
+            leaderBoardTeamTime.gameTimeRemaining + 1;
+          leaderBoardTeamTime.gameTimeRemaining =
+            (leaderBoardTeamTime.gameTimeRemaining + finishedGame.gameTime) /
+            leaderBoardTeamTime.numberOfGamesPlayed;
+        }
+      }
+      return;
     }
-    if (finishedGame.gameWinner === GameWinner.team2) {
-      if (teamsTiedId.includes(finishedGame.team2.id)) {
-        const leaderBoardTeamTime = leaderBoardTeamGameTimes.find(
-          (leaderBoardTeamGameTime) =>
-            leaderBoardTeamGameTime.teamId === finishedGame.team2.id,
-        )!;
-        leaderBoardTeamTime.gameTimeRemaining =
-          (leaderBoardTeamTime.gameTimeRemaining || 0) + finishedGame.gameTime;
+
+    // Check head to head games to do rokpot
+    if (
+      teamsTiedId.includes(finishedGame.team1.id) &&
+      teamsTiedId.includes(finishedGame.team2.id)
+    ) {
+      if (finishedGame.gameWinner === GameWinner.team1) {
+        if (teamsTiedId.includes(finishedGame.team1.id)) {
+          const leaderBoardTeamTime = leaderBoardTeamGameTimes.find(
+            (leaderBoardTeamGameTime) =>
+              leaderBoardTeamGameTime.teamId === finishedGame.team1.id,
+          )!;
+          leaderBoardTeamTime.numberOfGamesPlayed =
+            leaderBoardTeamTime.gameTimeRemaining + 1;
+          leaderBoardTeamTime.gameTimeRemaining =
+            (leaderBoardTeamTime.gameTimeRemaining + finishedGame.gameTime) /
+            leaderBoardTeamTime.numberOfGamesPlayed;
+        }
+      }
+      if (finishedGame.gameWinner === GameWinner.team2) {
+        if (teamsTiedId.includes(finishedGame.team2.id)) {
+          const leaderBoardTeamTime = leaderBoardTeamGameTimes.find(
+            (leaderBoardTeamGameTime) =>
+              leaderBoardTeamGameTime.teamId === finishedGame.team2.id,
+          )!;
+          leaderBoardTeamTime.numberOfGamesPlayed =
+            leaderBoardTeamTime.gameTimeRemaining + 1;
+          leaderBoardTeamTime.gameTimeRemaining =
+            (leaderBoardTeamTime.gameTimeRemaining + finishedGame.gameTime) /
+            leaderBoardTeamTime.numberOfGamesPlayed;
+        }
       }
     }
   });
@@ -388,8 +399,12 @@ const calculateTieBreakChecking = (
     case TieBreakCheckings.HeadToHead: {
       return checkForHeadToHeadTiebreaker(tiedTeams, finishedGames);
     }
-    case TieBreakCheckings.NumberOfPoints:
-    case TieBreakCheckings.MatchMargin:
+    case TieBreakCheckings.NumberOfPoints: {
+      break;
+    }
+    case TieBreakCheckings.MatchMargin: {
+      break;
+    }
     case TieBreakCheckings.GreatestTimeRemainingAmongAllWonGames:
       return checkForGreatestTimeRemainingTiebreaker(
         tiedTeams,
@@ -403,13 +418,13 @@ const calculateTieBreakChecking = (
         true,
       );
     case TieBreakCheckings.LeastTimeRemainingAmongAllLostGames:
-      return checkForGreatestTimeRemainingTiebreaker(
+      return checkForLeastTimeRemainingTiebreaker(
         tiedTeams,
         finishedGames,
         false,
       );
     case TieBreakCheckings.LeastTimeRemainingAmongTiedLostGames:
-      return checkForGreatestTimeRemainingTiebreaker(
+      return checkForLeastTimeRemainingTiebreaker(
         tiedTeams,
         finishedGames,
         true,
@@ -424,11 +439,10 @@ const calculateTieBreakChecking = (
 export const tryToResolveDraws = (
   currentRank: number,
   tiedTeams: LeaderboardTeam[],
-  leaderboardTeams: LeaderboardTeam[],
   finishedGames: Game[],
 ) => {
   let teamsTiedLeft = [...tiedTeams];
-  let sortingLeaderboardTeams = [...leaderboardTeams];
+  let sortingLeaderboardTeams: LeaderboardTeam[] = [];
   for (let j = 0; j < tieBreakChecks.length; j += 1) {
     const tieBreakCheck = tieBreakChecks[j];
     const resolvedTieBreaks = calculateTieBreakChecking(
@@ -440,22 +454,23 @@ export const tryToResolveDraws = (
       currentRank,
       resolvedTieBreaks,
       tiedTeams,
-      leaderboardTeams,
     );
 
     teamsTiedLeft = [...teamsLeft];
     sortingLeaderboardTeams = [...sortedLeaderboardTeam];
+    if (!teamsLeft?.length) {
+      break;
+    }
   }
+
   return sortingLeaderboardTeams;
 };
 
-export const calculateTournamentGroupLeaderboard = (
+const calculateTournamentGroupPoints = (
   group: TournamentGroup,
   tournamentSettings: TournamentSettings,
+  finishedGames: Game[],
 ) => {
-  const finishedGames = group.games.filter(
-    (game) => game.gameState === GameState.finished,
-  );
   const leaderboardTeams: LeaderboardTeam[] = [];
 
   group.teams.forEach((groupTeam) => {
@@ -523,9 +538,16 @@ export const calculateTournamentGroupLeaderboard = (
       });
     }
   });
-
   leaderboardTeams.sort((a, b) => b.totalPoints - a.totalPoints);
-  let leaderboardTeamsSorted: LeaderboardTeam[] = [];
+
+  return leaderboardTeams;
+};
+
+const checkAndResolveLeaderboardDraws = (
+  leaderboardTeams: LeaderboardTeam[],
+  finishedGames: Game[],
+) => {
+  const leaderboardTeamsSorted: LeaderboardTeam[] = [];
   for (let i = 0; i < leaderboardTeams.length; i += 1) {
     const currentLeaderboardTeam = leaderboardTeams[i];
     const leaderboardTeamsTiedToTheCurrentOne = leaderboardTeams.filter(
@@ -533,57 +555,44 @@ export const calculateTournamentGroupLeaderboard = (
         leaderboardTeam.totalPoints === currentLeaderboardTeam.totalPoints,
     );
     if (leaderboardTeamsTiedToTheCurrentOne?.length > 1) {
-      leaderboardTeamsSorted = tryToResolveDraws(
+      const resolvedDraws = tryToResolveDraws(
         i,
         leaderboardTeamsTiedToTheCurrentOne,
-        leaderboardTeams,
         finishedGames,
       );
+      leaderboardTeamsSorted.push(...resolvedDraws);
+      i += leaderboardTeamsTiedToTheCurrentOne.length;
+    } else {
+      leaderboardTeamsSorted.push(currentLeaderboardTeam);
     }
   }
-  // for (let i = 0; i < leaderboardTeams.length; i += 1) {
-  //   const currentTeam = leaderboardTeams[i];
-  //   for (let j = i + 1; j < leaderboardTeams.length; j += 1) {
-  //     const nextTeam = leaderboardTeams[j];
-  // if (currentTeam.totalPoints === nextTeam.totalPoints) {
-  //   const gameWhereTheTwoTeamsMet = finishedGames.find(
-  //     (game) =>
-  //       [currentTeam.team.id, nextTeam.team.id].includes(game.team1.id) &&
-  //       [currentTeam.team.id, nextTeam.team.id].includes(game.team2.id),
-  //   );
+  return leaderboardTeamsSorted;
+};
 
-  //   if (gameWhereTheTwoTeamsMet) {
-  //     if (gameWhereTheTwoTeamsMet.gameWinner === GameWinner.team1) {
-  //       // DO nothing team 1 is good
-  //     } else if (
-  //       gameWhereTheTwoTeamsMet.gameWinner === GameWinner.team2
-  //     ) {
-  //       // Swap
-  //       leaderboardTeamsSorted = [
-  //         ...swapElements(leaderboardTeamsSorted, i, j),
-  //       ];
-  //     } else if (gameWhereTheTwoTeamsMet.gameWinner === GameWinner.draw) {
-  //       let team1GameMargin = 0;
-  //       let team2GameMargin = 0;
-  //       gameWhereTheTwoTeamsMet.matches.forEach((match) => {
-  //         team1GameMargin += match.team1Margin;
-  //         team2GameMargin += match.team2Margin;
-  //       });
-  //       if (team2GameMargin > team1GameMargin) {
-  //         leaderboardTeamsSorted = [
-  //           ...swapElements(leaderboardTeamsSorted, i, j),
-  //         ];
-  //       }
-  //     }
-  //       } else if (nextTeam.margin > currentTeam.margin) {
-  //         leaderboardTeamsSorted = [
-  //           ...swapElements(leaderboardTeamsSorted, i, j),
-  //         ];
-  //       }
-  //     }
-  //   }
-  // }
+export const calculateTournamentGroupLeaderboard = (
+  group: TournamentGroup,
+  tournamentSettings: TournamentSettings,
+) => {
+  const finishedGames = group.games.filter(
+    (game) => game.gameState === GameState.finished,
+  );
+
+  // Calculate team points for a group.
+  // WIN - 3 POINTS
+  // DRAW - 1 POINT
+  // LOSE - 0 POINTS
+  const leaderboardTeams = calculateTournamentGroupPoints(
+    group,
+    tournamentSettings,
+    finishedGames,
+  );
+
+  // If there are any teams that are tied (same points), we need to try to resolve them
+  const sortedLeaderboardTeams = checkAndResolveLeaderboardDraws(
+    leaderboardTeams,
+    finishedGames,
+  );
 
   // set proper rankings
-  return recalculateRankings(leaderboardTeamsSorted);
+  return recalculateRankings(sortedLeaderboardTeams);
 };
