@@ -59,3 +59,9 @@ export namespace TestUtils {
     });
   };
 }
+export const team1 = TestUtils.generateTeam(1);
+export const team2 = TestUtils.generateTeam(2);
+export const team3 = TestUtils.generateTeam(3);
+export const team4 = TestUtils.generateTeam(4);
+export const team5 = TestUtils.generateTeam(5);
+export const team6 = TestUtils.generateTeam(6);
