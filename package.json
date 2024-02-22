@@ -94,7 +94,10 @@
     ],
     "transform": {
       "\\.(ts|tsx|js|jsx)$": "ts-jest"
-    }
+    },
+    "modulePathIgnorePatterns": [
+      "utils"
+    ]
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
