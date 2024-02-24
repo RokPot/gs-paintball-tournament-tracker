@@ -1,11 +1,15 @@
+import { Dayjs } from 'dayjs';
 import { TeamMember } from 'types/TeamMember';
+import { PouchDBDto } from 'types/dto/PouchDBDto';
 
-export interface ITeam {
+export interface ITeam extends PouchDBDto {
   id: string;
-  teamName: String;
+  teamName: string;
   teamTag: string;
   wins?: number;
   loses?: number;
   draw?: number;
-  members: TeamMember[];
+  members?: TeamMember[];
+  color?: string;
+  dateCreated?: Dayjs;
 }

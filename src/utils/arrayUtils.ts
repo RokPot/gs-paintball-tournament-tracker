@@ -1,0 +1,21 @@
+export const shuffleArray = <T>(array: T[]): T[] => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
+export const getItem = <T>(array: T[], index: number) => {
+  return array[index];
+};
+export const swapElements = <T>(
+  array: T[],
+  index1: number,
+  index2: number,
+): T[] => {
+  // eslint-disable-next-line prefer-destructuring
+  array[index1] = array.splice(index2, 1, array[index1])[0];
+  return array;
+};

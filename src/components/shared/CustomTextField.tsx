@@ -1,4 +1,9 @@
-import LoadingIndicator from './LoadingIndicator';
+/* eslint-disable no-lonely-if */
+/* eslint-disable react/destructuring-assignment */
+/* eslint-disable react/default-props-match-prop-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react/jsx-no-duplicate-props */
+/* eslint-disable react/function-component-definition */
 import { faClose } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { TextField, TextFieldProps, Theme } from '@mui/material';
@@ -15,6 +20,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import LoadingIndicator from './LoadingIndicator';
 
 interface CustomTextFieldProps {
   variant?:
@@ -84,9 +90,9 @@ const CustomTextField: FunctionComponent<
   const theme = useTheme();
   const { InputProps, error, label } = textFieldProps;
   const [value, setValue] = useState<string | number | any>(externalValue);
-  let onChangeDispatcher = useRef<DebouncedFunc<() => Promise<boolean>> | null>(
-    null
-  );
+  const onChangeDispatcher = useRef<DebouncedFunc<
+    () => Promise<boolean>
+  > | null>(null);
 
   const getVariant = (): string => {
     switch (variant) {
@@ -113,10 +119,10 @@ const CustomTextField: FunctionComponent<
   };
 
   const internalOnChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setValue(e.target.value);
-    const cpy = Object.assign({}, e);
+    const cpy = { ...e };
     if (debounceTime) {
       onChangeDispatcher.current?.cancel();
       onChangeDispatcher.current = debounce(() => {
@@ -155,7 +161,7 @@ const CustomTextField: FunctionComponent<
       className={clsx(variant, className)}
       inputRef={inputRef}
       autoComplete={autoComplete}
-      inputProps={{ maxLength: maxLength }}
+      inputProps={{ maxLength }}
       InputProps={{
         ...{ style: inputStyle, className: inputClassName },
         startAdornment: startIcon,
@@ -205,5 +211,5 @@ CustomTextField.defaultProps = {
 export default styled(CustomTextField)(
   (props: CustomTextFieldProps & { theme?: Theme }) => `
 
-`
+`,
 );

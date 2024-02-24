@@ -1,18 +1,13 @@
-import { ITeam } from './ITeam';
-import { TeamMember } from 'types/TeamMember';
+import Team from 'types/Team';
+import { PouchDBDto } from 'types/dto/PouchDBDto';
 
-export interface ILeaderboardTeam extends ITeam {
+export interface ILeaderboardTeam extends PouchDBDto {
   id: string;
-  teamName: String;
-  teamTag: string;
-  wins?: number;
-  loses?: number;
-  draw?: number;
-  members: TeamMember[];
-
   totalWins: number;
   totalLosses: number;
+  totalDraws: number;
   totalPoints: number;
   rank: number;
   previousRank?: number;
+  team: Team;
 }

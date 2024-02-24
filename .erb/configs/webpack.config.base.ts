@@ -45,6 +45,12 @@ const configuration: webpack.Configuration = {
   resolve: {
     extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
     modules: [webpackPaths.srcPath, 'node_modules'],
+    // fallback: {
+    //   path: require.resolve('path-browserify'),
+    //   os: require.resolve('os-browserify/browser'),
+    //   stream: require.resolve('stream-browserify'),
+    //   util: require.resolve('util/'),
+    // },
     // There is no need to add aliases here, the paths in tsconfig get mirrored
     plugins: [new TsconfigPathsPlugins()],
   },

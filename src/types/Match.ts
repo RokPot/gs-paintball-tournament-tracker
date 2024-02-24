@@ -1,6 +1,4 @@
-import { MatchState } from './MatchState';
-import { Team } from './Team';
-import { TeamMember } from './TeamMember';
+import MatchState from './MatchState';
 
 export interface Match {
   id: string;
@@ -8,5 +6,8 @@ export interface Match {
   matchState: MatchState;
 
   team1Margin: number;
+
   team2Margin: number;
+
+  matchDurationInSeconds: number;
 }

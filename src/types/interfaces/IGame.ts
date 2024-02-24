@@ -1,11 +1,14 @@
-import { GameState } from 'types/GameState';
+import { BracketProperties } from 'types/BracketProperties';
+import { GameState, GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
-import { Team } from 'types/Team';
-import { TournamentGroup } from 'types/TournamentGroup';
+import Team from 'types/Team';
+import { PouchDBDto } from 'types/dto/PouchDBDto';
 
-export interface IGame {
+export interface IGame extends PouchDBDto {
   id: string;
+
   team1: Team;
+
   team2: Team;
 
   matches: Match[];
@@ -13,7 +16,12 @@ export interface IGame {
   gameState: GameState;
 
   team1Wins?: number;
+
   team2Wins?: number;
 
-  group: TournamentGroup;
+  bracketProperties: BracketProperties | null;
+
+  gameTime: number;
+
+  gameWinner?: GameWinner;
 }

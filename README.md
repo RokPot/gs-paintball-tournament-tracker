@@ -1,15 +1,22 @@
+
+
 ## Install
 
 Clone the repo and install dependencies:
 
-- yarn
+```bash
+git clone 
+cd your-project-name
+yarn install
+```
+
 
 ## Starting Development
 
 Start the app in the `dev` environment:
 
 ```bash
-yarn start
+npm start
 ```
 
 ## Packaging for Production
@@ -17,5 +24,5 @@ yarn start
 To package apps for the local platform:
 
 ```bash
-yarn run package
+npm run package
 ```

@@ -1,15 +1,20 @@
-import { LeaderboardTeam } from 'types/LeadeboardTeam';
-import { Team } from 'types/Team';
-import { Tournament } from 'types/Tournament';
+import LeaderboardTeam from 'types/LeadeboardTeam';
+import Team from 'types/Team';
+import Tournament from 'types/Tournament';
+import { PouchDBDto } from 'types/dto/PouchDBDto';
 
-export interface ILeague {
+export interface ILeague extends PouchDBDto {
   id: string;
 
   name: string;
 
-  teams: Team[];
+  teams?: Team[];
 
-  tournaments: Tournament[];
+  tournaments?: Tournament[];
 
-  leaderboard: LeaderboardTeam[];
+  leaderboard?: LeaderboardTeam[];
+
+  isLeagueSelected?: boolean;
+
+  activeTournament?: Tournament;
 }

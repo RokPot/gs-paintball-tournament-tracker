@@ -1,4 +1,5 @@
 export enum GameState {
+  created = 'created',
   playing = 'playing',
   waiting = 'waiting',
   postponed = 'postponed',
@@ -6,8 +7,16 @@ export enum GameState {
 }
 
 export enum GameStateLabels {
-  playing = 'Playing',
-  waiting = 'Waiting',
-  postponed = 'Wostponed',
-  finished = 'Winished',
+  created = 'Created',
+  playing = 'Game is in progress',
+  waiting = 'Game is waiting',
+  postponed = 'Game is postponed',
+  finished = 'Game is finished',
+}
+
+export enum GameWinner {
+  team1 = 'Team1',
+  team2 = 'Team2',
+  draw = 'Draw',
+  notYet = 'NotYet',
 }

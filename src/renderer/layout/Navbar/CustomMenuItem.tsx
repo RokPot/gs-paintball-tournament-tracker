@@ -11,9 +11,8 @@ interface IProps {
   to?: string;
 }
 
-const CustomMenuItem: React.FC<IProps> = ({ path, icon, title, to }) => {
+function CustomMenuItem({ path, icon, title, to }: IProps) {
   const { pathname } = useLocation();
-
   const isPathActive = !!matchPath(path, pathname);
   const theme = useTheme();
 
@@ -32,11 +31,9 @@ const CustomMenuItem: React.FC<IProps> = ({ path, icon, title, to }) => {
         />
       }
     >
-      <Typography color={(theme) => theme.palette.primary.dark}>
-        {title}
-      </Typography>
+      <Typography color={theme.palette.primary.dark}>{title}</Typography>
     </MenuItem>
   );
-};
+}
 
 export default CustomMenuItem;

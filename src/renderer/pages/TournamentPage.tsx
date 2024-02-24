@@ -1,76 +1,367 @@
-import { Button, Typography } from '@mui/material';
+import {
+  faEdit,
+  faEllipsisVertical,
+  faLeftLong,
+  faPlus,
+  faRemove,
+  faRightLong,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  Button,
+  IconButton,
+  Typography,
+  alpha,
+  css,
+  styled,
+  useTheme,
+} from '@mui/material';
+import SelectLeague from 'components/leagues/SelectLeague';
+import CustomDropdownMenu from 'components/shared/CustomDropdownMenu';
+import CustomModal from 'components/shared/CustomModal';
+import CustomTabs from 'components/shared/CustomTabs';
 import FlexContainer from 'components/shared/FlexContainer';
+import LoadingIndicator from 'components/shared/LoadingIndicator';
 import PageContainer from 'components/shared/PageContainer';
-import TournamentDetailsInfo from 'components/tournament/TournamentDetailsInfo';
-import { useState } from 'react';
-import { Tournament } from 'types/Tournament';
+import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
+import InitializeTournament from 'components/tournament/InitializeTournament';
+import SelectTournament from 'components/tournament/SelectTournament';
+import TournamentActivity from 'components/tournament/TournamentActivity';
+import TournamentBrackets from 'components/tournament/TournamentBrackets';
+import TournamentDetails from 'components/tournament/TournamentDetails';
+import TournamentGroups from 'components/tournament/TournamentGroups';
+import TournamentResults from 'components/tournament/TournamentResults';
+import TournamentScheduleContainer from 'components/tournament/TournamentScheduleContainer';
+import useLeagueQueries from 'hooks/league/useLeagueQueries';
+import useTournamentQueries from 'hooks/tournament/useTournamentQueries';
+import { useCallback, useEffect, useState } from 'react';
+import useAddGame from 'services/queries/game/useAddGame';
+import useAddGroup from 'services/queries/group/useAddGroup';
+import useActiveLeague from 'services/queries/league/useActiveLeague';
+import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
+import Game from 'types/Game';
+import Tournament from 'types/Tournament';
+import TournamentGroup from 'types/TournamentGroup';
+import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
+import { TournamentSettings } from 'types/TournamentSettings';
+import { TournamentStatus } from 'types/TournamentStatus';
 
-const TournamentPage: React.FC = () => {
-  const [tournament, setTournament] = useState<Tournament>();
+const StyledLoadingContainer = styled('div')(
+  (props) => css`
+    display: flex;
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    padding: 16px 16px;
+    overflow: auto;
+    z-index: 12;
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    left: 0px;
+    background: ${alpha(props.theme.palette.grey[200], 0.7)};
+    transition: all 0.5s ease-in;
+  `,
+);
+
+enum TournamentTabs {
+  tournamentDetails = 'tournamentDetails',
+  brackets = 'brackets',
+  groups = 'groups',
+  schedule = 'schedule',
+  results = 'results',
+  activity = 'activity',
+}
+enum TournamentTabsLabel {
+  tournamentDetails = 'Tournament Details',
+  brackets = 'Brackets',
+  groups = 'Groups',
+  schedule = 'Schedule',
+  activity = 'Activity',
+  results = 'Results',
+}
+
+const TournamentPage = () => {
+  const [activeTab, setActiveTab] = useState(TournamentTabs.tournamentDetails);
+  const { setSelectedLeague, setSelectedLeagueTournament } = useLeagueQueries();
+  const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
+  const { addOrEditTournament } = useTournamentQueries();
+  const { invalidateSelectedLeague } = useLeagueInvalidations();
+  const [
+    allowAutomaticTournamentAssignment,
+    setAllowAutomaticTournamentAssignment,
+  ] = useState(true);
+  const [addOrEditTournamentModalProps, setAddOrEditTournamentModalProps] =
+    useState<{ isOpen: boolean; tournament?: Tournament }>({ isOpen: false });
+  const [isInitializeTournamentModalOpen, setIsInitializeTournamentModalOpen] =
+    useState(false);
+  const { addGamesBulk } = useAddGame();
+  const { addGroupsBulk } = useAddGroup();
+
+  const theme = useTheme();
+  const selectedTournament = activeLeague?.activeTournament;
+  const setSelectedTournament = useCallback(
+    async (tournament?: Tournament) => {
+      await setSelectedLeagueTournament(tournament, activeLeague);
+      setActiveTab(TournamentTabs.tournamentDetails);
+    },
+    [activeLeague, setSelectedLeagueTournament],
+  );
+
+  const addNewTournamentInternal = async (
+    tournament: Tournament,
+    isEdit: boolean,
+  ) => {
+    await addOrEditTournament(tournament, activeLeague, isEdit);
+    await invalidateSelectedLeague();
+
+    setAddOrEditTournamentModalProps({ isOpen: false });
+  };
+
+  const initializeTournament = async (
+    groups: TournamentGroup[],
+    settings: TournamentSettings,
+    schedule: TournamentScheduleGame[],
+  ) => {
+    if (!selectedTournament) {
+      return;
+    }
+    // In groups there are games and also teams split.
+    // If there is second stage those games we're also generated already
+    selectedTournament.groups = groups;
+    selectedTournament.settings = settings;
+    selectedTournament.schedule = schedule;
+    selectedTournament.state.status = TournamentStatus.initialized;
+    await addGamesBulk(
+      groups.reduce((prev: Game[], curr) => {
+        prev.push(...curr.games);
+        return prev;
+      }, []),
+    );
+    await addGroupsBulk(groups);
+    await addOrEditTournament(selectedTournament, activeLeague, true);
+    await invalidateSelectedLeague();
+    setIsInitializeTournamentModalOpen(false);
+  };
+
+  useEffect(() => {
+    if (
+      !activeLeague ||
+      activeLeague?.activeTournament ||
+      !allowAutomaticTournamentAssignment
+    ) {
+      if (activeLeague?.activeTournament) {
+        setAllowAutomaticTournamentAssignment(false);
+      }
+      return;
+    }
+
+    const unfinishedLeagueTournaments = activeLeague?.tournaments.filter(
+      (tournament) => tournament.state.status !== TournamentStatus.finished,
+    );
+
+    if (unfinishedLeagueTournaments?.length > 0) {
+      const inProgressTournament = activeLeague?.tournaments.find(
+        (tournament) => tournament.state.status === TournamentStatus.inProgress,
+      );
+
+      if (inProgressTournament) {
+        setSelectedTournament(inProgressTournament);
+      }
+    }
+    setAllowAutomaticTournamentAssignment(false);
+  }, [allowAutomaticTournamentAssignment, activeLeague, setSelectedTournament]);
+
+  const generateTournament = useCallback(() => {
+    setIsInitializeTournamentModalOpen(true);
+  }, []);
+
   return (
     <PageContainer>
-      <FlexContainer width="100%" justifyContent="space-between">
-        <Typography variant="h4">
-          Tournament - Turnir 2022 Gluhi Svizci
-        </Typography>
-        <Button onClick={() => {}}>
-          <Typography variant="body1">Create a new tournament</Typography>
-        </Button>
-      </FlexContainer>
-      {tournament && (
-        <Typography
-          variant="subtitle1"
-          color={(theme) => theme.palette.text.secondary}
-        >
-          No tournament selected, please create a new tournament or select
-          existing one
-        </Typography>
+      {isFetchingActiveLeague && (
+        <StyledLoadingContainer>
+          <LoadingIndicator height="100%" />
+        </StyledLoadingContainer>
       )}
-      {!tournament && (
-        <>
-          <Typography variant="h5">Tournament details</Typography>
-          <FlexContainer width="100%" justifyContent="flex-start" margin={16}>
-            <FlexContainer
-              flexDirection="column"
-              justifyContent="center"
-              alignItems="flex-start"
-              highlightRowOnHover
+      {activeLeague ? (
+        <FlexContainer width="100%" justifyContent="space-between">
+          <Typography variant="h4">
+            League -
+            <Typography
+              variant="h4Medium"
+              display="inline-block"
+              variantMapping={{ h4Medium: 'span' }}
             >
-              <TournamentDetailsInfo title="Status" value={'In Progress'} />
-              <TournamentDetailsInfo
-                title="Type"
-                value={'Round-Robin with groups'}
+              {activeLeague?.name}
+            </Typography>
+            <IconButton
+              style={{ width: '20px', height: '20px', marginLeft: 'auto' }}
+              onClick={() => setSelectedLeague(null, activeLeague)}
+            >
+              <FontAwesomeIcon
+                icon={faRemove}
+                width={10}
+                color={theme.palette.primary.main}
               />
-              <TournamentDetailsInfo title="Team size" value={'3-man'} />
-              <TournamentDetailsInfo title="Required match wins" value={2} />
-            </FlexContainer>
-            <FlexContainer
-              flexDirection="column"
-              justifyContent="center"
-              alignItems="flex-start"
-              highlightRowOnHover
-            >
-              <TournamentDetailsInfo title="# of total games" value={7} />
-              <TournamentDetailsInfo title="# of total games" value={7} />
-              <TournamentDetailsInfo title="# of finished games" value={3} />
-              <TournamentDetailsInfo title="# of unfinished games" value={16} />
-            </FlexContainer>
-            <FlexContainer
-              flexDirection="column"
-              justifyContent="center"
-              alignItems="flex-start"
-              highlightRowOnHover
-            >
-              <TournamentDetailsInfo title="Switch games" value={'Yes'} />
-              <TournamentDetailsInfo title="Number of Groups" value={3} />
-              <TournamentDetailsInfo title="Switch groups" value={'Yes'} />
-              <TournamentDetailsInfo title="Games played" value={7} />
-            </FlexContainer>
-          </FlexContainer>
+            </IconButton>
+          </Typography>
+          <FlexContainer gap={8}>
+            {!!selectedTournament &&
+              [TournamentStatus.created].includes(
+                selectedTournament.state.status,
+              ) && (
+                <Button variant="contained" onClick={generateTournament}>
+                  <Typography variant="p1">
+                    <FontAwesomeIcon icon={faRightLong} />
+                    Begin Tournament
+                    <FontAwesomeIcon icon={faLeftLong} />
+                  </Typography>
+                </Button>
+              )}
 
-          <Typography variant="h5">Participating teams</Typography>
-        </>
+            <CustomDropdownMenu
+              icon={faEllipsisVertical}
+              actions={[
+                {
+                  label: 'Edit tournament',
+                  icon: faEdit,
+                  onClick: () =>
+                    setAddOrEditTournamentModalProps({
+                      isOpen: true,
+                      tournament: selectedTournament,
+                    }),
+                  visible: !!selectedTournament,
+                },
+                {
+                  label: 'Add new tournament',
+                  icon: faPlus,
+                  onClick: () =>
+                    setAddOrEditTournamentModalProps({ isOpen: true }),
+                  visible: true,
+                },
+              ]}
+            />
+          </FlexContainer>
+        </FlexContainer>
+      ) : (
+        <FlexContainer
+          width="100%"
+          flexDirection="column"
+          justifyContent="flex-start"
+          alignItems="flex-start"
+          gap={8}
+        >
+          <Typography variant="h4">No league selected</Typography>
+          <Typography variant="subtitle1" color={theme.palette.text.secondary}>
+            No league is currently selected, please create a new league or
+            select an existing one.
+          </Typography>
+          <SelectLeague
+            onLeagueSelected={() => setAllowAutomaticTournamentAssignment(true)}
+          />
+        </FlexContainer>
       )}
+
+      {activeLeague && selectedTournament ? (
+        <FlexContainer flexDirection="column" width="100%" alignItems="stretch">
+          <Typography variant="h5">
+            Tournament -
+            <Typography
+              variant="h5Medium"
+              display="inline-block"
+              variantMapping={{ h4Medium: 'span' }}
+            >
+              {selectedTournament?.name}
+            </Typography>
+            <IconButton
+              style={{ width: '20px', height: '20px', marginLeft: 'auto' }}
+              onClick={() => setSelectedTournament(undefined)}
+            >
+              <FontAwesomeIcon
+                icon={faRemove}
+                width={10}
+                color={theme.palette.primary.main}
+              />
+            </IconButton>
+          </Typography>
+          <CustomTabs
+            items={Object.values(TournamentTabs).map((key) => ({
+              label: TournamentTabsLabel[key],
+              value: key,
+            }))}
+            onTabChanged={(newTab) => {
+              setActiveTab(TournamentTabs[newTab as TournamentTabs]);
+            }}
+          />
+          {activeTab === TournamentTabs.tournamentDetails && (
+            <TournamentDetails activeLeague={activeLeague} />
+          )}
+          {activeTab === TournamentTabs.groups && (
+            <TournamentGroups activeLeague={activeLeague} />
+          )}
+          {activeTab === TournamentTabs.brackets && (
+            <TournamentBrackets activeLeague={activeLeague} />
+          )}
+          {activeTab === TournamentTabs.results && (
+            <TournamentResults activeLeague={activeLeague} />
+          )}
+          {activeTab === TournamentTabs.activity && (
+            <TournamentActivity activeLeague={activeLeague} />
+          )}
+          {activeTab === TournamentTabs.schedule && (
+            <TournamentScheduleContainer activeLeague={activeLeague} />
+          )}
+        </FlexContainer>
+      ) : (
+        activeLeague && (
+          <FlexContainer
+            width="100%"
+            flexDirection="column"
+            justifyContent="flex-start"
+            alignItems="flex-start"
+            gap={8}
+          >
+            <Typography variant="h4">No tournament selected</Typography>
+            <Typography
+              variant="subtitle1"
+              color={theme.palette.text.secondary}
+            >
+              {(activeLeague?.tournaments?.length || 0) > 0
+                ? 'No tournament is currently selected, please create a new tournament or select existing one.'
+                : 'There are currently no tournaments. Please create one before proceeding.'}
+            </Typography>
+            <SelectTournament onTournamentSelected={setSelectedTournament} />
+          </FlexContainer>
+        )
+      )}
+
+      <CustomModal
+        isModalOpen={addOrEditTournamentModalProps?.isOpen}
+        onClose={() => {
+          setAddOrEditTournamentModalProps({ isOpen: false });
+        }}
+        width={700}
+      >
+        <AddOrEditTournament
+          league={activeLeague!}
+          tournament={addOrEditTournamentModalProps.tournament}
+          onAccept={addNewTournamentInternal}
+          onCancel={() => setAddOrEditTournamentModalProps({ isOpen: false })}
+        />
+      </CustomModal>
+      <CustomModal
+        isModalOpen={isInitializeTournamentModalOpen}
+        fullScreen
+        onClose={() => setIsInitializeTournamentModalOpen(false)}
+        title={`Initialize ${selectedTournament?.name}`}
+        showHeader
+      >
+        <InitializeTournament
+          tournament={selectedTournament!}
+          onConfirm={initializeTournament}
+        />
+      </CustomModal>
     </PageContainer>
   );
 };

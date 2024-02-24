@@ -1,26 +1,33 @@
-import { Box, Modal, css, styled } from '@mui/material';
+import { faClose } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  Box,
+  Button,
+  Modal,
+  Typography,
+  css,
+  styled,
+  useTheme,
+} from '@mui/material';
+import FlexContainer from './FlexContainer';
 
-const StyledModalContainerRoot = styled('div')(
-  () => css`
-    position: relative;
-    width: 100%;
-    height: 100%;
-  `
-);
 const StyledModalContainer = styled('div')(
   (props) => css`
     background-color: ${props.theme.palette.background.default};
     max-height: 700px;
     overflow-y: auto;
-  `
+  `,
 );
 
 interface IProps {
   isModalOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   children: React.ReactNode;
   width?: number;
-  maxHeight?: number;
+  fullScreen?: boolean;
+  title?: string;
+  showHeader?: boolean;
+  canClose?: boolean;
 }
 const style = {
   position: 'absolute' as 'absolute',
@@ -28,17 +35,55 @@ const style = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
 };
-const CustomModal: React.FC<IProps> = ({
+const fullScreenStyle = {
+  width: '100%',
+  height: '100%',
+};
+const CustomModal = ({
   isModalOpen,
   onClose,
   children,
   width = 400,
-  maxHeight = 700,
-}) => {
+  fullScreen,
+  title,
+  showHeader = false,
+  canClose = true,
+}: IProps) => {
+  const theme = useTheme();
   return (
     <Modal open={isModalOpen} onClose={onClose}>
-      <Box style={style}>
-        <StyledModalContainer style={{ width: width }}>
+      <Box style={fullScreen ? fullScreenStyle : style}>
+        <StyledModalContainer
+          style={{
+            width: fullScreen ? '100%' : width,
+            height: fullScreen ? '100%' : 'auto',
+            maxHeight: fullScreen ? '100%' : '',
+          }}
+        >
+          {showHeader && (
+            <FlexContainer
+              width="100%"
+              justifyContent="space-between"
+              alignItems="center"
+              position="sticky"
+              top="0px"
+              padding="5px 0px 5px 20px"
+              zIndex={10}
+              style={{
+                backgroundColor: theme.palette.background.default,
+                boxShadow: `0px 0px 8px 0px ${theme.palette.primary.dark}`,
+              }}
+            >
+              <Typography variant="h1">{title}</Typography>
+
+              {canClose && (
+                <Button onClick={onClose}>
+                  <FontAwesomeIcon icon={faClose} />
+                </Button>
+              )}
+            </FlexContainer>
+          )}
+
           {children}
         </StyledModalContainer>
       </Box>

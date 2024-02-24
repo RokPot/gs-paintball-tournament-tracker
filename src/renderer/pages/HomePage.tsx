@@ -10,29 +10,40 @@ import {
   css,
 } from '@mui/material';
 import PageContainer from 'components/shared/PageContainer';
+import useCountdownSound from 'hooks/sounds/useCountdownSound';
+import { PortInfo } from 'main/serialPortListener/serialPortListener';
 
-const StyledRootContainer = styled('div')(
-  (props) => css`
-    display: flex;
-    height: 100%;
-    width: 100%;
-    flex-direction: column;
-  `
-);
 const StyledStackingContainer = styled('div')(
-  (props) => css`
+  () => css`
     display: flex;
     width: 100%;
     flex-direction: row;
     gap: 15px;
-  `
+  `,
 );
 const HomePage: React.FC = () => {
+  const { playCountdown, stopCountdown } = useCountdownSound();
+  const tryyy = () => {
+    window.electron.ipcRenderer.sendMessage('get-ports-list');
+    window.electron.ipcRenderer.once('get-ports-list-response', (result) => {
+      console.log(result);
+      const ports = result as unknown as PortInfo[];
+      window.electron.ipcRenderer.sendMessage('select-serial-port', ports[1]);
+    });
+  };
+  const tryyySound = () => {
+    playCountdown();
+  };
+  // ToDo RokPot
+  window.electron.ipcRenderer.on('buttons-response', (result) => {
+    console.log(result);
+  });
+
   return (
     <PageContainer>
       <Typography variant="h6">Leagues</Typography>
       <StyledStackingContainer>
-        <Card style={{ width: '400px' }}>
+        <Card style={{ width: '400px' }} onClick={tryyy}>
           <CardHeader
             action={
               <IconButton aria-label="settings">
@@ -43,14 +54,26 @@ const HomePage: React.FC = () => {
             subheader="22.5.2022 - 30.10.2022"
           />
         </Card>
-        <Card>
+        <Card onClick={tryyySound}>
           <CardHeader
             avatar={
               <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe">
                 R
               </Avatar>
             }
-            action={<IconButton aria-label="settings"></IconButton>}
+            action={<IconButton aria-label="settings" />}
+            title="Shrimp and Chorizo Paella"
+            subheader="September 14, 2016"
+          />
+        </Card>
+        <Card onClick={stopCountdown}>
+          <CardHeader
+            avatar={
+              <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe">
+                R
+              </Avatar>
+            }
+            action={<IconButton aria-label="settings" />}
             title="Shrimp and Chorizo Paella"
             subheader="September 14, 2016"
           />
@@ -62,19 +85,7 @@ const HomePage: React.FC = () => {
                 R
               </Avatar>
             }
-            action={<IconButton aria-label="settings"></IconButton>}
-            title="Shrimp and Chorizo Paella"
-            subheader="September 14, 2016"
-          />
-        </Card>
-        <Card>
-          <CardHeader
-            avatar={
-              <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe">
-                R
-              </Avatar>
-            }
-            action={<IconButton aria-label="settings"></IconButton>}
+            action={<IconButton aria-label="settings" />}
             title="Shrimp and Chorizo Paella"
             subheader="September 14, 2016"
           />

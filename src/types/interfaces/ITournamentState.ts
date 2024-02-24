@@ -1,12 +1,19 @@
-import { TournamentGroup } from 'types/TournamentGroup';
-import { TournamentStage } from 'types/TournamentStage';
+import { TournamentStatus } from 'types/TournamentStatus';
 
 export interface ITournamentState {
   id: string;
 
   isTournamentFinished: boolean;
 
-  isGameInProgress: TournamentGroup[];
+  isGameInProgress: boolean;
 
-  stage: TournamentStage;
+  status: TournamentStatus;
+
+  stage: number;
+
+  activeGameId?: string;
+
+  pairedGame1Id?: string;
+
+  pairedGame2Id?: string;
 }

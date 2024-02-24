@@ -1,63 +1,63 @@
 import '@mui/material/Typography';
 import '@mui/material/styles';
-import { CSSProperties } from 'react';
+import { TypographyStyleOptions } from 'react';
 
 declare module '@mui/material/styles' {
   interface TypographyVariants {
-    body3: CSSProperties;
-    subtitle3: CSSProperties;
+    body3: TypographyStyleOptions;
+    subtitle3: TypographyStyleOptions;
 
-    h1Bold: CSSProperties;
-    h1Medium: CSSProperties;
-    h2Bold: CSSProperties;
-    h2Medium: CSSProperties;
-    h3Bold: CSSProperties;
-    h3Medium: CSSProperties;
-    h4Bold: CSSProperties;
-    h4Medium: CSSProperties;
-    h5Bold: CSSProperties;
-    h5Medium: CSSProperties;
-    h6Bold: CSSProperties;
-    h6Medium: CSSProperties;
+    h1Bold: TypographyStyleOptions;
+    h1Medium: TypographyStyleOptions;
+    h2Bold: TypographyStyleOptions;
+    h2Medium: TypographyStyleOptions;
+    h3Bold: TypographyStyleOptions;
+    h3Medium: TypographyStyleOptions;
+    h4Bold: TypographyStyleOptions;
+    h4Medium: TypographyStyleOptions;
+    h5Bold: TypographyStyleOptions;
+    h5Medium: TypographyStyleOptions;
+    h6Bold: TypographyStyleOptions;
+    h6Medium: TypographyStyleOptions;
 
-    p1: CSSProperties;
-    p1Bold: CSSProperties;
-    p1Medium: CSSProperties;
-    p2: CSSProperties;
-    p2Bold: CSSProperties;
-    p2Medium: CSSProperties;
-    p3: CSSProperties;
-    p3Bold: CSSProperties;
-    p3Medium: CSSProperties;
+    p1: TypographyStyleOptions;
+    p1Bold: TypographyStyleOptions;
+    p1Medium: TypographyStyleOptions;
+    p2: TypographyStyleOptions;
+    p2Bold: TypographyStyleOptions;
+    p2Medium: TypographyStyleOptions;
+    p3: TypographyStyleOptions;
+    p3Bold: TypographyStyleOptions;
+    p3Medium: TypographyStyleOptions;
   }
 
   // allow configuration using `createMuiTheme`
   interface TypographyVariantsOptions {
-    body3?: CSSProperties;
-    subtitle3?: CSSProperties;
+    body3?: TypographyStyleOptions;
+    subtitle3?: TypographyStyleOptions;
 
-    h1Bold: CSSProperties;
-    h1Medium: CSSProperties;
-    h2Bold: CSSProperties;
-    h2Medium: CSSProperties;
-    h3Bold: CSSProperties;
-    h3Medium: CSSProperties;
-    h4Bold: CSSProperties;
-    h4Medium: CSSProperties;
-    h5Bold: CSSProperties;
-    h5Medium: CSSProperties;
-    h6Bold: CSSProperties;
-    h6Medium: CSSProperties;
+    h1Bold: TypographyStyleOptions;
+    h1Medium: TypographyStyleOptions;
+    h2Bold: TypographyStyleOptions;
+    h2Medium: TypographyStyleOptions;
+    h3Bold: TypographyStyleOptions;
+    h3Medium: TypographyStyleOptions;
+    h4Bold: TypographyStyleOptions;
+    h4Medium: TypographyStyleOptions;
+    h5Bold: TypographyStyleOptions;
+    h5Medium: TypographyStyleOptions;
+    h6Bold: TypographyStyleOptions;
+    h6Medium: TypographyStyleOptions;
 
-    p1: CSSProperties;
-    p1Bold: CSSProperties;
-    p1Medium: CSSProperties;
-    p2: CSSProperties;
-    p2Bold: CSSProperties;
-    p2Medium: CSSProperties;
-    p3: CSSProperties;
-    p3Bold: CSSProperties;
-    p3Medium: CSSProperties;
+    p1: TypographyStyleOptions;
+    p1Bold: TypographyStyleOptions;
+    p1Medium: TypographyStyleOptions;
+    p2: TypographyStyleOptions;
+    p2Bold: TypographyStyleOptions;
+    p2Medium: TypographyStyleOptions;
+    p3: TypographyStyleOptions;
+    p3Bold: TypographyStyleOptions;
+    p3Medium: TypographyStyleOptions;
   }
 }
 

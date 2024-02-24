@@ -13,23 +13,25 @@ module.exports = {
     '@typescript-eslint/no-shadow': 'error',
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'error',
+    'no-undef': 'off',
+    'react-hooks/exhaustive-deps': 'warn',
+    'no-underscore-dangle': 'off',
+    'no-continue': 'off',
+    'react/require-default-props': 'off',
+    'react/no-array-index-key': 'off',
+    'react/jsx-props-no-spreading': 'off',
+    'react/prop-types': 'off',
+    'react/function-component-definition': [
+      2,
+      {
+        namedComponents: 'arrow-function',
+        unnamedComponents: 'arrow-function',
+      },
+    ],
   },
-  'sort-imports': [
-    'warning',
-    {
-      ignoreCase: true,
-      ignoreDeclarationSort: true,
-      ignoreMemberSort: true,
-      memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-      allowSeparatedGroups: true,
-    },
-  ],
   parserOptions: {
-    ecmaVersion: 2020,
+    ecmaVersion: 2022,
     sourceType: 'module',
-    project: './tsconfig.json',
-    tsconfigRootDir: __dirname,
-    createDefaultProgram: true,
   },
   settings: {
     'import/resolver': {
