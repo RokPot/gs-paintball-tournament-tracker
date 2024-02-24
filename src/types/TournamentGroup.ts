@@ -4,6 +4,7 @@ import { TournamentType } from './TournamentType';
 import { DocType, IPouchDB } from './interfaces/IPouchDB';
 import { ITournamentGroup } from './interfaces/ITournamentGroup';
 import { TournamentGroupDto } from './dto/TournamentGroupDto';
+import { GameState } from './GameState';
 
 export default class TournamentGroup extends IPouchDB {
   id: string;
@@ -26,6 +27,10 @@ export default class TournamentGroup extends IPouchDB {
     this.games = props.games;
     this.groupType = props.groupType;
     this.stage = props.stage;
+  }
+
+  public get finishedGames(): Game[] {
+    return this.games.filter((game) => game.gameState === GameState.finished);
   }
 
   public toDto = (): TournamentGroupDto => {
