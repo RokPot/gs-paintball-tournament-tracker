@@ -6,6 +6,7 @@ import {
   team3,
   team4,
   team5,
+  team6,
 } from '__tests__/utils/testUtils';
 import { GameState, GameWinner } from 'types/GameState';
 import { DefaultTournamentSettings } from 'types/TournamentSettings';
@@ -74,19 +75,21 @@ describe('TournamentResults', () => {
       ),
       TestUtils.generateGame(
         1,
-        team1,
         team3,
+        team1,
         GameState.finished,
         GameWinner.team1,
       ),
       TestUtils.generateGame(
         1,
-        team3,
+        team1,
         team2,
         GameState.finished,
         GameWinner.team1,
       ),
     ];
+    // T1 2 wins
+    // T3 2 wins
 
     const newGroup = TestUtils.generateTournamentGroup(
       1,
@@ -94,12 +97,13 @@ describe('TournamentResults', () => {
       [team1, team2, team3, team4],
       TournamentType.roundRobin,
     );
+
     const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
       ...DefaultTournamentSettings,
     });
     expect(leaderboard.length).toBe(4);
-    expect(leaderboard[0].team.id).toBe(team1.id);
-    expect(leaderboard[1].team.id).toBe(team3.id);
+    expect(leaderboard[0].team.id).toBe(team3.id);
+    expect(leaderboard[1].team.id).toBe(team1.id);
     expect(leaderboard[2].team.id).toBe(team4.id);
     expect(leaderboard[3].team.id).toBe(team2.id);
   });
@@ -481,5 +485,75 @@ describe('TournamentResults', () => {
     expect(leaderboard[1].team.id).toBe(team1.id);
     expect(leaderboard[2].team.id).toBe(team4.id);
     expect(leaderboard[3].team.id).toBe(team3.id);
+  });
+
+  it('should calculate results and check for NumberOfCleanGames', () => {
+    const gamesWithClearWinner = [
+      TestUtils.generateGame(
+        1,
+        team1,
+        team3,
+        GameState.finished,
+        GameWinner.team1,
+        250,
+        2,
+        1,
+      ),
+      TestUtils.generateGame(
+        2,
+        team1,
+        team4,
+        GameState.finished,
+        GameWinner.team1,
+        300,
+        2,
+        0,
+      ),
+      TestUtils.generateGame(
+        2,
+        team2,
+        team5,
+        GameState.finished,
+        GameWinner.team1,
+        260,
+        2,
+        0,
+      ),
+      TestUtils.generateGame(
+        2,
+        team2,
+        team6,
+        GameState.finished,
+        GameWinner.team1,
+        400,
+        2,
+        0,
+      ),
+    ];
+    // T1 - T2
+    // T1 - T3
+    // T2 - T4
+    // T2 - T5
+    // Team 1 - 2 Wins
+    // Team 2 - 2 Win
+    // Team 3 - 0 Win
+    // Team 5 - 0 Win
+    // T2, T1, T4, T3
+    const newGroup = TestUtils.generateTournamentGroup(
+      1,
+      gamesWithClearWinner,
+      [team1, team2, team3, team4, team5, team6],
+      TournamentType.roundRobin,
+    );
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
+      ...DefaultTournamentSettings,
+    });
+    expect(leaderboard.length).toBe(6);
+    expect(leaderboard[0].team.id).toBe(team2.id);
+    expect(leaderboard[1].team.id).toBe(team1.id);
+    expect(leaderboard[2].team.id).toBe(team3.id);
+    expect(leaderboard[3].team.id).toBe(team5.id);
+    expect(leaderboard[4].team.id).toBe(team4.id);
+    expect(leaderboard[5].team.id).toBe(team6.id);
   });
 });

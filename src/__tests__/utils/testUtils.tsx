@@ -12,6 +12,8 @@ export namespace TestUtils {
     gameState: GameState = GameState.created,
     gameWinner: GameWinner = GameWinner.notYet,
     gameTime: number = 300,
+    team1Wins: number = 0,
+    team2Wins: number = 0,
   ) => {
     return new Game(
       new Game({
@@ -24,8 +26,8 @@ export namespace TestUtils {
         team1,
         team2,
         gameWinner,
-        team1Wins: 0,
-        team2Wins: 0,
+        team1Wins,
+        team2Wins,
       }),
     );
   };
