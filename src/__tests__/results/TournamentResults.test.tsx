@@ -11,7 +11,7 @@ import {
 import { GameState, GameWinner } from 'types/GameState';
 import { DefaultTournamentSettings } from 'types/TournamentSettings';
 import { TournamentType } from 'types/TournamentType';
-import { calculateTournamentLeaderboard } from 'utils/tournamentResultUtils';
+import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
 
 describe('TournamentResults', () => {
   it('should calculate results', () => {
@@ -46,7 +46,7 @@ describe('TournamentResults', () => {
       TournamentType.roundRobin,
     );
 
-    const leaderboard = calculateTournamentLeaderboard(newGroup, {
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
       ...DefaultTournamentSettings,
     });
     expect(leaderboard.length).toBe(4);
@@ -98,7 +98,7 @@ describe('TournamentResults', () => {
       TournamentType.roundRobin,
     );
 
-    const leaderboard = calculateTournamentLeaderboard(newGroup, {
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
       ...DefaultTournamentSettings,
     });
     expect(leaderboard.length).toBe(4);
@@ -164,7 +164,7 @@ describe('TournamentResults', () => {
       [team1, team2, team3, team4],
       TournamentType.roundRobin,
     );
-    const leaderboard = calculateTournamentLeaderboard(newGroup, {
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
       ...DefaultTournamentSettings,
     });
     expect(leaderboard.length).toBe(4);
@@ -230,7 +230,7 @@ describe('TournamentResults', () => {
       [team1, team2, team3, team4],
       TournamentType.roundRobin,
     );
-    const leaderboard = calculateTournamentLeaderboard(newGroup, {
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
       ...DefaultTournamentSettings,
     });
     expect(leaderboard.length).toBe(4);
@@ -269,7 +269,7 @@ describe('TournamentResults', () => {
       [team1, team2, team3],
       TournamentType.roundRobin,
     );
-    const leaderboard = calculateTournamentLeaderboard(newGroup, {
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
       ...DefaultTournamentSettings,
     });
     expect(leaderboard.length).toBe(3);
@@ -325,7 +325,7 @@ describe('TournamentResults', () => {
       [team1, team2, team3, team4, team5],
       TournamentType.roundRobin,
     );
-    const leaderboard = calculateTournamentLeaderboard(newGroup, {
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
       ...DefaultTournamentSettings,
     });
     expect(leaderboard.length).toBe(5);
@@ -416,7 +416,7 @@ describe('TournamentResults', () => {
       [team1, team2, team3, team4, team5],
       TournamentType.roundRobin,
     );
-    const leaderboard = calculateTournamentLeaderboard(newGroup, {
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
       ...DefaultTournamentSettings,
     });
     expect(leaderboard.length).toBe(5);
@@ -477,7 +477,7 @@ describe('TournamentResults', () => {
       [team1, team2, team3, team4],
       TournamentType.roundRobin,
     );
-    const leaderboard = calculateTournamentLeaderboard(newGroup, {
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
       ...DefaultTournamentSettings,
     });
     expect(leaderboard.length).toBe(4);
@@ -545,7 +545,7 @@ describe('TournamentResults', () => {
       [team1, team2, team3, team4, team5, team6],
       TournamentType.roundRobin,
     );
-    const leaderboard = calculateTournamentLeaderboard(newGroup, {
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
       ...DefaultTournamentSettings,
     });
     expect(leaderboard.length).toBe(6);

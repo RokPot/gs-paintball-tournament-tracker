@@ -616,7 +616,7 @@ const checkAndResolveLeaderboardDraws = (
   return leaderboardTeamsSorted;
 };
 
-export const calculateTournamentGroupLeaderboard = (
+export const calculateTournamentGroupLeaderboard1 = (
   group: TournamentGroup,
   tournamentSettings: TournamentSettings,
 ) => {
@@ -641,7 +641,7 @@ export const calculateTournamentGroupLeaderboard = (
   return recalculateRankings(sortedLeaderboardTeams);
 };
 
-export const calculateTournamentLeaderboard = (
+export const calculateTournamentGroupLeaderboard = (
   group: TournamentGroup,
   tournamentSettings: TournamentSettings,
 ) => {

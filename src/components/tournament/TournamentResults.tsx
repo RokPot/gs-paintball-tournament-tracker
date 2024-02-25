@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import League from 'types/League';
 import TournamentGroup from 'types/TournamentGroup';
-import { calculateTournamentLeaderboard } from 'utils/tournamentResultUtils';
+import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
 import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
 
 interface IProps {
@@ -19,7 +19,7 @@ const TournamentResults = ({ activeLeague }: IProps) => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardTeam[]>([]);
 
   const calculateLeaderboard = (group: TournamentGroup) => {
-    const newLeaderboard = calculateTournamentLeaderboard(
+    const newLeaderboard = calculateTournamentGroupLeaderboard(
       group,
       selectedTournament!.settings,
     );
