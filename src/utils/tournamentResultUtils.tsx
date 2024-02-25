@@ -98,7 +98,7 @@ export const recalculateRankings = (leaderboardTeams: LeaderboardTeam[]) => {
   );
 };
 
-export const reorderSortedTiedTeams = (
+export const reorderResolvedTies = (
   resolvedTiedTeams: ResolvedTieBreaks,
   tiedLeaderboardTeams: LeaderboardTeam[],
 ) => {
@@ -436,7 +436,7 @@ const resolveWithMatchMarginCheck = (): ResolvedTieBreaks => {
   return NotViableTiebreaker;
 };
 
-const tryToResolveTiedTeams = (
+const resolveTiedTeamsWithTieBreakCheck = (
   tieBreakCheck: TieResolveCheck,
   tiedTeams: LeaderboardTeam[],
   finishedGames: Game[],
@@ -491,13 +491,13 @@ export const tryToResolveDraws = (
 
   for (let j = 0; j < tieBreakChecks.length; j += 1) {
     const tieBreakCheck = tieBreakChecks[j];
-    const resolvedTieBreaks = tryToResolveTiedTeams(
+    const resolvedTieBreaks = resolveTiedTeamsWithTieBreakCheck(
       tieBreakCheck,
       teamsTiedLeft,
       finishedGames,
       tournamentSettings,
     );
-    const { sortedLeaderboardTeam, teamsLeft } = reorderSortedTiedTeams(
+    const { sortedLeaderboardTeam, teamsLeft } = reorderResolvedTies(
       resolvedTieBreaks,
       teamsTiedLeft,
     );
@@ -617,6 +617,31 @@ const checkAndResolveLeaderboardDraws = (
 };
 
 export const calculateTournamentGroupLeaderboard = (
+  group: TournamentGroup,
+  tournamentSettings: TournamentSettings,
+) => {
+  // Calculate team points for a group.
+  // WIN - 3 POINTS
+  // DRAW - 1 POINT
+  // LOSE - 0 POINTS
+  const leaderboardTeams = calculateTournamentGroupPoints(
+    group,
+    tournamentSettings,
+    group.finishedGames,
+  );
+
+  // If there are any teams that are tied (same points), we need to try to resolve them
+  const sortedLeaderboardTeams = checkAndResolveLeaderboardDraws(
+    leaderboardTeams,
+    group.finishedGames,
+    tournamentSettings,
+  );
+
+  // set proper rankings
+  return recalculateRankings(sortedLeaderboardTeams);
+};
+
+export const calculateTournamentLeaderboard = (
   group: TournamentGroup,
   tournamentSettings: TournamentSettings,
 ) => {
