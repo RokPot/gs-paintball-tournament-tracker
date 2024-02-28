@@ -4,17 +4,28 @@ import Team from 'types/Team';
 import TournamentGroup from 'types/TournamentGroup';
 import { TournamentType } from 'types/TournamentType';
 
+interface GenerateGameProps {
+  index: number;
+  team1: Team;
+  team2: Team;
+  gameState: GameState;
+  gameWinner: GameWinner;
+  gameTime?: number;
+  team1Wins?: number;
+  team2Wins?: number;
+}
+
 export namespace TestUtils {
-  export const generateGame = (
-    index: number,
-    team1: Team,
-    team2: Team,
-    gameState: GameState = GameState.created,
-    gameWinner: GameWinner = GameWinner.notYet,
-    gameTime: number = 300,
-    team1Wins: number = 0,
-    team2Wins: number = 0,
-  ) => {
+  export const generateGame = ({
+    index,
+    team1,
+    team2,
+    gameState = GameState.created,
+    gameTime = 300,
+    gameWinner = GameWinner.notYet,
+    team1Wins = 0,
+    team2Wins = 0,
+  }: GenerateGameProps) => {
     return new Game(
       new Game({
         _id: `G${index}`,
