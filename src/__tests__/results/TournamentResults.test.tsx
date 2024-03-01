@@ -9,6 +9,7 @@ import {
   team6,
 } from '__tests__/utils/testUtils';
 import { GameState, GameWinner } from 'types/GameState';
+import MatchState from 'types/MatchState';
 import { DefaultTournamentSettings } from 'types/TournamentSettings';
 import { TournamentType } from 'types/TournamentType';
 import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
@@ -640,6 +641,29 @@ describe('TournamentResults', () => {
         gameTime: 250,
         team1Wins: 2,
         team2Wins: 1,
+        matches: [
+          {
+            id: '1',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+          },
+          {
+            id: '1',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+          },
+          {
+            id: '1',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+          },
+        ],
       }),
       TestUtils.generateGame({
         index: 1,

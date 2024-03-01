@@ -1,5 +1,6 @@
 import Game from 'types/Game';
 import { GameState, GameWinner } from 'types/GameState';
+import { Match } from 'types/Match';
 import Team from 'types/Team';
 import TournamentGroup from 'types/TournamentGroup';
 import { TournamentType } from 'types/TournamentType';
@@ -13,6 +14,7 @@ interface GenerateGameProps {
   gameTime?: number;
   team1Wins?: number;
   team2Wins?: number;
+  matches?: Match[];
 }
 
 export namespace TestUtils {
@@ -25,6 +27,7 @@ export namespace TestUtils {
     gameWinner = GameWinner.notYet,
     team1Wins = 0,
     team2Wins = 0,
+    matches = [],
   }: GenerateGameProps) => {
     return new Game(
       new Game({
@@ -33,7 +36,7 @@ export namespace TestUtils {
         gameState,
         gameTime,
         id: `G${index}`,
-        matches: [],
+        matches,
         team1,
         team2,
         gameWinner,
