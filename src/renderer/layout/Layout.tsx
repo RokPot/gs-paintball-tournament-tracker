@@ -1,5 +1,6 @@
-import SidebarNav from './Navbar/SidebarNav';
 import { styled } from '@mui/material';
+import { Outlet } from 'react-router-dom';
+import SidebarNav from './Navbar/SidebarNav';
 
 const LayoutContainer = styled('div')(
   (props) => `
@@ -9,19 +10,18 @@ const LayoutContainer = styled('div')(
   height: 100vh;
   background-color: ${props.theme.palette.background.default};
   overflow: hidden;
-`
+`,
 );
 
 interface IProps {
-  children: React.ReactNode;
   className?: string;
 }
 
-const Layout: React.FC<IProps> = ({ children, className }) => {
+const Layout: React.FC<IProps> = ({ className }) => {
   return (
     <LayoutContainer className={className}>
       <SidebarNav />
-      {children}
+      <Outlet />
     </LayoutContainer>
   );
 };

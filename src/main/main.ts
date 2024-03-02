@@ -12,6 +12,7 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import * as urlUtil from 'url';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import serialPortListener from './serialPortListener/serialPortListener';
@@ -24,6 +25,12 @@ class AppUpdater {
   }
 }
 let mainWindow: BrowserWindow | null = null;
+const childWindows: BrowserWindow[] = [];
+ipcMain.on('ipc-example', async (event, arg) => {
+  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
+  console.log(msgTemplate(arg));
+  event.reply('ipc-example', msgTemplate('pong'));
+});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -50,7 +57,7 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
-const createWindow = async () => {
+const createWindow = async (childPath?: string) => {
   if (isDebug) {
     await installExtensions();
   }
@@ -64,6 +71,7 @@ const createWindow = async () => {
   };
 
   mainWindow = new BrowserWindow({
+    parent: childPath && mainWindow ? mainWindow : undefined,
     show: false,
     icon: getAssetPath('new-test-icon.ico'),
     webPreferences: {
@@ -74,7 +82,7 @@ const createWindow = async () => {
     },
   });
   mainWindow.maximize();
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
+  mainWindow.loadURL(resolveHtmlPath('index.html', childPath));
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -133,3 +141,23 @@ app
     });
   })
   .catch(console.log);
+ipcMain.on('open-new-window', async (event, content) => {
+  const newWindow = await createWindow('results');
+
+  childWindows.push(newWindow);
+  // const newWindow = new BrowserWindow({ width: 800, height: 600 });
+  // console.log(
+  //   urlUtil.format({
+  //     pathname: path.join(__dirname, content),
+  //     protocol: 'file:',
+  //     slashes: true,
+  //   }),
+  // );
+  // newWindow.loadURL(
+  //   urlUtil.format({
+  //     pathname: path.join(__dirname, content),
+  //     protocol: 'file:',
+  //     slashes: true,
+  //   }),
+  // );
+});

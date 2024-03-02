@@ -9,7 +9,8 @@ export type Channels =
   | 'set-selected-port'
   | 'get-ports-list-response'
   | 'select-serial-port'
-  | 'buttons-response';
+  | 'buttons-response'
+  | 'open-new-window';
 
 const electronHandler = {
   ipcRenderer: {
