@@ -12,7 +12,10 @@ import MatchState from 'types/MatchState';
 import Tournament from 'types/Tournament';
 import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentStatus } from 'types/TournamentStatus';
-import { switchToNextScheduledGames } from 'utils/tournamentFlowUtils';
+import {
+  FlowState,
+  switchToNextScheduledGames,
+} from 'utils/tournamentFlowUtils';
 
 const useTournamentFlow = (tournament?: Tournament) => {
   const {
@@ -190,7 +193,10 @@ const useTournamentFlow = (tournament?: Tournament) => {
   );
 
   const onAfterFinishedMatchProcedure = useCallback(
-    async (game: TournamentScheduleGame, timeLeft: number) => {
+    async (
+      game: TournamentScheduleGame,
+      timeLeft: number,
+    ): Promise<FlowState> => {
       const isGame1ActiveGame = activeScheduledGame?.id === game.id;
 
       const currentTmpGame1 = isGame1ActiveGame ? game : currentScheduledGame1;
@@ -221,8 +227,8 @@ const useTournamentFlow = (tournament?: Tournament) => {
         currentTmpGame2,
       );
 
-      if (newGroupAndGames === 'NoMoreGames') {
-        return;
+      if (newGroupAndGames === FlowState.NoGamesAvailable) {
+        return FlowState.NoGamesAvailable;
       }
 
       await setNewActiveGroupAndGames(
@@ -231,6 +237,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
         newGroupAndGames.newPairedGame2,
       );
       setGameAndBreakDuration(newGroupAndGames.newActiveGame);
+      return FlowState.GamesAvailable;
     },
     [
       activeScheduledGame?.id,
@@ -266,6 +273,26 @@ const useTournamentFlow = (tournament?: Tournament) => {
     [],
   );
 
+  const finishTournament = useCallback(async () => {
+    if (!tournament) {
+      return;
+    }
+    tournament.state.isTournamentFinished = true;
+    tournament.state.status = TournamentStatus.finished;
+
+    await updateTournament(tournament);
+    await invalidateSelectedLeague();
+  }, [invalidateSelectedLeague, tournament, updateTournament]);
+
+  const goToNextTournamentStage = useCallback(async () => {
+    if (!tournament?.state) {
+      return;
+    }
+    tournament.state.stage += 1;
+    tournament.state.status = TournamentStatus.stageChange;
+    await updateTournament(tournament);
+  }, [tournament, updateTournament]);
+
   const finishMatch = useCallback(
     async (match: Match) => {
       if (!activeScheduledGame) {
@@ -276,7 +303,32 @@ const useTournamentFlow = (tournament?: Tournament) => {
         const { currentDuration, duration: timeLeft } = getDuration();
         match.matchDurationInSeconds = currentDuration;
         addMatchAndDataToGame(activeScheduledGame, match, timeLeft);
-        await onAfterFinishedMatchProcedure(activeScheduledGame, timeLeft);
+        const afterFinishedMatchStatus = await onAfterFinishedMatchProcedure(
+          activeScheduledGame,
+          timeLeft,
+        );
+        if (afterFinishedMatchStatus === FlowState.NoGamesAvailable) {
+          const currentStageGamesThatAreNotYetFinished = tournament?.groups
+            .filter((group) => group.stage === tournament.state.stage)
+            .map((group) =>
+              group.games.filter(
+                (game) => game.gameState !== GameState.finished,
+              ),
+            )
+            .flat();
+          // If there are no more games, that means that we should check if tournament is finished, or if we need to change group or tournament stage
+
+          if (!currentStageGamesThatAreNotYetFinished?.length) {
+            if (
+              tournamentSettings?.secondStageType &&
+              tournamentSettings?.numberOfGroups > 1
+            ) {
+              await goToNextTournamentStage();
+              return;
+            }
+            await finishTournament();
+          }
+        }
       } catch (e) {
         console.error(e);
       } finally {
@@ -288,8 +340,14 @@ const useTournamentFlow = (tournament?: Tournament) => {
     [
       activeScheduledGame,
       addMatchAndDataToGame,
+      finishTournament,
       getDuration,
+      goToNextTournamentStage,
       onAfterFinishedMatchProcedure,
+      tournament?.groups,
+      tournament?.state.stage,
+      tournamentSettings?.numberOfGroups,
+      tournamentSettings?.secondStageType,
     ],
   );
 

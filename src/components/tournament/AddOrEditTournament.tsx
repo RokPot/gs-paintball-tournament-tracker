@@ -142,7 +142,7 @@ const AddOrEditTournament = ({
               isTournamentFinished:
                 tournament?.state?.isTournamentFinished || false,
               status: tournament?.state?.status || TournamentStatus.created,
-              stage: tournament?.state?.stage || 0,
+              stage: tournament?.state?.stage || 1,
             }),
             teams: values.teams,
             leaderboard: tournament?.leaderboard || [],

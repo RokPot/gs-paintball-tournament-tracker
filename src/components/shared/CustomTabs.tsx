@@ -29,6 +29,7 @@ const StyledTabs = styled((props: StyledTabsProps) => (
     width: '100%',
     backgroundColor: theme.palette.primary.light,
   },
+  width: '100%',
   borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
@@ -65,11 +66,7 @@ const CustomTabs = ({ items, onTabChanged }: IProps) => {
   };
 
   return (
-    <StyledTabs
-      value={value}
-      onChange={handleChange}
-      aria-label="styled tabs example"
-    >
+    <StyledTabs value={value} onChange={handleChange}>
       {items.map((item, index) => (
         <StyledTab label={item.label} key={index} />
       ))}

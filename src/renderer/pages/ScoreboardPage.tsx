@@ -46,7 +46,6 @@ const ScoreboardPage: React.FC<IProps> = () => {
     showFinishMatchPopup,
     isProcessing,
   } = useTournamentFlow(tournament);
-
   const finishMatchInternal = useCallback(
     async (match: Match) => {
       await finishMatch(match);
@@ -81,6 +80,7 @@ const ScoreboardPage: React.FC<IProps> = () => {
         setShowFinishMatchPopup={setFinishMatchModal}
         showFinishMatchPopup={showFinishMatchPopup}
         isCurrentlyInCountdown={timingBreak}
+        isTournamentFinished={!!tournament?.state?.isTournamentFinished}
       />
     </PageContainer>
   );

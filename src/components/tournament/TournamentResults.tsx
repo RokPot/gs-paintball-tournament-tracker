@@ -28,6 +28,9 @@ const TournamentResults = ({ activeLeague }: IProps) => {
   };
 
   useEffect(() => {
+    if (!selectedTournament?.groups?.length) {
+      return;
+    }
     calculateLeaderboard(selectedTournament?.groups?.[0]!);
   }, []);
 
@@ -47,7 +50,7 @@ const TournamentResults = ({ activeLeague }: IProps) => {
   }
 
   return (
-    <FlexContainer flexDirection="column" gap={8}>
+    <FlexContainer flexDirection="column" gap={8} height="100%">
       <CustomTabs
         items={selectedTournament.groups.map((group) => ({
           label: `Group ${group.groupIndex}`,

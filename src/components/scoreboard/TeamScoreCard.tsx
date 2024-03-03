@@ -37,9 +37,10 @@ const StyledCard = styled(Card)(
 interface IProps {
   team?: Team;
   teamScore?: number;
+  disabled?: boolean;
 }
 
-const TeamScoreCard: React.FC<IProps> = ({ team, teamScore }) => {
+const TeamScoreCard: React.FC<IProps> = ({ team, teamScore, disabled }) => {
   return (
     <StyledCard className="custom-card teams-card">
       <FlexContainer flexDirection="column" gap={8}>
@@ -54,7 +55,7 @@ const TeamScoreCard: React.FC<IProps> = ({ team, teamScore }) => {
         <StyledTeamScoreTypography variant="h3Medium">
           {teamScore || 0}
         </StyledTeamScoreTypography>
-        <Button variant="contained" color="info">
+        <Button variant="contained" color="info" disabled={disabled}>
           <Typography variant="p1Medium">Take pause</Typography>
         </Button>
       </FlexContainer>

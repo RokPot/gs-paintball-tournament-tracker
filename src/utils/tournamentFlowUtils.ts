@@ -1,8 +1,17 @@
 import Game from 'types/Game';
 import { GameState } from 'types/GameState';
+import Team from 'types/Team';
+import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
 import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
+import { TournamentStatus } from 'types/TournamentStatus';
+
+export enum FlowState {
+  NoGamesAvailable = 'noGamesAvailable',
+  GamesAvailable = 'gamesAvailable',
+  GroupNotFound = 'groupNotFound',
+}
 
 export const getNextGroup = (
   currentGroup: TournamentGroup,
@@ -18,7 +27,6 @@ export const getNextGroup = (
     ) {
       return currentGroup;
     }
-    console.log('Aj am hir');
   }
 
   const currentStageGroups = groups.filter(
@@ -153,10 +161,11 @@ export const switchGames = (
       newPairedGame2?: Game;
       activeGroup: TournamentGroup;
     }
-  | 'NoMoreGames' => {
+  | FlowState.GroupNotFound
+  | FlowState.NoGamesAvailable => {
   let activeGroup = groups.find((group) => group.id === activeGroupId);
   if (!activeGroup) {
-    return 'NoMoreGames';
+    return FlowState.GroupNotFound;
   }
   let newActiveGame: Game = activeGame;
   let newPairedGame1: Game = pairedGame1;
@@ -175,7 +184,7 @@ export const switchGames = (
     settings.switchGroups,
   );
   if (!activeGroup) {
-    return 'NoMoreGames';
+    return FlowState.GroupNotFound;
   }
   if (game1Available || game2Available) {
     const isGame1Active = pairedGame1.id === activeGame.id;
@@ -221,7 +230,7 @@ export const switchGames = (
     if (settings.switchGames) {
       const { game1, game2 } = getNextGamePair(activeGroup!);
       if (!game1) {
-        return 'NoMoreGames';
+        return FlowState.NoGamesAvailable;
       }
       newActiveGame = game1;
       newPairedGame1 = game1;
@@ -229,7 +238,7 @@ export const switchGames = (
     } else {
       const newNextGame = getNextGame(activeGroup!);
       if (!newNextGame?.game1) {
-        return 'NoMoreGames';
+        return FlowState.NoGamesAvailable;
       }
       newActiveGame = newNextGame.game1;
       newPairedGame1 = newNextGame.game1;
@@ -257,12 +266,12 @@ export const switchToNextScheduledGames = (
       newPairedGame1: TournamentScheduleGame;
       newPairedGame2?: TournamentScheduleGame;
     }
-  | 'NoMoreGames' => {
+  | FlowState.NoGamesAvailable => {
   const availableScheduledGames = schedule?.filter(
     (scheduledGame) => scheduledGame.game.gameState !== GameState.finished,
   );
   if (!availableScheduledGames?.length) {
-    return 'NoMoreGames';
+    return FlowState.NoGamesAvailable;
   }
   let newActiveGame: TournamentScheduleGame = activeGame;
   let newPairedGame1: TournamentScheduleGame = pairedScheduledGame1;
@@ -303,7 +312,7 @@ export const switchToNextScheduledGames = (
         activeGame.gameNumber,
       );
       if (!game1) {
-        return 'NoMoreGames';
+        return FlowState.NoGamesAvailable;
       }
       newActiveGame = game1;
       newPairedGame1 = game1;
@@ -311,7 +320,7 @@ export const switchToNextScheduledGames = (
     } else {
       const newNextGame = getNextScheduledGame(schedule, activeGame.gameNumber);
       if (!newNextGame?.game1) {
-        return 'NoMoreGames';
+        return FlowState.NoGamesAvailable;
       }
       newActiveGame = newNextGame.game1;
       newPairedGame1 = newNextGame.game1;
@@ -324,4 +333,18 @@ export const switchToNextScheduledGames = (
     newPairedGame1,
     newPairedGame2,
   };
+};
+
+const prepareGamesForTheNextStage = (
+  teams: Team[][],
+  tournament: Tournament,
+) => {
+  return tournament;
+};
+
+export const proceedToNextTournamentStage = (tournament: Tournament) => {
+  tournament.state.stage += 1;
+  tournament.state.status = TournamentStatus.stageChange;
+  const newTournament = prepareGamesForTheNextStage([], tournament);
+  return newTournament;
 };

@@ -10,6 +10,8 @@ import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
 import GameTimerStoreRenderComponent from '../GameTimerStoreRenderComponent';
 import TeamScoreCard from '../TeamScoreCard';
 import FinishMatch from './FinishMatch';
+import FinishedTournamentModal from './FinishedTournamentModal';
+import StageChangeTournamentModal from './StageChangeTournamentModal';
 import StartTournament from './StartTournament';
 
 interface IProps {
@@ -19,6 +21,7 @@ interface IProps {
   hasGameTimeRanOut: boolean;
   showFinishMatchPopup: boolean;
   isCurrentlyInCountdown: boolean;
+  isTournamentFinished: boolean;
   beginTournament: () => Promise<void>;
   startStopMatch: () => void;
   finishMatch: (match: Match) => Promise<void>;
@@ -50,8 +53,8 @@ const DesktopScoreboard: React.FC<IProps> = ({
     TournamentStatus.inProgress,
     TournamentStatus.finished,
   ].includes(tournament?.state?.status || TournamentStatus.created);
-  console.log(isMatchInProgress, isCurrentlyInCountdown);
-
+  const isTournamentFinished =
+    tournament?.state?.status === TournamentStatus.finished;
   return (
     <FlexContainer
       justifyContent="center"
@@ -74,6 +77,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
         <TeamScoreCard
           team={currentGame?.team1}
           teamScore={currentGame?.team1Wins}
+          disabled={isTournamentFinished}
         />
         <Card className="custom-card counter-card">
           <FlexContainer
@@ -121,6 +125,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
         <TeamScoreCard
           team={currentGame?.team2}
           teamScore={currentGame?.team2Wins}
+          disabled={isTournamentFinished}
         />
       </FlexContainer>
       <FlexContainer alignItems="flex-start">
@@ -134,7 +139,12 @@ const DesktopScoreboard: React.FC<IProps> = ({
             padding="16px"
           >
             <FlexContainer flexDirection="column" gap={8}>
-              <Button variant="contained" fullWidth size="large">
+              <Button
+                variant="contained"
+                fullWidth
+                size="large"
+                disabled={isTournamentFinished}
+              >
                 <Typography variant="p1Medium">Team 1 Pause</Typography>
               </Button>
             </FlexContainer>
@@ -145,7 +155,11 @@ const DesktopScoreboard: React.FC<IProps> = ({
                 fullWidth
                 size="large"
                 onClick={() => setShowFinishMatchPopup(true)}
-                disabled={!isMatchInProgress || isCurrentlyInCountdown}
+                disabled={
+                  !isMatchInProgress ||
+                  isCurrentlyInCountdown ||
+                  isTournamentFinished
+                }
               >
                 <Typography variant="h3Medium">Finish Match</Typography>
               </Button>
@@ -155,6 +169,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
                 color="primary"
                 fullWidth
                 onClick={startStopMatch}
+                disabled={isTournamentFinished}
               >
                 <Typography variant="h3Medium">
                   {isMatchInProgress ? 'Pause Game' : 'Start Game'}
@@ -162,7 +177,11 @@ const DesktopScoreboard: React.FC<IProps> = ({
               </Button>
             </FlexContainer>
             <FlexContainer flexDirection="column" gap={8}>
-              <Button variant="contained" size="large">
+              <Button
+                variant="contained"
+                size="large"
+                disabled={isTournamentFinished}
+              >
                 <Typography variant="p1Medium">Team 2 Pause</Typography>
               </Button>
             </FlexContainer>
@@ -197,13 +216,23 @@ const DesktopScoreboard: React.FC<IProps> = ({
       <CustomModal
         isModalOpen={isTournamentNotStartedYet && !isFetchingActiveLeague}
         width={600}
+        canClose
       >
         <StartTournament
+          tournamentSelected={!!tournament}
           onTournamentStart={async () => {
             await beginTournament();
           }}
         />
       </CustomModal>
+      <StageChangeTournamentModal
+        onTournamentContinueStage={() => {}}
+        tournament={tournament}
+      />
+      <FinishedTournamentModal
+        onTournamentContinueStage={() => {}}
+        tournament={tournament}
+      />
     </FlexContainer>
   );
 };

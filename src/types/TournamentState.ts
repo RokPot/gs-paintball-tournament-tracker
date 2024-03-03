@@ -23,7 +23,7 @@ export default class TournamentState {
     this.isTournamentFinished = props.isTournamentFinished;
     this.isGameInProgress = props.isGameInProgress;
     this.status = props.status;
-    this.stage = props.stage || 0;
+    this.stage = props.stage || 1;
     this.activeGameId = props.activeGameId;
     this.pairedGame1Id = props.pairedGame1Id;
     this.pairedGame2Id = props.pairedGame2Id;

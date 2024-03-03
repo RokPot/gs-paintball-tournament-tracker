@@ -25,6 +25,7 @@ const TournamentGroups: React.FC<IProps> = ({ activeLeague }) => {
       </FlexContainer>
     );
   }
+
   return (
     <FlexContainer
       flexDirection="row"
@@ -33,7 +34,7 @@ const TournamentGroups: React.FC<IProps> = ({ activeLeague }) => {
       alignItems="stretch"
     >
       {selectedTournament.groups
-        .filter((group) => group.stage === 1)
+        .filter((group) => group.stage === selectedTournament.state.stage)
         .sort((a, b) => a.groupIndex - b.groupIndex)
         .map((group, index) => (
           <TournamentGroupCard key={index} group={group} />

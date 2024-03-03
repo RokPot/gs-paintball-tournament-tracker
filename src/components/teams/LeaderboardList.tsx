@@ -4,6 +4,7 @@ import { Avatar, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
 import CustomDataTable from 'components/shared/CustomDataTable';
 import FlexContainer from 'components/shared/FlexContainer';
+import { useEffect, useRef, useState } from 'react';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 
 interface IProps {
@@ -104,12 +105,25 @@ const LeaderboardList: React.FC<IProps> = ({
     },
   ];
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [rowsPerPage, setRowsPerPage] = useState<number | null>(null);
+  useEffect(() => {
+    if (!containerRef?.current) {
+      return;
+    }
+    const containerRefHeight = containerRef.current.offsetHeight;
+    const rowHeight = 60;
+    const availableRowsPerPage = Math.floor(containerRefHeight / rowHeight);
+    setRowsPerPage(availableRowsPerPage);
+  }, []);
+
   return (
     <FlexContainer
       width="100%"
       flexDirection="column"
       className={className}
       height="100%"
+      ref={containerRef}
     >
       {!teams?.length && (
         <Typography
@@ -119,8 +133,13 @@ const LeaderboardList: React.FC<IProps> = ({
           There is currently no leaderboard available.
         </Typography>
       )}
-      {(!!teams?.length || (showHeader && !teams?.length)) && (
-        <CustomDataTable height="350px" columns={columns} rows={teams || []} />
+      {(!!teams?.length || (showHeader && !teams?.length)) && rowsPerPage && (
+        <CustomDataTable
+          height="100%"
+          columns={columns}
+          rows={teams || []}
+          pageSize={rowsPerPage}
+        />
       )}
     </FlexContainer>
   );

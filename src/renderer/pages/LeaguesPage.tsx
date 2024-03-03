@@ -89,7 +89,6 @@ const LeaguesPage = () => {
   const { leaguesList, isFetchingLeaguesList } = useLeaguesList();
   const { activeLeague } = useActiveLeague();
   const { addOrEditTournament } = useTournamentQueries();
-  console.log(leaguesList);
   const confirmLeague = async (league: League, isEdit: boolean) => {
     await addOrEditLeague(league, isEdit);
     setIsLeagueModalOpen(false);
