@@ -641,29 +641,6 @@ describe('TournamentResults', () => {
         gameTime: 250,
         team1Wins: 2,
         team2Wins: 1,
-        matches: [
-          {
-            id: '1',
-            matchDurationInSeconds: 10,
-            matchState: MatchState.team1Win,
-            team1Margin: 3,
-            team2Margin: -3,
-          },
-          {
-            id: '1',
-            matchDurationInSeconds: 10,
-            matchState: MatchState.team2Win,
-            team1Margin: -3,
-            team2Margin: 3,
-          },
-          {
-            id: '1',
-            matchDurationInSeconds: 10,
-            matchState: MatchState.team1Win,
-            team1Margin: 3,
-            team2Margin: -3,
-          },
-        ],
       }),
       TestUtils.generateGame({
         index: 1,
@@ -694,6 +671,39 @@ describe('TournamentResults', () => {
         gameTime: 400,
         team1Wins: 2,
         team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.draw,
+        gameTime: 400,
+        team1Wins: 1,
+        team2Wins: 2,
+        matches: [
+          {
+            id: '1',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+          },
+          {
+            id: '2',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+          },
+          {
+            id: '3',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+          },
+        ],
       }),
     ];
     // T1 - T2
