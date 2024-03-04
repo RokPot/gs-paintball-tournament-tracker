@@ -1,16 +1,16 @@
 import { CssBaseline, GlobalStyles, ThemeProvider, alpha } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SnackbarProvider } from 'notistack';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import ConfirmationModal from '../components/shared/ConfirmationModal';
-import { theme } from '../theme/theme';
-import Layout from './layout/Layout';
-import HomePage from './pages/HomePage';
-import LeaguesPage from './pages/LeaguesPage';
-import ResultsPage from './pages/ResultsPage';
-import ScoreboardPage from './pages/ScoreboardPage';
-import TeamsPage from './pages/TeamsPage';
-import TournamentPage from './pages/TournamentPage';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import ConfirmationModal from '../../components/shared/ConfirmationModal';
+import { theme } from '../../theme/theme';
+import Layout from '../layout/Layout';
+import HomePage from '../pages/HomePage';
+import LeaguesPage from '../pages/LeaguesPage';
+import ResultsPage from '../pages/ResultsPage';
+import ScoreboardPage from '../pages/ScoreboardPage';
+import TeamsPage from '../pages/TeamsPage';
+import TournamentPage from '../pages/TournamentPage';
 
 const App = () => {
   const queryClient = new QueryClient();
@@ -18,6 +18,7 @@ const App = () => {
   // borderRadius: 5,
   // padding: '2px',
   // margin: '5px',
+  console.log('asd');
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -42,7 +43,7 @@ const App = () => {
         anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
         <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
+          <MemoryRouter>
             <Routes>
               <Route path="/results" element={<ResultsPage />} />
 
@@ -55,7 +56,7 @@ const App = () => {
                 <Route path="/scoreboard" element={<ScoreboardPage />} />
               </Route>
             </Routes>
-          </BrowserRouter>
+          </MemoryRouter>
 
           <ConfirmationModal />
         </QueryClientProvider>

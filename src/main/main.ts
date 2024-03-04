@@ -12,7 +12,6 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import * as urlUtil from 'url';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import serialPortListener from './serialPortListener/serialPortListener';
@@ -57,7 +56,7 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
-const createWindow = async (childPath?: string) => {
+const createWindow = async (windowPath: string) => {
   if (isDebug) {
     await installExtensions();
   }
@@ -71,7 +70,7 @@ const createWindow = async (childPath?: string) => {
   };
 
   mainWindow = new BrowserWindow({
-    parent: childPath && mainWindow ? mainWindow : undefined,
+    parent: windowPath && mainWindow ? mainWindow : undefined,
     show: false,
     icon: getAssetPath('new-test-icon.ico'),
     webPreferences: {
@@ -82,7 +81,7 @@ const createWindow = async (childPath?: string) => {
     },
   });
   mainWindow.maximize();
-  mainWindow.loadURL(resolveHtmlPath('index.html', childPath));
+  mainWindow.loadURL(resolveHtmlPath(windowPath));
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -129,20 +128,20 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(async () => {
-    let window = await createWindow();
+    let window = await createWindow('window1/index.html');
     serialPortListener(window);
     app.on('activate', async () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) {
-        window = await createWindow();
+        window = await createWindow('window1/index.html');
         serialPortListener(window);
       }
     });
   })
   .catch(console.log);
 ipcMain.on('open-new-window', async (event, content) => {
-  const newWindow = await createWindow('results');
+  const newWindow = await createWindow('window2/index.html');
 
   childWindows.push(newWindow);
   // const newWindow = new BrowserWindow({ width: 800, height: 600 });

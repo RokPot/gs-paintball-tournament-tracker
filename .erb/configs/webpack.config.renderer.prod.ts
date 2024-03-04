@@ -18,19 +18,37 @@ import deleteSourceMaps from '../scripts/delete-source-maps';
 checkNodeEnv('production');
 deleteSourceMaps();
 
+const devtoolsConfig =
+  process.env.DEBUG_PROD === 'true'
+    ? {
+        devtool: 'source-map',
+      }
+    : {};
+
 const configuration: webpack.Configuration = {
-  devtool: 'source-map',
+  ...devtoolsConfig,
 
   mode: 'production',
 
   target: ['web', 'electron-renderer'],
 
-  entry: [path.join(webpackPaths.srcRendererPath, 'index.tsx')],
+  entry: {
+    window1: [
+      'core-js',
+      'regenerator-runtime/runtime',
+      path.join(webpackPaths.srcRendererPath, 'window1/index.tsx'),
+    ],
+    window2: [
+      'core-js',
+      'regenerator-runtime/runtime',
+      path.join(webpackPaths.srcRendererPath, 'window2/index.tsx'),
+    ],
+  },
 
   output: {
     path: webpackPaths.distRendererPath,
-    publicPath: './',
-    filename: 'renderer.js',
+    publicPath: '../',
+    filename: '[name].renderer.js',
     library: {
       type: 'umd',
     },
@@ -66,34 +84,20 @@ const configuration: webpack.Configuration = {
       },
       // Images
       {
-        test: /\.(png|jpg|jpeg|gif|mp3)$/i,
+        test: /\.(png|svg|jpg|jpeg|gif|mp3)$/i,
         type: 'asset/resource',
-      },
-      // SVG
-      {
-        test: /\.svg$/,
-        use: [
-          {
-            loader: '@svgr/webpack',
-            options: {
-              prettier: false,
-              svgo: false,
-              svgoConfig: {
-                plugins: [{ removeViewBox: false }],
-              },
-              titleProp: true,
-              ref: true,
-            },
-          },
-          'file-loader',
-        ],
       },
     ],
   },
 
   optimization: {
     minimize: true,
-    minimizer: [new TerserPlugin(), new CssMinimizerPlugin()],
+    minimizer: [
+      new TerserPlugin({
+        parallel: true,
+      }),
+      new CssMinimizerPlugin(),
+    ],
   },
 
   plugins: [
@@ -117,23 +121,32 @@ const configuration: webpack.Configuration = {
 
     new BundleAnalyzerPlugin({
       analyzerMode: process.env.ANALYZE === 'true' ? 'server' : 'disabled',
-      analyzerPort: 8889,
     }),
 
     new HtmlWebpackPlugin({
-      filename: 'index.html',
-      template: path.join(webpackPaths.srcRendererPath, 'index.ejs'),
+      filename: 'window1/index.html',
+      template: path.join(webpackPaths.srcRendererPath, 'window1/index.ejs'),
+      chunks: ['window1'],
       minify: {
         collapseWhitespace: true,
         removeAttributeQuotes: true,
         removeComments: true,
       },
       isBrowser: false,
-      isDevelopment: false,
+      isDevelopment: process.env.NODE_ENV !== 'production',
     }),
 
-    new webpack.DefinePlugin({
-      'process.type': '"renderer"',
+    new HtmlWebpackPlugin({
+      filename: 'window2/index.html',
+      template: path.join(webpackPaths.srcRendererPath, 'window2/index.ejs'),
+      chunks: ['window2'],
+      minify: {
+        collapseWhitespace: true,
+        removeAttributeQuotes: true,
+        removeComments: true,
+      },
+      isBrowser: false,
+      isDevelopment: process.env.NODE_ENV !== 'production',
     }),
   ],
 };

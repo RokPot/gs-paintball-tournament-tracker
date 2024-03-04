@@ -5,7 +5,7 @@ import webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import chalk from 'chalk';
 import { merge } from 'webpack-merge';
-import { execSync, spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import baseConfig from './webpack.config.base';
 import webpackPaths from './webpack.paths';
@@ -45,16 +45,23 @@ const configuration: webpack.Configuration = {
 
   target: ['web', 'electron-renderer'],
 
-  entry: [
-    `webpack-dev-server/client?http://localhost:${port}/dist`,
-    'webpack/hot/only-dev-server',
-    path.join(webpackPaths.srcRendererPath, 'index.tsx'),
-  ],
+  entry: {
+    window1: [
+      `webpack-dev-server/client?http://localhost:${port}/dist`,
+      'webpack/hot/only-dev-server',
+      path.join(webpackPaths.srcRendererPath, 'window1/index.tsx'),
+    ],
+    window2: [
+      `webpack-dev-server/client?http://localhost:${port}/dist`,
+      'webpack/hot/only-dev-server',
+      path.join(webpackPaths.srcRendererPath, 'window2/index.tsx'),
+    ],
+  },
 
   output: {
     path: webpackPaths.distRendererPath,
     publicPath: '/',
-    filename: 'renderer.dev.js',
+    filename: '[name].renderer.dev.js',
     library: {
       type: 'umd',
     },
@@ -63,7 +70,7 @@ const configuration: webpack.Configuration = {
   module: {
     rules: [
       {
-        test: /\.s?(c|a)ss$/,
+        test: /\.s?css$/,
         use: [
           'style-loader',
           {
@@ -149,9 +156,33 @@ const configuration: webpack.Configuration = {
 
     new ReactRefreshWebpackPlugin(),
 
+    // FIXME: El problema es que tratamos de cargar index.ejs pero no existe
+    // por que se cambio el path a window1/, ya no es hijo directo de src
     new HtmlWebpackPlugin({
-      filename: path.join('index.html'),
-      template: path.join(webpackPaths.srcRendererPath, 'index.ejs'),
+      /* filename: path.join('window1/index.html'),
+      template: path.join(webpackPaths.srcRendererPath, 'window1/index.ejs'), */
+
+      filename: path.join('window1/index.html'),
+      template: path.join(webpackPaths.srcRendererPath, 'window1/index.ejs'),
+      chunks: ['window1'],
+      minify: {
+        collapseWhitespace: true,
+        removeAttributeQuotes: true,
+        removeComments: true,
+      },
+      isBrowser: false,
+      env: process.env.NODE_ENV,
+      isDevelopment: process.env.NODE_ENV !== 'production',
+      nodeModules: webpackPaths.appNodeModulesPath,
+    }),
+
+    new HtmlWebpackPlugin({
+      /* filename: path.join('window1/index.html'),
+      template: path.join(webpackPaths.srcRendererPath, 'window1/index.ejs'), */
+
+      filename: path.join('window2/index.html'),
+      template: path.join(webpackPaths.srcRendererPath, 'window2/index.ejs'),
+      chunks: ['window2'],
       minify: {
         collapseWhitespace: true,
         removeAttributeQuotes: true,
