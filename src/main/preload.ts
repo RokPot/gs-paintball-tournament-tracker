@@ -10,7 +10,8 @@ export type Channels =
   | 'get-ports-list-response'
   | 'select-serial-port'
   | 'buttons-response'
-  | 'open-new-window';
+  | 'open-new-window'
+  | 'tournament-updated';
 
 const electronHandler = {
   ipcRenderer: {

@@ -46,15 +46,15 @@ const configuration: webpack.Configuration = {
   target: ['web', 'electron-renderer'],
 
   entry: {
-    window1: [
+    main: [
       `webpack-dev-server/client?http://localhost:${port}/dist`,
       'webpack/hot/only-dev-server',
-      path.join(webpackPaths.srcRendererPath, 'window1/index.tsx'),
+      path.join(webpackPaths.srcRendererPath, 'main/index.tsx'),
     ],
-    window2: [
+    results: [
       `webpack-dev-server/client?http://localhost:${port}/dist`,
       'webpack/hot/only-dev-server',
-      path.join(webpackPaths.srcRendererPath, 'window2/index.tsx'),
+      path.join(webpackPaths.srcRendererPath, 'results/index.tsx'),
     ],
   },
 
@@ -156,15 +156,10 @@ const configuration: webpack.Configuration = {
 
     new ReactRefreshWebpackPlugin(),
 
-    // FIXME: El problema es que tratamos de cargar index.ejs pero no existe
-    // por que se cambio el path a window1/, ya no es hijo directo de src
     new HtmlWebpackPlugin({
-      /* filename: path.join('window1/index.html'),
-      template: path.join(webpackPaths.srcRendererPath, 'window1/index.ejs'), */
-
-      filename: path.join('window1/index.html'),
-      template: path.join(webpackPaths.srcRendererPath, 'window1/index.ejs'),
-      chunks: ['window1'],
+      filename: path.join('main/index.html'),
+      template: path.join(webpackPaths.srcRendererPath, 'main/index.ejs'),
+      chunks: ['main'],
       minify: {
         collapseWhitespace: true,
         removeAttributeQuotes: true,
@@ -177,12 +172,9 @@ const configuration: webpack.Configuration = {
     }),
 
     new HtmlWebpackPlugin({
-      /* filename: path.join('window1/index.html'),
-      template: path.join(webpackPaths.srcRendererPath, 'window1/index.ejs'), */
-
-      filename: path.join('window2/index.html'),
-      template: path.join(webpackPaths.srcRendererPath, 'window2/index.ejs'),
-      chunks: ['window2'],
+      filename: path.join('results/index.html'),
+      template: path.join(webpackPaths.srcRendererPath, 'results/index.ejs'),
+      chunks: ['results'],
       minify: {
         collapseWhitespace: true,
         removeAttributeQuotes: true,

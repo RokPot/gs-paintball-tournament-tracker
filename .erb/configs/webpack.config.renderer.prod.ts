@@ -33,15 +33,15 @@ const configuration: webpack.Configuration = {
   target: ['web', 'electron-renderer'],
 
   entry: {
-    window1: [
+    main: [
       'core-js',
       'regenerator-runtime/runtime',
-      path.join(webpackPaths.srcRendererPath, 'window1/index.tsx'),
+      path.join(webpackPaths.srcRendererPath, 'main/index.tsx'),
     ],
-    window2: [
+    results: [
       'core-js',
       'regenerator-runtime/runtime',
-      path.join(webpackPaths.srcRendererPath, 'window2/index.tsx'),
+      path.join(webpackPaths.srcRendererPath, 'results/index.tsx'),
     ],
   },
 
@@ -124,9 +124,9 @@ const configuration: webpack.Configuration = {
     }),
 
     new HtmlWebpackPlugin({
-      filename: 'window1/index.html',
-      template: path.join(webpackPaths.srcRendererPath, 'window1/index.ejs'),
-      chunks: ['window1'],
+      filename: 'main/index.html',
+      template: path.join(webpackPaths.srcRendererPath, 'main/index.ejs'),
+      chunks: ['main'],
       minify: {
         collapseWhitespace: true,
         removeAttributeQuotes: true,
@@ -137,9 +137,9 @@ const configuration: webpack.Configuration = {
     }),
 
     new HtmlWebpackPlugin({
-      filename: 'window2/index.html',
-      template: path.join(webpackPaths.srcRendererPath, 'window2/index.ejs'),
-      chunks: ['window2'],
+      filename: 'results/index.html',
+      template: path.join(webpackPaths.srcRendererPath, 'results/index.ejs'),
+      chunks: ['results'],
       minify: {
         collapseWhitespace: true,
         removeAttributeQuotes: true,

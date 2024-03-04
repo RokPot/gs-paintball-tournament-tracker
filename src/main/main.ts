@@ -128,20 +128,20 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(async () => {
-    let window = await createWindow('window1/index.html');
+    let window = await createWindow('main/index.html');
     serialPortListener(window);
     app.on('activate', async () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) {
-        window = await createWindow('window1/index.html');
+        window = await createWindow('main/index.html');
         serialPortListener(window);
       }
     });
   })
   .catch(console.log);
 ipcMain.on('open-new-window', async (event, content) => {
-  const newWindow = await createWindow('window2/index.html');
+  const newWindow = await createWindow('results/index.html');
 
   childWindows.push(newWindow);
   // const newWindow = new BrowserWindow({ width: 800, height: 600 });
