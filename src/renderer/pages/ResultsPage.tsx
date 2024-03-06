@@ -29,7 +29,7 @@ const ResultsPage: React.FC<IProps> = () => {
   }, [currentActiveView]);
 
   useEffect(() => {
-    const secondsBeforeSwitch = 5;
+    const secondsBeforeSwitch = 15;
     if (timerRef?.current) {
       clearInterval(timerRef?.current);
     }
