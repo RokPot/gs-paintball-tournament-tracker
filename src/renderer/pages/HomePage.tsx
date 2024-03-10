@@ -10,8 +10,6 @@ import {
   css,
 } from '@mui/material';
 import PageContainer from 'components/shared/PageContainer';
-import useCountdownSound from 'hooks/sounds/useCountdownSound';
-import { PortInfo } from 'main/serialPortListener/serialPortListener';
 
 const StyledStackingContainer = styled('div')(
   () => css`
@@ -22,17 +20,12 @@ const StyledStackingContainer = styled('div')(
   `,
 );
 const HomePage: React.FC = () => {
-  const { playCountdown, stopCountdown } = useCountdownSound();
-  const tryyy = () => {
-    window.electron.ipcRenderer.sendMessage('get-ports-list');
-    window.electron.ipcRenderer.once('get-ports-list-response', (result) => {
-      console.log(result);
-      const ports = result as unknown as PortInfo[];
-      window.electron.ipcRenderer.sendMessage('select-serial-port', ports[1]);
-    });
-  };
   const tryyySound = () => {
-    playCountdown();
+    window.electron.ipcRenderer.sendMessage(
+      'open-new-window',
+      'new_window.html',
+    );
+    // playCountdown();
   };
   // ToDo RokPot
   window.electron.ipcRenderer.on('buttons-response', (result) => {
@@ -43,7 +36,7 @@ const HomePage: React.FC = () => {
     <PageContainer>
       <Typography variant="h6">Leagues</Typography>
       <StyledStackingContainer>
-        <Card style={{ width: '400px' }} onClick={tryyy}>
+        <Card style={{ width: '400px' }}>
           <CardHeader
             action={
               <IconButton aria-label="settings">
@@ -66,7 +59,7 @@ const HomePage: React.FC = () => {
             subheader="September 14, 2016"
           />
         </Card>
-        <Card onClick={stopCountdown}>
+        <Card>
           <CardHeader
             avatar={
               <Avatar sx={{ bgcolor: 'red' }} aria-label="recipe">

@@ -266,9 +266,9 @@ const TournamentPage = () => {
       {activeLeague && selectedTournament ? (
         <FlexContainer
           flexDirection="column"
-          height="100%"
           width="100%"
           alignItems="stretch"
+          height="100%"
         >
           <Typography variant="h5">
             Tournament -
