@@ -19,7 +19,12 @@ const LeaderboardView: React.FC<IProps> = () => {
     ) {
       return;
     }
-
+    console.log(
+      calculateTournamentGroupLeaderboard(
+        activeTournament.groups[0],
+        activeTournament.settings,
+      ),
+    );
     setLeaderboardTeam(
       calculateTournamentGroupLeaderboard(
         activeTournament.groups[0],
@@ -28,7 +33,7 @@ const LeaderboardView: React.FC<IProps> = () => {
     );
   }, [activeTournament, isFetchingActiveLeague]);
   return (
-    <FlexContainer loading={isFetchingActiveLeague} width="100%">
+    <FlexContainer loading={isFetchingActiveLeague} width="100%" height="100%">
       <LeaderboardList showHeader teams={leaderboardTeam} />
     </FlexContainer>
   );

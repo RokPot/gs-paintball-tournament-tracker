@@ -2,19 +2,21 @@ import LeaderboardView from 'components/results-window/LeaderboardView';
 import ScheduleView from 'components/results-window/ScheduleView';
 import FlexContainer from 'components/shared/FlexContainer';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import useActiveLeague from 'services/queries/league/useActiveLeague';
+import useLeagueService from 'services/LeagueService';
 import { setInterval } from 'worker-timers';
 
 interface IProps {}
 
 const ResultsPage: React.FC<IProps> = () => {
-  const activeTournament = useActiveLeague();
+  const { getActiveLeague } = useLeagueService();
   const highest = 1;
   const [currentActiveView, setCurentActiveView] = useState(0);
   const timerRef = useRef<number>();
 
-  window.electron.ipcRenderer.on('tournament-updated', (result) => {
+  window.electron.ipcRenderer.on('tournament-updated', async (result) => {
     console.log(result);
+    const league = await getActiveLeague();
+    console.log(league);
   });
 
   const currentActiveElement = useMemo(() => {
@@ -47,7 +49,9 @@ const ResultsPage: React.FC<IProps> = () => {
   console.log(currentActiveView);
   // todo rokpot transitons, create views
   return (
-    <FlexContainer flexDirection="column">{currentActiveElement}</FlexContainer>
+    <FlexContainer flexDirection="column" height="100%">
+      {currentActiveElement}
+    </FlexContainer>
   );
 };
 

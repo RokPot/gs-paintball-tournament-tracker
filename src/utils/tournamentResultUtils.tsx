@@ -561,7 +561,8 @@ export const tryToResolveDraws = (
       break;
     }
     if (j === tieBreakChecks.length - 1) {
-      sortingLeaderboardTeams = [...teamsTiedLeft];
+      // todo rokpot, maybe this not the best approach
+      sortingLeaderboardTeams = [...sortingLeaderboardTeams, ...teamsTiedLeft];
     }
   }
 

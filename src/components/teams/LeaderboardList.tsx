@@ -107,6 +107,7 @@ const LeaderboardList: React.FC<IProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [rowsPerPage, setRowsPerPage] = useState<number | null>(null);
+  console.log('teamsLength', rowsPerPage, teams);
   useEffect(() => {
     if (!containerRef?.current) {
       return;
@@ -133,14 +134,16 @@ const LeaderboardList: React.FC<IProps> = ({
           There is currently no leaderboard available.
         </Typography>
       )}
-      {(!!teams?.length || (showHeader && !teams?.length)) && rowsPerPage && (
-        <CustomDataTable
-          height="100%"
-          columns={columns}
-          rows={teams || []}
-          pageSize={rowsPerPage}
-        />
-      )}
+      {(teams?.length! > 0 || (showHeader && !teams?.length)) &&
+        rowsPerPage !== null &&
+        rowsPerPage > 0 && (
+          <CustomDataTable
+            height="100%"
+            columns={columns}
+            rows={teams || []}
+            pageSize={rowsPerPage}
+          />
+        )}
     </FlexContainer>
   );
 };
