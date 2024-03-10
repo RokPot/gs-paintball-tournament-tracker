@@ -5,6 +5,7 @@ import { DocType, IPouchDB } from './interfaces/IPouchDB';
 import { ITournamentGroup } from './interfaces/ITournamentGroup';
 import { TournamentGroupDto } from './dto/TournamentGroupDto';
 import { GameState } from './GameState';
+import { TournamentGroupSettings } from './TournamentGroupSettings';
 
 export default class TournamentGroup extends IPouchDB {
   id: string;
@@ -17,6 +18,8 @@ export default class TournamentGroup extends IPouchDB {
 
   groupType: TournamentType;
 
+  settings?: TournamentGroupSettings;
+
   stage: number;
 
   constructor(props: ITournamentGroup) {
@@ -27,6 +30,7 @@ export default class TournamentGroup extends IPouchDB {
     this.games = props.games;
     this.groupType = props.groupType;
     this.stage = props.stage;
+    this.settings = props.settings;
   }
 
   public get finishedGames(): Game[] {
@@ -44,6 +48,7 @@ export default class TournamentGroup extends IPouchDB {
       groupType: this.groupType,
       gameIds: this.games?.map((game) => game._id),
       stage: this.stage,
+      settings: this.settings,
     };
   };
 }

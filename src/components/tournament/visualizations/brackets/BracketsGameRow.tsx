@@ -17,7 +17,12 @@ const BracketsGameRow: React.FC<IProps> = ({ game }) => {
     >
       <FlexContainer flexDirection="column" position="relative">
         {game?.bracketProperties?.isThridPlaceGame && (
-          <Typography position="absolute" variant="p1" top={-20}>
+          <Typography
+            position="absolute"
+            variant="p1Medium"
+            top={-20}
+            color={(theme) => theme.palette.text.secondary}
+          >
             Third place
           </Typography>
         )}

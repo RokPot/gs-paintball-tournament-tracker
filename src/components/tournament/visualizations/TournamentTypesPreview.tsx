@@ -7,13 +7,9 @@ import RoundRobinPreview from './round-robin/RoundRobinPreview';
 interface IProps {
   group?: TournamentGroup;
   teams?: Team[];
-  totalNumberOfRounds?: number;
 }
 
-const TournamentTypesPreview: React.FC<IProps> = ({
-  group,
-  totalNumberOfRounds,
-}) => {
+const TournamentTypesPreview: React.FC<IProps> = ({ group }) => {
   switch (group?.groupType) {
     case TournamentType.roundRobin: {
       return group && <RoundRobinPreview group={group} />;
@@ -22,7 +18,7 @@ const TournamentTypesPreview: React.FC<IProps> = ({
       return (
         <BracketsPreview
           games={group.games}
-          totalNumberOfRounds={totalNumberOfRounds!}
+          totalNumberOfRounds={group.settings?.bracketNumberOfRounds || 1}
         />
       );
     }

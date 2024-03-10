@@ -1,4 +1,5 @@
 import { TournamentType } from 'types/TournamentType';
+import { TournamentGroupSettings } from 'types/TournamentGroupSettings';
 import { PouchDBDto } from './PouchDBDto';
 
 export interface TournamentGroupDto extends PouchDBDto {
@@ -13,4 +14,6 @@ export interface TournamentGroupDto extends PouchDBDto {
   groupType: TournamentType;
 
   stage: number;
+
+  settings?: TournamentGroupSettings;
 }

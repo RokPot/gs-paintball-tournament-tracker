@@ -292,7 +292,7 @@ const AddOrEditTournament = ({
               ))}
             </Select>
           </FormControl>
-          {formik?.values?.settings.type === TournamentType.roundRobin && (
+          {formik?.values?.settings.numberOfGroups > 1 && (
             <FormControl fullWidth>
               <InputLabel>Second stage type</InputLabel>
               <Select
@@ -324,17 +324,19 @@ const AddOrEditTournament = ({
             label="Win Condition: 2 point difference"
             tooltip="If this is checked, then a pair of games will play at the same time and matches will be switched every round."
           />
-          <CustomCheckbox
-            onChange={(checked) =>
-              formik.setFieldValue('settings', {
-                ...formik.values.settings,
-                switchGames: checked,
-              } as TournamentSettings)
-            }
-            checked={formik.values.settings?.switchGames}
-            label="Switch paired games"
-            tooltip="If this is checked, then a pair of games will play at the same time and matches will be switched every round."
-          />
+          {formik?.values?.settings.type === TournamentType.roundRobin && (
+            <CustomCheckbox
+              onChange={(checked) =>
+                formik.setFieldValue('settings', {
+                  ...formik.values.settings,
+                  switchGames: checked,
+                } as TournamentSettings)
+              }
+              checked={formik.values.settings?.switchGames}
+              label="Switch paired games"
+              tooltip="If this is checked, then a pair of games will play at the same time and matches will be switched every round."
+            />
+          )}
           <CustomTextField
             inputProps={{ pattern: '[0-9]*' }}
             type="number"

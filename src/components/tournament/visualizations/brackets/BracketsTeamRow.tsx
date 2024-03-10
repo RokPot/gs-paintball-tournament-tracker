@@ -43,7 +43,7 @@ const BracketsTeamRow: React.FC<IProps> = ({ team, teamScore }) => {
           variant="p1"
           color={(theme) => theme.palette.primary.contrastText}
         >
-          {team.teamName}
+          {team.teamName || 'TBD'}
         </Typography>
       </StyledTeamNameContainer>
       <StyledTeamScoreContainer>

@@ -672,7 +672,7 @@ const checkAndResolveLeaderboardDraws = (
   return leaderboardTeamsSorted;
 };
 
-export const calculateTournamentGroupLeaderboard1 = (
+export const calculateTournamentEliminations = (
   group: TournamentGroup,
   tournamentSettings: TournamentSettings,
 ) => {

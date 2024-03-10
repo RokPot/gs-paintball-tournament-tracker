@@ -733,73 +733,184 @@ describe('TournamentResults', () => {
     expect(leaderboard[5].team.id).toBe(team6.id);
   });
 
-  // it('should calculate results and check for MatchMargin', () => {
-  //   const gamesWithClearWinner = [
-  //     TestUtils.generateGame(
-  //       1,
-  //       team1,
-  //       team3,
-  //       GameState.finished,
-  //       GameWinner.team1,
-  //       250,
-  //       2,
-  //       1,
-  //     ),
-  //     TestUtils.generateGame(
-  //       2,
-  //       team1,
-  //       team4,
-  //       GameState.finished,
-  //       GameWinner.team1,
-  //       300,
-  //       2,
-  //       0,
-  //     ),
-  //     TestUtils.generateGame(
-  //       2,
-  //       team2,
-  //       team5,
-  //       GameState.finished,
-  //       GameWinner.team1,
-  //       260,
-  //       2,
-  //       0,
-  //     ),
-  //     TestUtils.generateGame(
-  //       2,
-  //       team2,
-  //       team6,
-  //       GameState.finished,
-  //       GameWinner.team1,
-  //       400,
-  //       2,
-  //       0,
-  //     ),
-  //   ];
-  //   // T1 - T2
-  //   // T1 - T3
-  //   // T2 - T4
-  //   // T2 - T5
-  //   // Team 1 - 2 Wins
-  //   // Team 2 - 2 Win
-  //   // Team 3 - 0 Win
-  //   // Team 5 - 0 Win
-  //   // T2, T1, T4, T3
-  //   const newGroup = TestUtils.generateTournamentGroup(
-  //     1,
-  //     gamesWithClearWinner,
-  //     [team1, team2, team3, team4, team5, team6],
-  //     TournamentType.roundRobin,
-  //   );
-  //   const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
-  //     ...DefaultTournamentSettings,
-  //   });
-  //   expect(leaderboard.length).toBe(6);
-  //   expect(leaderboard[0].team.id).toBe(team2.id);
-  //   expect(leaderboard[1].team.id).toBe(team1.id);
-  //   expect(leaderboard[2].team.id).toBe(team3.id);
-  //   expect(leaderboard[3].team.id).toBe(team5.id);
-  //   expect(leaderboard[4].team.id).toBe(team4.id);
-  //   expect(leaderboard[5].team.id).toBe(team6.id);
-  // });
+  it('should calculate results and check for MatchMargin', () => {
+    const gamesWithClearWinner = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        gameTime: 250,
+        team1Wins: 2,
+        team2Wins: 1,
+        matches: [
+          {
+            id: '1',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+          },
+          {
+            id: '2',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+          },
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2: team4,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        gameTime: 300,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: '1',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+          },
+          {
+            id: '2',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+          },
+          {
+            id: '2',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+          },
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team2,
+        team2: team5,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        gameTime: 260,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: '1',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+          },
+          {
+            id: '2',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+          },
+          {
+            id: '3',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+          },
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team2,
+        team2: team6,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        gameTime: 400,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: '1',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+          },
+          {
+            id: '2',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+          },
+          {
+            id: '3',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+          },
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.draw,
+        gameTime: 400,
+        team1Wins: 1,
+        team2Wins: 2,
+        matches: [
+          {
+            id: '1',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+          },
+          {
+            id: '2',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+          },
+        ],
+      }),
+    ];
+    // T1 - T2
+    // T1 - T3
+    // T2 - T4
+    // T2 - T5
+    // Team 1 - 2 Wins, Matches: 3, 3, 3, -3, +3
+    // Team 2 - 2 Win, Matches: 3, -3, 3, 3, -3, 3
+    // Team 3 - 0 Win
+    // Team 5 - 0 Win
+    // T2, T1, T4, T3
+    const newGroup = TestUtils.generateTournamentGroup(
+      1,
+      gamesWithClearWinner,
+      [team1, team2, team3, team4, team5, team6],
+      TournamentType.roundRobin,
+    );
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
+      ...DefaultTournamentSettings,
+    });
+    expect(leaderboard.length).toBe(6);
+    expect(leaderboard[0].team.id).toBe(team1.id);
+    expect(leaderboard[1].team.id).toBe(team2.id);
+    expect(leaderboard[2].team.id).toBe(team3.id);
+    expect(leaderboard[3].team.id).toBe(team5.id);
+    expect(leaderboard[4].team.id).toBe(team4.id);
+    expect(leaderboard[5].team.id).toBe(team6.id);
+  });
 });

@@ -421,8 +421,7 @@ export const generateGamesForEliminationBrackets = (
 
     for (let j = 0, i = 0; j < roundOneGames.length; j += 1) {
       if (i >= teams.length) {
-        games[j].team1.teamName += 'BYE';
-        games[j].team2.teamName += 'BYE';
+        games[j].bracketProperties!.bye = true;
       } else {
         if (i < teams.length) {
           games[j].team1 = teams[teamsSeeding[i] - 1];

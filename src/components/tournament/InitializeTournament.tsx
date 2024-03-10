@@ -14,6 +14,7 @@ import Game from 'types/Game';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
+import { TournamentGroupSettings } from 'types/TournamentGroupSettings';
 import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentType, TournamentTypeLabels } from 'types/TournamentType';
@@ -51,7 +52,6 @@ const InitializeTournament: React.FC<IProps> = ({
 }) => {
   const [groups, setGroups] = useState(tournament.groups);
   const [schedule, setSchedule] = useState(tournament.schedule || []);
-  const [totalNumberOfRounds, setTotalNumberOfRounds] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [tournamentSettings, setTournamentSettings] = useState(
     tournament.settings,
@@ -96,11 +96,35 @@ const InitializeTournament: React.FC<IProps> = ({
             newGroups[i].games = roundRobinGames;
           }
         }
+      } else if (
+        newTournamentSettings.type === TournamentType.singleElimination ||
+        newTournamentSettings.type === TournamentType.doubleElimination
+      ) {
+        for (let i = 0; i < newGroups.length; i += 1) {
+          if (newGroups[i].teams.length > 1) {
+            const {
+              games: bracketGames,
+              totalNumberOfRounds: numberOfBracketRounds,
+            } = generateGamesForEliminationBrackets(
+              newGroups[i].teams,
+              tournament.gameSettings,
+            );
+
+            newGroups[i].games = bracketGames;
+            newGroups[i].settings = {
+              bracketNumberOfRounds: numberOfBracketRounds,
+            };
+          }
+        }
       }
 
       if (numberOfGroups > 1) {
         const nextStageTeams: Team[] = [];
         const nextStageGames: Game[] = [];
+        const groupSettings: TournamentGroupSettings = {
+          bracketNumberOfRounds: 0,
+        };
+
         for (let i = 0; i < numberOfGroups; i += 1) {
           nextStageTeams.push(
             new Team({
@@ -149,17 +173,21 @@ const InitializeTournament: React.FC<IProps> = ({
             tournament.gameSettings,
           );
           nextStageGames.push(...bracketGames);
-          setTotalNumberOfRounds(numberOfBracketRounds);
+          groupSettings.bracketNumberOfRounds = numberOfBracketRounds;
         }
         if (
           newTournamentSettings.secondStageType ===
           TournamentType.doubleElimination
         ) {
-          const { games: bracketGames } = generateGamesForEliminationBrackets(
+          const {
+            games: bracketGames,
+            totalNumberOfRounds: totalNumberOfBracketRounds,
+          } = generateGamesForEliminationBrackets(
             nextStageTeams,
             tournament.gameSettings,
           );
           nextStageGames.push(...bracketGames);
+          groupSettings.bracketNumberOfRounds = totalNumberOfBracketRounds;
         }
         const newId = v4();
         newGroups.push(
@@ -173,6 +201,7 @@ const InitializeTournament: React.FC<IProps> = ({
               newTournamentSettings.secondStageType ||
               TournamentType.roundRobin,
             stage: 2,
+            settings: groupSettings,
           }),
         );
       }
@@ -348,10 +377,7 @@ const InitializeTournament: React.FC<IProps> = ({
             >
               <TournamentGroupCard group={groups[groups.length - 1]} />
 
-              <TournamentTypesPreview
-                group={groups[groups.length - 1]}
-                totalNumberOfRounds={totalNumberOfRounds}
-              />
+              <TournamentTypesPreview group={groups[groups.length - 1]} />
             </FlexContainer>
           </FlexContainer>
         )}

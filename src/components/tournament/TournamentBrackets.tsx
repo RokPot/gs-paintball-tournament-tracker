@@ -64,12 +64,6 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
       padding="20px 0px 0px 0px"
       gap={16}
     >
-      <Typography
-        variant="body1"
-        color={(theme) => theme.palette.text.disabled}
-      >
-        Tournament has not yet started. This is just a preview.{' '}
-      </Typography>
       <FlexContainer
         flexDirection="row"
         gap={16}
