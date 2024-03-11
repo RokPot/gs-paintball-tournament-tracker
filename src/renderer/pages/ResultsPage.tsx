@@ -49,7 +49,7 @@ const ResultsPage: React.FC<IProps> = () => {
   console.log(currentActiveView);
   // todo rokpot transitons, create views
   return (
-    <FlexContainer flexDirection="column" height="100%">
+    <FlexContainer flexDirection="column" height="100%" alignItems="flex-start">
       {currentActiveElement}
     </FlexContainer>
   );

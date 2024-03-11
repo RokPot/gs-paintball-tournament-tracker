@@ -1,92 +1,17 @@
-import { faCaretRight, faLeftRight } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Typography, lighten, useTheme } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
-import { useEffect, useState } from 'react';
-import { GameState } from 'types/GameState';
 import League from 'types/League';
-import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import ScheduleContainer from './visualizations/schedule/ScheduleContainer';
+import ScheduleUpcomingGames from './visualizations/schedule/ScheduleUpcomingGames';
 
 interface IProps {
   activeLeague: League;
 }
 
 const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
-  const theme = useTheme();
-  const [upcomingGames, setUpcomingGames] = useState<TournamentScheduleGame[]>(
-    [],
-  );
-  useEffect(() => {
-    if (!activeLeague?.activeTournament) {
-      return;
-    }
-    const notFinishedScheduledGames =
-      activeLeague?.activeTournament.schedule?.filter(
-        (scheduledGame) => scheduledGame.game.gameState === GameState.created,
-      );
-    setUpcomingGames(notFinishedScheduledGames?.slice(0, 2) || []);
-  }, [activeLeague?.activeTournament]);
   return (
     <FlexContainer height="100%" width="100%" flexDirection="column">
       <ScheduleContainer activeLeague={activeLeague} />
-      <FlexContainer
-        flexDirection="row"
-        style={{
-          position: 'sticky',
-          bottom: '-16px',
-          width: 'calc(100% + 32px)',
-          background: lighten(theme.palette.primary.light, 0.7),
-          marginLeft: '-16px',
-          marginRight: '-16px',
-          marginBottom: '-16px',
-          height: '50px',
-          padding: '8px',
-          marginTop: 'auto',
-        }}
-      >
-        <Typography
-          variant="p1Bold"
-          marginRight="8px"
-          color={theme.palette.text.secondary}
-        >
-          Upcoming games:
-        </Typography>
-
-        {upcomingGames.map((upcomingGame, index) => (
-          <>
-            <Typography
-              variant="p1Medium"
-              style={{ textDecoration: 'underline' }}
-            >
-              {upcomingGame.game.team1.teamName}
-              <FontAwesomeIcon
-                icon={faLeftRight}
-                style={{ margin: '0px 8px' }}
-                color={theme.palette.text.secondary}
-              />
-              {upcomingGame.game.team2.teamName}
-            </Typography>
-            {index + 1 < upcomingGames.length ? (
-              // <div
-              //   style={{
-              //     width: '1px',
-              //     background: theme.palette.primary.dark,
-              //     margin: '8px',
-              //     height: '35px',
-              //   }}
-              // />
-              <FontAwesomeIcon
-                icon={faCaretRight}
-                style={{ margin: '0px 8px' }}
-                color={theme.palette.primary.main}
-              />
-            ) : (
-              ''
-            )}
-          </>
-        ))}
-      </FlexContainer>
+      <ScheduleUpcomingGames activeLeague={activeLeague} />
     </FlexContainer>
   );
 };

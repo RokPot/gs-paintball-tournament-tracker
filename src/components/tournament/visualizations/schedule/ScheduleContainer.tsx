@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import Game from 'types/Game';
 import League from 'types/League';
 import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
+import { generateTournamentSchedule } from 'utils/tournamentUtils';
 import { ReactComponent as EmptyState } from '../../../../../assets/icons/EmptyInbox.svg';
 import ScheduleRowGame from './ScheduleRowGame';
 import ScheduleRowGroup, { StyledDivider } from './ScheduleRowGroup';
@@ -40,12 +41,18 @@ const ScheduleContainer = ({ activeLeague, disableEditting }: IProps) => {
     setGameForEditModal(undefined);
     setGameForEditModal(undefined);
   };
-
+  console.log(selectedTournament?.groups?.[0]?.games);
   useEffect(() => {
     if (
       !selectedTournament?.groups?.length ||
       !selectedTournament?.schedule?.length
     ) {
+      if (selectedTournament?.groups?.length) {
+        selectedTournament.schedule = generateTournamentSchedule(
+          selectedTournament?.groups,
+          selectedTournament.settings,
+        );
+      }
       return;
     }
     const newScheduledRows: ScheduleRow[] = [];

@@ -6,12 +6,22 @@ import TournamentGroup from 'types/TournamentGroup';
 import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentStatus } from 'types/TournamentStatus';
+import { TournamentType } from 'types/TournamentType';
 
 export enum FlowState {
   NoGamesAvailable = 'noGamesAvailable',
   GamesAvailable = 'gamesAvailable',
   GroupNotFound = 'groupNotFound',
+  NotDefined = 'notDefined',
 }
+
+type NextGameState =
+  | {
+      newActiveGame: TournamentScheduleGame;
+      newPairedGame1: TournamentScheduleGame;
+      newPairedGame2?: TournamentScheduleGame;
+    }
+  | FlowState.NoGamesAvailable;
 
 export const getNextGroup = (
   currentGroup: TournamentGroup,
@@ -254,19 +264,13 @@ export const switchGames = (
   };
 };
 
-export const switchToNextScheduledGames = (
+const switchToNextRoundRobinGame = (
   schedule: TournamentScheduleGame[],
   settings: TournamentSettings,
   activeGame: TournamentScheduleGame,
   pairedScheduledGame1: TournamentScheduleGame,
   pairedScheduledGame2?: TournamentScheduleGame,
-):
-  | {
-      newActiveGame: TournamentScheduleGame;
-      newPairedGame1: TournamentScheduleGame;
-      newPairedGame2?: TournamentScheduleGame;
-    }
-  | FlowState.NoGamesAvailable => {
+): NextGameState => {
   const availableScheduledGames = schedule?.filter(
     (scheduledGame) => scheduledGame.game.gameState !== GameState.finished,
   );
@@ -333,6 +337,121 @@ export const switchToNextScheduledGames = (
     newPairedGame1,
     newPairedGame2,
   };
+};
+
+const switchToNextSingleEliminationsGame = (
+  schedule: TournamentScheduleGame[],
+  settings: TournamentSettings,
+  activeGame: TournamentScheduleGame,
+  pairedScheduledGame1: TournamentScheduleGame,
+  pairedScheduledGame2?: TournamentScheduleGame,
+): NextGameState => {
+  if (!activeGame?.game?.bracketProperties) {
+    return FlowState.NoGamesAvailable;
+  }
+  const currentBracketsRound = activeGame.game.bracketProperties.round;
+  const availableScheduledGames = schedule?.filter(
+    (scheduledGame) =>
+      scheduledGame.game.gameState !== GameState.finished &&
+      scheduledGame.game?.bracketProperties?.round === currentBracketsRound,
+  );
+
+  if (!availableScheduledGames?.length) {
+    return FlowState.NoGamesAvailable;
+  }
+  let newActiveGame: TournamentScheduleGame = activeGame;
+  let newPairedGame1: TournamentScheduleGame = pairedScheduledGame1;
+  let newPairedGame2: TournamentScheduleGame | undefined = pairedScheduledGame2;
+
+  const {
+    game1Available,
+    game2Available,
+    shouldSwitchToNewPair: switchToNewPair,
+  } = checkIfCurrentGamesAreFinished(newPairedGame1.game, newPairedGame2?.game);
+
+  if (game1Available || game2Available) {
+    const isGame1Active = pairedScheduledGame1.id === activeGame.id;
+    if (settings.switchGames) {
+      if (isGame1Active) {
+        // If Game 1 is active, set game 2 as active game if its available
+        return {
+          newActiveGame: game2Available ? newPairedGame2! : newPairedGame1,
+          newPairedGame1,
+          newPairedGame2,
+        };
+      }
+      if (!isGame1Active) {
+        // If Game 2 is active, set game 1 as active game if its available
+        return {
+          newActiveGame: game1Available ? newPairedGame1 : newPairedGame2!,
+          newPairedGame1,
+          newPairedGame2,
+        };
+      }
+    }
+  }
+
+  if (switchToNewPair) {
+    if (settings.switchGames) {
+      const { game1, game2 } = getNextScheduledGamePair(
+        schedule,
+        activeGame.gameNumber,
+      );
+      if (!game1) {
+        return FlowState.NoGamesAvailable;
+      }
+      newActiveGame = game1;
+      newPairedGame1 = game1;
+      newPairedGame2 = game2;
+    } else {
+      const newNextGame = getNextScheduledGame(schedule, activeGame.gameNumber);
+      if (!newNextGame?.game1) {
+        return FlowState.NoGamesAvailable;
+      }
+      newActiveGame = newNextGame.game1;
+      newPairedGame1 = newNextGame.game1;
+    }
+  }
+
+  return {
+    newActiveGame,
+    newPairedGame1,
+    newPairedGame2,
+  };
+};
+
+export const switchToNextScheduledGames = (
+  schedule: TournamentScheduleGame[],
+  settings: TournamentSettings,
+  currentStageTournamentType: TournamentType,
+  activeGame: TournamentScheduleGame,
+  pairedScheduledGame1: TournamentScheduleGame,
+  pairedScheduledGame2?: TournamentScheduleGame,
+): NextGameState => {
+  switch (currentStageTournamentType) {
+    case TournamentType.roundRobin: {
+      return switchToNextRoundRobinGame(
+        schedule,
+        settings,
+        activeGame,
+        pairedScheduledGame1,
+        pairedScheduledGame2,
+      );
+    }
+    case TournamentType.singleElimination: {
+      return switchToNextSingleEliminationsGame(
+        schedule,
+        settings,
+        activeGame,
+        pairedScheduledGame1,
+        pairedScheduledGame2,
+      );
+    }
+    default: {
+      break;
+    }
+  }
+  return FlowState.NoGamesAvailable;
 };
 
 const prepareGamesForTheNextStage = (

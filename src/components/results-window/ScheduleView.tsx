@@ -10,7 +10,7 @@ const ScheduleView: React.FC<IProps> = () => {
     return null;
   }
   return (
-    <FlexContainer width="100%" height="100%">
+    <FlexContainer width="100%" height="100%" alignItems="flex-start">
       <ScheduleContainer activeLeague={activeLeague} disableEditting />
     </FlexContainer>
   );

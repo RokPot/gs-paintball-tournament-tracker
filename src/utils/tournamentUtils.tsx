@@ -552,6 +552,118 @@ const generateRoundRobinSchedule = (
   return scheduledGames;
 };
 
+const generateSingleEliminationSchedule = (
+  groups: TournamentGroup[],
+  settings: TournamentSettings,
+) => {
+  if (!groups?.length) {
+    return [];
+  }
+  const { switchGames, switchGroups } = settings;
+
+  const innerGroups = [
+    ...(JSON.parse(
+      JSON.stringify(groups.filter((group) => group.stage === 1)),
+    ) as TournamentGroup[]),
+  ];
+  const totalGames = innerGroups.reduce((prev, curr) => {
+    return prev + (curr?.games?.length || 0);
+  }, 0);
+
+  let mostCurrentGroup = innerGroups.filter((group) => group.stage === 1)[0];
+  let currentGameNumber = 0;
+  let pairedGame1: Game = mostCurrentGroup.games[0];
+  let pairedGame2: Game | null = switchGames ? mostCurrentGroup.games[1] : null;
+
+  if (pairedGame1) {
+    pairedGame1.gameState = GameState.finished;
+  }
+  if (pairedGame2) {
+    pairedGame2.gameState = GameState.finished;
+  }
+
+  const scheduledGames: TournamentScheduleGame[] = compact([
+    pairedGame1 &&
+      ({
+        game: pairedGame1,
+        gameNumber: 1,
+        group: mostCurrentGroup,
+        id: v4(),
+      } as TournamentScheduleGame),
+    pairedGame2 &&
+      ({
+        game: pairedGame2,
+        gameNumber: 2,
+        group: mostCurrentGroup,
+        id: v4(),
+      } as TournamentScheduleGame),
+  ]);
+  currentGameNumber = scheduledGames.length + 1;
+  while (scheduledGames.length < totalGames) {
+    const newGroup = getNextGroup(
+      mostCurrentGroup,
+      innerGroups,
+      1,
+      switchGroups,
+    );
+    if (!newGroup) {
+      break;
+    }
+    mostCurrentGroup = newGroup;
+    if (switchGames) {
+      const gamePair = getNextGamePair(mostCurrentGroup);
+      if (!gamePair) {
+        break;
+      }
+
+      if (gamePair.game1) {
+        pairedGame1 = gamePair.game1;
+        pairedGame1.gameState = GameState.finished;
+        scheduledGames.push({
+          game: pairedGame1,
+          gameNumber: currentGameNumber,
+          group: mostCurrentGroup,
+          id: v4(),
+        });
+        currentGameNumber += 1;
+      }
+
+      if (gamePair.game2) {
+        pairedGame2 = gamePair.game2;
+        pairedGame2.gameState = GameState.finished;
+        scheduledGames.push({
+          game: pairedGame2,
+          gameNumber: currentGameNumber,
+          group: mostCurrentGroup,
+          id: v4(),
+        });
+        currentGameNumber += 1;
+      }
+    } else {
+      const gamePair = getNextGame(mostCurrentGroup);
+      if (!gamePair) {
+        break;
+      }
+
+      if (gamePair.game1) {
+        pairedGame1 = gamePair.game1;
+        pairedGame1.gameState = GameState.finished;
+        scheduledGames.push({
+          game: pairedGame1,
+          gameNumber: currentGameNumber,
+          group: mostCurrentGroup,
+          id: v4(),
+        });
+        currentGameNumber += 1;
+      }
+    }
+  }
+  scheduledGames.forEach((scheduledGame) => {
+    scheduledGame.game.gameState = GameState.created;
+  });
+  return scheduledGames;
+};
+
 export const generateTournamentSchedule = (
   groups?: TournamentGroup[],
   settings?: TournamentSettings,
@@ -563,7 +675,7 @@ export const generateTournamentSchedule = (
     case TournamentType.roundRobin:
       return generateRoundRobinSchedule(groups, settings);
     case TournamentType.singleElimination:
-      return [];
+      return generateSingleEliminationSchedule(groups, settings);
     case TournamentType.doubleElimination:
       return [];
     case TournamentType.training:
