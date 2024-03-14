@@ -36,14 +36,17 @@ const StyledArrowHorizontal = styled('div')(
 interface IProps {
   isLastRound: boolean;
   round: number;
-  currentRoundGames: Game[];
+  roundGames: Game[];
 }
 
 const BracketsRoundColumn: React.FC<IProps> = ({
   isLastRound,
   round,
-  currentRoundGames,
+  roundGames,
 }) => {
+  const currentRoundGames = isLastRound
+    ? [...roundGames].reverse()
+    : roundGames;
   const teamComponentRowHeight = 40;
   const firstRoundPadding = 40 + Math.ceil(40 / 4);
 

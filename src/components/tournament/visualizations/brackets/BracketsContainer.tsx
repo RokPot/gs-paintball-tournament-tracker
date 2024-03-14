@@ -22,7 +22,7 @@ const BracketsContainer: React.FC<IProps> = ({
           <BracketsRoundColumn
             key={index}
             isLastRound={index + 1 === totalNumberOfRounds}
-            currentRoundGames={games.filter(
+            roundGames={games.filter(
               (game) => game.bracketProperties?.round === index,
             )}
             round={index}
