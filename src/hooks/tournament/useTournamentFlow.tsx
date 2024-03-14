@@ -9,13 +9,14 @@ import { DefaultGameSettings } from 'types/GameSettings';
 import { GameState, GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
 import MatchState from 'types/MatchState';
-import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentStatus } from 'types/TournamentStatus';
-import { TournamentType } from 'types/TournamentType';
 import {
   FlowState,
+  checkIfGameIsFinishedProcedure,
+  finishSelectedGame,
+  prepareNextGameIfEliminationsTournament,
   switchToNextScheduledGames,
 } from 'utils/tournamentFlowUtils';
 
@@ -144,45 +145,25 @@ const useTournamentFlow = (tournament?: Tournament) => {
     );
   }, [setNewActiveGroupAndGames, tournament]);
 
-  const prepareRelatedGames = useCallback(() => {}, []);
-
   const finishGame = useCallback(
     async (game: Game, gameWinner: GameWinner) => {
-      game.gameState = GameState.finished;
-      game.gameWinner = gameWinner;
-      switch (currentStageTournamentType) {
-        case TournamentType.singleElimination: {
-          const currentGameBrackets = game.bracketProperties;
-          const currentGroupGames = tournament?.groups?.find(
-            (group) => group.id === activeScheduledGame?.group?.id,
-          )?.games;
-          const nextBracketGame = currentGroupGames?.find(
-            (newGame) =>
-              newGame.bracketProperties?.round ===
-                currentGameBrackets!.round + 1 &&
-              newGame.bracketProperties.roundGameNumber ===
-                currentGameBrackets?.winnerNextRoundGameNumber,
-          );
-          if (nextBracketGame) {
-            const winningTeam =
-              game.gameWinner === GameWinner.team1 ? game.team1 : game.team2;
-            if (!nextBracketGame.team1.id) {
-              nextBracketGame.team1 = winningTeam;
-            } else if (!nextBracketGame.team2.id) {
-              nextBracketGame.team2 = winningTeam;
-            }
-            await updateGameData(nextBracketGame);
-          }
-          break;
-        }
-        case TournamentType.roundRobin:
-        case TournamentType.doubleElimination:
-        case TournamentType.training:
-        default: {
-          break;
-        }
+      const finishedGame = finishSelectedGame(game, gameWinner);
+      const nextEliminationsGame = prepareNextGameIfEliminationsTournament(
+        game,
+        tournament?.groups?.find(
+          (group) => group.id === activeScheduledGame?.group?.id,
+        ),
+        currentStageTournamentType,
+      );
+      if (finishedGame) {
+        await updateGameData(finishedGame);
       }
-      await updateGameData(game);
+      if (nextEliminationsGame?.nextRoundGameWinner) {
+        await updateGameData(nextEliminationsGame?.nextRoundGameWinner);
+      }
+      if (nextEliminationsGame?.nextRoundGameLoser) {
+        await updateGameData(nextEliminationsGame?.nextRoundGameLoser);
+      }
       return game;
     },
     [
@@ -191,58 +172,6 @@ const useTournamentFlow = (tournament?: Tournament) => {
       tournament?.groups,
       updateGameData,
     ],
-  );
-
-  const checkIfGameIsFinished = useCallback(
-    (
-      game: Game,
-      timeLeft: number,
-    ): { gameWinner: GameWinner; winningTeam?: Team } => {
-      const { twoWinsDifference, numberOfWinsRequired } = tournament!.settings;
-      const team1Score = game.team1Wins;
-      const team2Score = game.team2Wins;
-
-      if (timeLeft <= 0) {
-        const team1HasMoreWinsThanTeam2 = team1Score > team2Score;
-        const team2HasMoreWinsThanTeam1 = team2Score > team1Score;
-        const isGameADraw = team1Score === team2Score;
-        if (team1HasMoreWinsThanTeam2) {
-          return { gameWinner: GameWinner.team1, winningTeam: game.team1 };
-        }
-        if (team2HasMoreWinsThanTeam1) {
-          return { gameWinner: GameWinner.team2, winningTeam: game.team2 };
-        }
-        if (isGameADraw) {
-          return { gameWinner: GameWinner.draw };
-        }
-      }
-
-      const addToTeamsForTwosDifference = twoWinsDifference ? 1 : 0;
-
-      const team1HasMoreThanThresholdWins = team1Score >= numberOfWinsRequired;
-      const team2HasMoreThanThresholdWins = team2Score >= numberOfWinsRequired;
-
-      const team1HasMoreWinsThanTeam2 =
-        team1Score > team2Score + addToTeamsForTwosDifference;
-      const team2HasMoreWinsThanTeam1 =
-        team2Score > team1Score + addToTeamsForTwosDifference;
-      const isGameADraw = team1Score === team2Score;
-
-      if (team1HasMoreThanThresholdWins && team1HasMoreWinsThanTeam2) {
-        return { gameWinner: GameWinner.team1, winningTeam: game.team1 };
-      }
-      if (team2HasMoreThanThresholdWins && team2HasMoreWinsThanTeam1) {
-        return { gameWinner: GameWinner.team2, winningTeam: game.team2 };
-      }
-      if (
-        (team1HasMoreThanThresholdWins || team2HasMoreThanThresholdWins) &&
-        isGameADraw
-      ) {
-        return { gameWinner: GameWinner.draw };
-      }
-      return { gameWinner: GameWinner.notYet };
-    },
-    [tournament],
   );
 
   const onAfterFinishedMatchProcedure = useCallback(
@@ -257,9 +186,10 @@ const useTournamentFlow = (tournament?: Tournament) => {
 
       const currentTmpGame1 = isGame1ActiveGame ? game : currentScheduledGame1;
       const currentTmpGame2 = !isGame1ActiveGame ? game : currentScheduledGame2;
-      const { gameWinner, winningTeam } = checkIfGameIsFinished(
+      const { gameWinner } = checkIfGameIsFinishedProcedure(
         isGame1ActiveGame ? currentTmpGame1!.game : currentTmpGame2!.game,
         timeLeft,
+        tournamentSettings,
       );
       if (gameWinner !== GameWinner.notYet) {
         // Complete game
@@ -302,7 +232,6 @@ const useTournamentFlow = (tournament?: Tournament) => {
       activeScheduledGame?.id,
       currentScheduledGame1,
       currentScheduledGame2,
-      checkIfGameIsFinished,
       currentStageTournamentType,
       setNewActiveGroupAndGames,
       setGameAndBreakDuration,

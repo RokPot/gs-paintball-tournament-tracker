@@ -2,16 +2,17 @@ import { faCaretRight, faLeftRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Typography, lighten, useTheme } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
-import { useEffect, useState } from 'react';
+import { CSSProperties, useEffect, useState } from 'react';
 import { GameState } from 'types/GameState';
 import League from 'types/League';
 import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 
 interface IProps {
   activeLeague: League;
+  style?: CSSProperties;
 }
 
-const ScheduleUpcomingGames: React.FC<IProps> = ({ activeLeague }) => {
+const ScheduleUpcomingGames: React.FC<IProps> = ({ activeLeague, style }) => {
   const theme = useTheme();
 
   const [upcomingGames, setUpcomingGames] = useState<TournamentScheduleGame[]>(
@@ -43,6 +44,7 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({ activeLeague }) => {
         height: '50px',
         padding: '8px',
         marginTop: 'auto',
+        ...style,
       }}
     >
       <Typography

@@ -1,8 +1,10 @@
+import { Button, Typography } from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import CustomTabs from 'components/shared/CustomTabs';
 import FlexContainer from 'components/shared/FlexContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
@@ -17,6 +19,9 @@ interface IProps {
 const FinishedTournamentModal: React.FC<IProps> = ({ tournament }) => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardTeam[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const navigate = useNavigate();
+
   const calculateLeaderboard = useCallback(
     (group: TournamentGroup) => {
       if (!tournament) {
@@ -80,6 +85,9 @@ const FinishedTournamentModal: React.FC<IProps> = ({ tournament }) => {
           />
         )}
         <LeaderboardList teams={leaderboard} />
+        <Button onClick={() => navigate('/tournament')}>
+          <Typography variant="p1Medium">Go to Tournaments</Typography>
+        </Button>
       </FlexContainer>
     </CustomModal>
   );

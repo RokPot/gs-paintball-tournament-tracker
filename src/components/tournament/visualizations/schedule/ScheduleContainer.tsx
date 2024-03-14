@@ -112,6 +112,7 @@ const ScheduleContainer = ({ activeLeague, disableEditting }: IProps) => {
     });
     setScheduleRows(newScheduledRows);
   }, [
+    selectedTournament,
     selectedTournament?.groups?.length,
     selectedTournament?.schedule,
     switchGames,

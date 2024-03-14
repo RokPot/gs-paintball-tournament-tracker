@@ -1,4 +1,9 @@
-import { faEdit, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons';
+import {
+  faEdit,
+  faEllipsisVertical,
+  faTrophy,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Typography, css, styled, useTheme } from '@mui/material';
 import CustomDropdownMenu from 'components/shared/CustomDropdownMenu';
 import FlexContainer from 'components/shared/FlexContainer';
@@ -49,6 +54,16 @@ const ScheduleRowGame: React.FC<IProps> = ({
     <StyledGameContainer>
       <FlexContainer alignItems="center" width="100%" height="50px" gap={8}>
         <Typography variant="h6Medium" textAlign="end" marginBottom="0px">
+          {/* {game.bracketProperties?.isFirstPlaceGame ? (
+            <FontAwesomeIcon icon={faTrophy} color="#FFD700" fontSize={20} />
+          ) : (
+            ''
+          )}
+          {game.bracketProperties?.isThridPlaceGame ? (
+            <FontAwesomeIcon icon={faTrophy} color="#CD7F32" fontSize={20} />
+          ) : (
+            ''
+          )} */}
           Game: {gameNumber}
         </Typography>
 
@@ -72,7 +87,46 @@ const ScheduleRowGame: React.FC<IProps> = ({
           {game.team2.id === undefined ? 'TBD' : game.team2.teamName}
         </Typography>
         <ScheduleGameStatus gameState={game.gameState} />
-
+        {game.bracketProperties?.isThridPlaceGame ? (
+          <Typography
+            variant="p2Medium"
+            marginBottom="0px"
+            paddingLeft="8px"
+            textAlign="center"
+            color={theme.palette.text.secondary}
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            <FontAwesomeIcon
+              icon={faTrophy}
+              color="#CD7F32"
+              fontSize={20}
+              style={{ paddingRight: '8px' }}
+            />
+            Third place Game
+          </Typography>
+        ) : (
+          ''
+        )}
+        {game.bracketProperties?.isFirstPlaceGame ? (
+          <Typography
+            variant="p2Medium"
+            textAlign="end"
+            marginBottom="0px"
+            paddingLeft="16px"
+            color={theme.palette.text.secondary}
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            <FontAwesomeIcon
+              icon={faTrophy}
+              color="#FFD700"
+              fontSize={20}
+              style={{ paddingRight: '8px' }}
+            />
+            First place Game
+          </Typography>
+        ) : (
+          ''
+        )}
         {!disableEditting && game?.gameState === GameState.finished && (
           <div style={{ marginLeft: 'auto' }}>
             <CustomDropdownMenu

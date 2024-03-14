@@ -1,22 +1,19 @@
 import FlexContainer from 'components/shared/FlexContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import { useEffect, useState } from 'react';
-import useActiveLeague from 'services/queries/league/useActiveLeague';
 import LeaderboardTeam from 'types/LeadeboardTeam';
+import League from 'types/League';
 import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
 
-interface IProps {}
+interface IProps {
+  activeLeague: League | null;
+}
 
-const LeaderboardView: React.FC<IProps> = () => {
-  const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
+const LeaderboardView: React.FC<IProps> = ({ activeLeague }) => {
   const [leaderboardTeam, setLeaderboardTeam] = useState<LeaderboardTeam[]>([]);
   const activeTournament = activeLeague?.activeTournament;
   useEffect(() => {
-    if (
-      isFetchingActiveLeague ||
-      !activeTournament ||
-      !activeTournament.groups?.length
-    ) {
+    if (!activeTournament || !activeTournament.groups?.length) {
       return;
     }
     console.log(
@@ -31,9 +28,9 @@ const LeaderboardView: React.FC<IProps> = () => {
         activeTournament.settings,
       ),
     );
-  }, [activeTournament, isFetchingActiveLeague]);
+  }, [activeTournament]);
   return (
-    <FlexContainer loading={isFetchingActiveLeague} width="100%" height="100%">
+    <FlexContainer width="100%" height="100%">
       <LeaderboardList showHeader teams={leaderboardTeam} />
     </FlexContainer>
   );

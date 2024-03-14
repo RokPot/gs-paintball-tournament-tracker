@@ -1,5 +1,5 @@
 import Game from 'types/Game';
-import { GameState } from 'types/GameState';
+import { GameState, GameWinner } from 'types/GameState';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
@@ -156,114 +156,6 @@ export const getNextScheduledGamePair = (
   };
 };
 
-export const switchGames = (
-  groups: TournamentGroup[],
-  settings: TournamentSettings,
-  currentStage: number,
-  activeGroupId: string,
-  activeGame: Game,
-  pairedGame1: Game,
-  pairedGame2?: Game,
-):
-  | {
-      newActiveGame: Game;
-      newPairedGame1: Game;
-      newPairedGame2?: Game;
-      activeGroup: TournamentGroup;
-    }
-  | FlowState.GroupNotFound
-  | FlowState.NoGamesAvailable => {
-  let activeGroup = groups.find((group) => group.id === activeGroupId);
-  if (!activeGroup) {
-    return FlowState.GroupNotFound;
-  }
-  let newActiveGame: Game = activeGame;
-  let newPairedGame1: Game = pairedGame1;
-  let newPairedGame2: Game | undefined = pairedGame2;
-
-  const {
-    game1Available,
-    game2Available,
-    shouldSwitchToNewPair: switchToNewPair,
-  } = checkIfCurrentGamesAreFinished(pairedGame1, pairedGame2);
-
-  activeGroup = getNextGroup(
-    activeGroup,
-    groups,
-    currentStage,
-    settings.switchGroups,
-  );
-  if (!activeGroup) {
-    return FlowState.GroupNotFound;
-  }
-  if (game1Available || game2Available) {
-    const isGame1Active = pairedGame1.id === activeGame.id;
-    if (settings.switchGames) {
-      if (isGame1Active) {
-        if (game2Available) {
-          // return game 2
-          return {
-            newActiveGame: newPairedGame2!,
-            newPairedGame1,
-            newPairedGame2,
-            activeGroup,
-          };
-        }
-        // return game 1
-        return {
-          newActiveGame: newPairedGame1,
-          newPairedGame1,
-          newPairedGame2,
-          activeGroup,
-        };
-      }
-      if (game1Available) {
-        // return game 1
-        return {
-          newActiveGame: newPairedGame1,
-          newPairedGame1,
-          newPairedGame2,
-          activeGroup,
-        };
-      }
-      // return game 2
-      return {
-        newActiveGame: newPairedGame2!,
-        newPairedGame1,
-        newPairedGame2,
-        activeGroup,
-      };
-    }
-  }
-
-  if (switchToNewPair) {
-    if (settings.switchGames) {
-      const { game1, game2 } = getNextGamePair(activeGroup!);
-      if (!game1) {
-        return FlowState.NoGamesAvailable;
-      }
-      newActiveGame = game1;
-      newPairedGame1 = game1;
-      newPairedGame2 = game2;
-    } else {
-      const newNextGame = getNextGame(activeGroup!);
-      if (!newNextGame?.game1) {
-        return FlowState.NoGamesAvailable;
-      }
-      newActiveGame = newNextGame.game1;
-      newPairedGame1 = newNextGame.game1;
-    }
-  }
-
-  // Not switching games
-  return {
-    newActiveGame,
-    newPairedGame1,
-    newPairedGame2,
-    activeGroup,
-  };
-};
-
 const switchToNextRoundRobinGame = (
   schedule: TournamentScheduleGame[],
   settings: TournamentSettings,
@@ -350,14 +242,23 @@ const switchToNextSingleEliminationsGame = (
     return FlowState.NoGamesAvailable;
   }
   const currentBracketsRound = activeGame.game.bracketProperties.round;
-  const availableScheduledGames = schedule?.filter(
+  let availableScheduledGames = schedule?.filter(
     (scheduledGame) =>
       scheduledGame.game.gameState !== GameState.finished &&
       scheduledGame.game?.bracketProperties?.round === currentBracketsRound,
   );
 
   if (!availableScheduledGames?.length) {
-    return FlowState.NoGamesAvailable;
+    // If current round games are finished go to next round
+    availableScheduledGames = schedule?.filter(
+      (scheduledGame) =>
+        scheduledGame.game.gameState !== GameState.finished &&
+        scheduledGame.game?.bracketProperties?.round ===
+          currentBracketsRound + 1,
+    );
+    if (!availableScheduledGames?.length) {
+      return FlowState.NoGamesAvailable;
+    }
   }
   let newActiveGame: TournamentScheduleGame = activeGame;
   let newPairedGame1: TournamentScheduleGame = pairedScheduledGame1;
@@ -454,10 +355,127 @@ export const switchToNextScheduledGames = (
   return FlowState.NoGamesAvailable;
 };
 
+export const checkIfGameIsFinishedProcedure = (
+  game: Game,
+  timeLeft: number,
+  tournamentSettings: TournamentSettings,
+) => {
+  const { twoWinsDifference, numberOfWinsRequired } = tournamentSettings;
+  const team1Score = game.team1Wins;
+  const team2Score = game.team2Wins;
+
+  if (timeLeft <= 0) {
+    const team1HasMoreWinsThanTeam2 = team1Score > team2Score;
+    const team2HasMoreWinsThanTeam1 = team2Score > team1Score;
+    const isGameADraw = team1Score === team2Score;
+    if (team1HasMoreWinsThanTeam2) {
+      return { gameWinner: GameWinner.team1, winningTeam: game.team1 };
+    }
+    if (team2HasMoreWinsThanTeam1) {
+      return { gameWinner: GameWinner.team2, winningTeam: game.team2 };
+    }
+    if (isGameADraw) {
+      return { gameWinner: GameWinner.draw };
+    }
+  }
+
+  const addToTeamsForTwosDifference = twoWinsDifference ? 1 : 0;
+
+  const team1HasMoreThanThresholdWins = team1Score >= numberOfWinsRequired;
+  const team2HasMoreThanThresholdWins = team2Score >= numberOfWinsRequired;
+
+  const team1HasMoreWinsThanTeam2 =
+    team1Score > team2Score + addToTeamsForTwosDifference;
+  const team2HasMoreWinsThanTeam1 =
+    team2Score > team1Score + addToTeamsForTwosDifference;
+  const isGameADraw = team1Score === team2Score;
+
+  if (team1HasMoreThanThresholdWins && team1HasMoreWinsThanTeam2) {
+    return { gameWinner: GameWinner.team1, winningTeam: game.team1 };
+  }
+  if (team2HasMoreThanThresholdWins && team2HasMoreWinsThanTeam1) {
+    return { gameWinner: GameWinner.team2, winningTeam: game.team2 };
+  }
+  if (
+    (team1HasMoreThanThresholdWins || team2HasMoreThanThresholdWins) &&
+    isGameADraw
+  ) {
+    return { gameWinner: GameWinner.draw };
+  }
+  return { gameWinner: GameWinner.notYet };
+};
+
+export const prepareNextGameIfEliminationsTournament = (
+  game: Game,
+  currentGroup?: TournamentGroup,
+  currentStageTournamentType?: TournamentType,
+) => {
+  if (!currentGroup || !currentStageTournamentType) {
+    return undefined;
+  }
+  switch (currentStageTournamentType) {
+    case TournamentType.singleElimination: {
+      const currentGameBracketProperties = game.bracketProperties;
+      const currentGroupGames = currentGroup.games;
+
+      const nextRelatedBracketGameForWinningTeam = currentGroupGames?.find(
+        (newGame) =>
+          newGame.bracketProperties?.round ===
+            currentGameBracketProperties!.round + 1 &&
+          newGame.bracketProperties.roundGameNumber ===
+            currentGameBracketProperties?.winnerNextRoundGameNumber,
+      );
+      if (nextRelatedBracketGameForWinningTeam) {
+        const winningTeam =
+          game.gameWinner === GameWinner.team1 ? game.team1 : game.team2;
+        if (!nextRelatedBracketGameForWinningTeam.team1.id) {
+          nextRelatedBracketGameForWinningTeam.team1 = winningTeam;
+        } else if (!nextRelatedBracketGameForWinningTeam.team2.id) {
+          nextRelatedBracketGameForWinningTeam.team2 = winningTeam;
+        }
+      }
+      const nextRelatedBracketGameForLosingTeam = currentGroupGames?.find(
+        (newGame) =>
+          newGame.bracketProperties?.round ===
+            currentGameBracketProperties!.round + 1 &&
+          newGame.bracketProperties.roundGameNumber ===
+            currentGameBracketProperties?.loserNextRoundGameNumber,
+      );
+      if (nextRelatedBracketGameForLosingTeam) {
+        const losingTeam =
+          game.gameWinner === GameWinner.team1 ? game.team2 : game.team1;
+        if (!nextRelatedBracketGameForLosingTeam.team1.id) {
+          nextRelatedBracketGameForLosingTeam.team1 = losingTeam;
+        } else if (!nextRelatedBracketGameForLosingTeam.team2.id) {
+          nextRelatedBracketGameForLosingTeam.team2 = losingTeam;
+        }
+      }
+      return {
+        nextRoundGameWinner: nextRelatedBracketGameForWinningTeam,
+        nextRoundGameLoser: nextRelatedBracketGameForLosingTeam,
+      };
+    }
+    case TournamentType.roundRobin:
+    case TournamentType.doubleElimination:
+    case TournamentType.training:
+    default: {
+      break;
+    }
+  }
+  return undefined;
+};
+
+export const finishSelectedGame = (game: Game, gameWinner: GameWinner) => {
+  game.gameState = GameState.finished;
+  game.gameWinner = gameWinner;
+  return game;
+};
+
 const prepareGamesForTheNextStage = (
   teams: Team[][],
   tournament: Tournament,
 ) => {
+  // todo rokpot
   return tournament;
 };
 

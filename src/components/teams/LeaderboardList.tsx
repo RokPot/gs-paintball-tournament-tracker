@@ -107,7 +107,6 @@ const LeaderboardList: React.FC<IProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [rowsPerPage, setRowsPerPage] = useState<number | null>(null);
-  console.log('teamsLength', rowsPerPage, teams);
   useEffect(() => {
     if (!containerRef?.current) {
       return;
@@ -115,7 +114,7 @@ const LeaderboardList: React.FC<IProps> = ({
     const containerRefHeight = containerRef.current.offsetHeight;
     const rowHeight = 60;
     const availableRowsPerPage = Math.floor(containerRefHeight / rowHeight);
-    setRowsPerPage(availableRowsPerPage);
+    setRowsPerPage(availableRowsPerPage || 5);
   }, []);
 
   return (
