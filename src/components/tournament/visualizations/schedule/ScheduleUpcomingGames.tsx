@@ -1,6 +1,6 @@
 import { faCaretRight, faLeftRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Typography, lighten, useTheme } from '@mui/material';
+import { Typography, lighten, styled, useTheme } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import { CSSProperties, useEffect, useState } from 'react';
 import { GameState } from 'types/GameState';
@@ -11,6 +11,16 @@ interface IProps {
   activeLeague: League;
   style?: CSSProperties;
 }
+
+const StyledFlexContainer = styled(FlexContainer)`
+  position: sticky;
+  bottom: -16px;
+  width: calc(100% + 32px);
+  margin: auto -16px -16px -16px;
+  background: ${(theme) => lighten(theme.theme?.palette?.primary.light, 0.7)};
+  height: 50px;
+  padding: 8px;
+`;
 
 const ScheduleUpcomingGames: React.FC<IProps> = ({ activeLeague, style }) => {
   const theme = useTheme();
@@ -31,19 +41,9 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({ activeLeague, style }) => {
   }, [activeLeague?.activeTournament]);
 
   return (
-    <FlexContainer
+    <StyledFlexContainer
       flexDirection="row"
       style={{
-        position: 'sticky',
-        bottom: '-16px',
-        width: 'calc(100% + 32px)',
-        background: lighten(theme.palette.primary.light, 0.7),
-        marginLeft: '-16px',
-        marginRight: '-16px',
-        marginBottom: '-16px',
-        height: '50px',
-        padding: '8px',
-        marginTop: 'auto',
         ...style,
       }}
     >
@@ -78,7 +78,7 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({ activeLeague, style }) => {
           )}
         </>
       ))}
-    </FlexContainer>
+    </StyledFlexContainer>
   );
 };
 

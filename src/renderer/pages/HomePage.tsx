@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { faCogs } from '@fortawesome/free-solid-svg-icons';
+import { faCogs, faSoap } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Avatar,
@@ -10,6 +10,7 @@ import {
   css,
 } from '@mui/material';
 import PageContainer from 'components/shared/PageContainer';
+import useLeaguesList from 'services/queries/league/useLeaguesList';
 
 const StyledStackingContainer = styled('div')(
   () => css`
@@ -32,21 +33,34 @@ const HomePage: React.FC = () => {
     console.log(result);
   });
 
+  const { leaguesList, isFetchingLeaguesList } = useLeaguesList();
+
   return (
     <PageContainer>
-      <Typography variant="h6">Leagues</Typography>
+      <Typography variant="h6">Latest Leagues</Typography>
       <StyledStackingContainer>
-        <Card style={{ width: '400px' }}>
-          <CardHeader
-            action={
-              <IconButton aria-label="settings">
-                <FontAwesomeIcon icon={faCogs} width={15} />
-              </IconButton>
-            }
-            title="SLO Cup 2022"
-            subheader="22.5.2022 - 30.10.2022"
-          />
-        </Card>
+        {leaguesList?.map((league) => (
+          <Card style={{ width: '400px' }}>
+            <CardHeader
+              action={
+                <IconButton aria-label="settings">
+                  <FontAwesomeIcon icon={faCogs} width={15} />
+                </IconButton>
+              }
+              title={league.name}
+              subheader={
+                <Typography>
+                  <FontAwesomeIcon icon={faSoap} />
+                  Tournaments:
+                  {league.tournaments.length}
+                  Teams:
+                  {league.tournaments.length}
+                </Typography>
+              }
+            />
+          </Card>
+        ))}
+
         <Card onClick={tryyySound}>
           <CardHeader
             avatar={

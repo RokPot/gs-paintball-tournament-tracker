@@ -21,15 +21,15 @@
   },
   "license": "MIT",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://electron-react-boilerplate.js.org"
+    "name": "Gluhi Svizci 2024",
+    "email": "rokypot@gmail.com",
+    "url": "https://www.gluhisvizci.eu"
   },
   "contributors": [
     {
-      "name": "Amila Welihinda",
-      "email": "amilajack@gmail.com",
-      "url": "https://github.com/amilajack"
+      "name": "Rok Potočnik",
+      "email": "rokypot@gmail.com",
+      "url": "https://github.com/rokpot"
     }
   ],
   "main": "./src/main/main.ts",
@@ -215,8 +215,8 @@
     "webpack-merge": "^5.9.0"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "GS Paintball Tracker",
+    "appId": "org.gs.paintballTracker",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -274,12 +274,12 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "electron-react-boilerplate",
-      "repo": "electron-react-boilerplate"
+      "owner": "gs-paintball",
+      "repo": "gs-paintball"
     }
   },
   "collective": {
-    "url": "https://opencollective.com/electron-react-boilerplate-594"
+    "url": "https://www.gluhisvizci.com"
   },
   "devEngines": {
     "node": ">=14.x",

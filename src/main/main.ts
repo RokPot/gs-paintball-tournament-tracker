@@ -72,7 +72,7 @@ const createWindow = async (windowPath: string) => {
   mainWindow = new BrowserWindow({
     parent: windowPath && mainWindow ? mainWindow : undefined,
     show: false,
-    icon: getAssetPath('new-test-icon.ico'),
+    icon: getAssetPath('icon.ico'),
     webPreferences: {
       nodeIntegration: true,
       preload: app.isPackaged

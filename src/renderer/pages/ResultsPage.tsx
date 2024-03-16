@@ -11,7 +11,7 @@ interface IProps {}
 const ResultsPage: React.FC<IProps> = () => {
   const { getActiveLeague } = useLeagueService();
   const highest = 1;
-  const [currentActiveView, setCurentActiveView] = useState(0);
+  const [currentActiveView, setCurentActiveView] = useState(1);
   const [activeLeague, setActiveLeague] = useState<League | null>(null);
   const timerRef = useRef<number>();
 
@@ -37,6 +37,12 @@ const ResultsPage: React.FC<IProps> = () => {
     if (timerRef?.current) {
       clearInterval(timerRef?.current);
     }
+
+    const getLeague = async () => {
+      const league = await getActiveLeague();
+      setActiveLeague(league);
+    };
+
     timerRef.current = setInterval(async () => {
       const league = await getActiveLeague();
       setActiveLeague(league);
@@ -47,7 +53,7 @@ const ResultsPage: React.FC<IProps> = () => {
         return curr + 1;
       });
     }, secondsBeforeSwitch * 1000);
-
+    getLeague();
     return () => clearInterval(timerRef?.current);
   }, []);
   console.log(currentActiveView);

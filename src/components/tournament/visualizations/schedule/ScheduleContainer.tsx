@@ -1,4 +1,6 @@
-import { Typography } from '@mui/material';
+import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconButton, Tooltip, Typography, useTheme } from '@mui/material';
 import AddOrEditGame from 'components/game/AddOrEditGame';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
@@ -31,6 +33,7 @@ const ScheduleContainer = ({ activeLeague, disableEditting }: IProps) => {
   const { updateGameWithMatchesAndRecalculate } = useGameQueries();
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
   const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
+  const theme = useTheme();
   const { numberOfTeamSize } = selectedTournament.settings;
   const switchGames = true;
   const onEditGame = (game: Game) => {
@@ -153,19 +156,49 @@ const ScheduleContainer = ({ activeLeague, disableEditting }: IProps) => {
       justifyContent="flex-start"
       alignItems="flex-start"
       gap={0}
+      style={{ paddingTop: '8px' }}
+      position="relative"
     >
+      <Tooltip title="Open Schedule In New Window" arrow placement="left">
+        <IconButton
+          onClick={() => {
+            window.electron.ipcRenderer.sendMessage(
+              'open-new-window',
+              'new_window.html',
+            );
+          }}
+          style={{
+            width: '40px',
+            position: 'absolute',
+            right: '8px',
+            top: '8px',
+          }}
+        >
+          <FontAwesomeIcon
+            icon={faArrowUpRightFromSquare}
+            width={15}
+            height={15}
+            color={theme.palette.primary.main}
+          />
+        </IconButton>
+      </Tooltip>
+
       {scheduleRows?.map((scheduleRow, index) => {
         if (scheduleRow.showDivider) {
           return <StyledDivider key={`${index}1`} />;
         }
         if (scheduleRow.showGroup) {
           return (
-            <ScheduleRowGroup groupIndex={scheduleRow.groupIndex || index} />
+            <ScheduleRowGroup
+              key={`${index}1`}
+              groupIndex={scheduleRow.groupIndex || index}
+            />
           );
         }
 
         return (
           <ScheduleRowGame
+            key={`${index}1`}
             game={scheduleRow.scheduledGame?.game!}
             gameNumber={scheduleRow?.scheduledGame?.gameNumber || index}
             onEditGame={onEditGame}

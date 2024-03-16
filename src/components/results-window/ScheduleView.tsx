@@ -21,7 +21,12 @@ const ScheduleView: React.FC<IProps> = ({ activeLeague }) => {
       <ScheduleContainer activeLeague={activeLeague} disableEditting />
       <ScheduleUpcomingGames
         activeLeague={activeLeague}
-        style={{ margin: '0px', marginTop: 'auto', width: '100%' }}
+        style={{
+          marginLeft: '0px',
+          marginBottom: '0px',
+          marginRight: '0px',
+          width: '100%',
+        }}
       />
     </FlexContainer>
   );
