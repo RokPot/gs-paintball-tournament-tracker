@@ -11,14 +11,10 @@ import ResultsPage from '../pages/ResultsPage';
 import ScoreboardPage from '../pages/ScoreboardPage';
 import TeamsPage from '../pages/TeamsPage';
 import TournamentPage from '../pages/TournamentPage';
+import routes from './Routes';
 
 const App = () => {
   const queryClient = new QueryClient();
-  // backgroundColor: alpha(theme.palette.primary.main, 0.5),
-  // borderRadius: 5,
-  // padding: '2px',
-  // margin: '5px',
-  console.log('asd');
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -47,13 +43,13 @@ const App = () => {
             <Routes>
               <Route path="/results" element={<ResultsPage />} />
 
-              <Route path="/" element={<Layout />}>
-                <Route path="/" element={<HomePage />} />
+              <Route path={routes.HOME} element={<Layout />}>
+                <Route path={routes.HOME} element={<HomePage />} />
 
-                <Route path="/leagues" element={<LeaguesPage />} />
-                <Route path="/teams" element={<TeamsPage />} />
-                <Route path="/tournament" element={<TournamentPage />} />
-                <Route path="/scoreboard" element={<ScoreboardPage />} />
+                <Route path={routes.LEAGUES} element={<LeaguesPage />} />
+                <Route path={routes.TEAMS} element={<TeamsPage />} />
+                <Route path={routes.TOURNAMENT} element={<TournamentPage />} />
+                <Route path={routes.SCOREBOARD} element={<ScoreboardPage />} />
               </Route>
             </Routes>
           </MemoryRouter>

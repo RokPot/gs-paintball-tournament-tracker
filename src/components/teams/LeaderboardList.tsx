@@ -11,12 +11,14 @@ interface IProps {
   teams?: LeaderboardTeam[];
   showHeader?: boolean;
   className?: string;
+  hideFooter?: boolean;
 }
 
 const LeaderboardList: React.FC<IProps> = ({
   teams,
   className,
   showHeader,
+  hideFooter,
 }) => {
   const getColor = (index: number) => {
     switch (index) {
@@ -141,6 +143,7 @@ const LeaderboardList: React.FC<IProps> = ({
             columns={columns}
             rows={teams || []}
             pageSize={rowsPerPage}
+            hideFooter={hideFooter}
           />
         )}
     </FlexContainer>

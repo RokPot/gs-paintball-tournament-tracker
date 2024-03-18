@@ -5,6 +5,7 @@ import FlexContainer from 'components/shared/FlexContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import routes from 'renderer/main/Routes';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
@@ -85,7 +86,7 @@ const FinishedTournamentModal: React.FC<IProps> = ({ tournament }) => {
           />
         )}
         <LeaderboardList teams={leaderboard} />
-        <Button onClick={() => navigate('/tournament')}>
+        <Button onClick={() => navigate(routes.getTournamentRoute())}>
           <Typography variant="p1Medium">Go to Tournaments</Typography>
         </Button>
       </FlexContainer>

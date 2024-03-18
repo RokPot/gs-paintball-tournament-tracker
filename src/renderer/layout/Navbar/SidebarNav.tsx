@@ -1,6 +1,3 @@
-import LogoImage from '../../../../assets/logo3.svg';
-import LogoTextImage from '../../../../assets/logo_text.svg';
-import CustomMenuItem from './CustomMenuItem';
 import {
   faBars,
   faChartSimple,
@@ -14,23 +11,27 @@ import { IconButton, Typography, alpha, styled, useTheme } from '@mui/material';
 import clsx from 'clsx';
 import { useState } from 'react';
 import { Menu, Sidebar } from 'react-pro-sidebar';
+import routes from 'renderer/main/Routes';
+import LogoImage from '../../../../assets/logo3.svg';
+import LogoTextImage from '../../../../assets/logo_text.svg';
+import CustomMenuItem from './CustomMenuItem';
 
 const StyledMenuButtonContainer = styled('div')(
-  (props) => `
+  () => `
     display: flex;
     width: 100%;
-  
-  `
+
+  `,
 );
 const StyledLogoContainer = styled('div')(
-  (props) => `
+  () => `
     display: flex;
     width: 100%;
     height: 100px;
     justify-content: center;
     align-items: center;
     position: relative;
-  `
+  `,
 );
 
 const navBarItems = [
@@ -38,32 +39,32 @@ const navBarItems = [
     icon: faHouse,
     path: '/',
     title: 'Home',
-    to: '/',
+    to: routes.HOME,
   },
   {
     icon: faPeopleGroup,
     path: '/teams/*',
     title: 'Teams',
-    to: '/teams',
+    to: routes.TEAMS,
   },
   {
     icon: faTicket,
     path: '/leagues/*',
     title: 'Leagues',
-    to: '/leagues',
+    to: routes.LEAGUES,
   },
 
   {
     icon: faNetworkWired,
     path: '/tournament/*',
     title: 'Tournament',
-    to: '/tournament',
+    to: routes.getTournamentRoute(),
   },
   {
     icon: faChartSimple,
     path: '/scoreboard/*',
     title: 'Scoreboard',
-    to: '/scoreboard',
+    to: routes.SCOREBOARD,
   },
 ];
 
@@ -79,14 +80,22 @@ const SidebarNav: React.FC = () => {
     >
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <StyledLogoContainer>
-          <img className="logo-image" src={LogoImage} width={65} height={95} />
+          <img
+            className="logo-image"
+            src={LogoImage}
+            width={65}
+            height={95}
+            alt="logo"
+          />
           <div
             className={clsx(
               'logo-text',
-              isMenuCollapsed ? 'collapsed' : 'open'
+              isMenuCollapsed ? 'collapsed' : 'open',
             )}
           >
-            {true && <img src={LogoTextImage} width={90} height={40} />}
+            {true && (
+              <img src={LogoTextImage} width={90} height={40} alt="logo" />
+            )}
           </div>
         </StyledLogoContainer>
 
@@ -96,7 +105,7 @@ const SidebarNav: React.FC = () => {
             onClick={() => setIsMenuCollapsed((old) => !old)}
             className={clsx(
               'menu-icon',
-              isMenuCollapsed ? 'collapsed' : 'open'
+              isMenuCollapsed ? 'collapsed' : 'open',
             )}
           >
             <FontAwesomeIcon icon={faBars} />
@@ -107,7 +116,7 @@ const SidebarNav: React.FC = () => {
             style={{ display: 'flex', flexDirection: 'column' }}
             menuItemStyles={{
               button: ({ level, active }) => {
-                if (level === 0)
+                if (level === 0) {
                   return {
                     color: active
                       ? theme.palette.text.primary
@@ -123,6 +132,8 @@ const SidebarNav: React.FC = () => {
                       background: alpha(theme.palette.primary.light, 0.2),
                     },
                   };
+                }
+                return {};
               },
             }}
           >

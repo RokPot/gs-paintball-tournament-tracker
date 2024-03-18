@@ -13,13 +13,14 @@ import { TournamentScheduleGame } from './TournamentScheduleGame';
 import TournamentState from './TournamentState';
 import TournamentGroup from './TournamentGroup';
 import { TournamentScheduleDto } from './dto/TournamentScheduleDto';
+import { TournamentStage } from './TournamentStage';
 
 export default class Tournament extends IPouchDB {
   id: string;
 
   teams: Team[];
 
-  groups: TournamentGroup[];
+  stages?: TournamentStage[];
 
   state: TournamentState;
 
@@ -35,13 +36,10 @@ export default class Tournament extends IPouchDB {
 
   leaderboard?: LeaderboardTeam[];
 
-  schedule?: TournamentScheduleGame[];
-
   constructor(props: ITournament) {
     super(props._id, props._rev, props.docType || DocType.Tournament);
     this.id = props.id;
     this.teams = props.teams || [];
-    this.groups = props.groups || [];
     this.state = props.state;
     this.name = props.name;
     this.startDate = dayjs(props.startDate);
@@ -49,7 +47,7 @@ export default class Tournament extends IPouchDB {
     this.settings = props.settings || DefaultTournamentSettings;
     this.gameSettings = props.gameSettings || DefaultGameSettings;
     this.leaderboard = props.leaderboard;
-    this.schedule = props.schedule;
+    this.stages = props.stages;
   }
 
   public toDto = (): TournamentDto => {
@@ -59,7 +57,6 @@ export default class Tournament extends IPouchDB {
       docType: this.docType,
       id: this.id,
       gameSettings: this.gameSettings,
-      groupIds: this.groups?.map((group) => group._id),
       name: this.name,
       settings: this.settings,
       state: this.state,

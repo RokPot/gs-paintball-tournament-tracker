@@ -16,7 +16,7 @@ import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
 import AddOrEditTeam from 'components/teams/AddOrEditTeam';
 import useTeamQueries from 'hooks/team/useTeamQueries';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useDeleteTeam from 'services/queries/team/useDeleteTeam';
 import useTeamInvalidations from 'services/queries/team/useTeamInvalidations';
 import useTeamsList from 'services/queries/team/useTeamsList';
@@ -149,6 +149,18 @@ const TeamsPage = () => {
     setTeamToUpsert(undefined);
   };
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [rowsPerPage, setRowsPerPage] = useState<number | null>(null);
+  useEffect(() => {
+    if (!containerRef?.current) {
+      return;
+    }
+    const containerRefHeight = containerRef.current.offsetHeight;
+    const rowHeight = 60;
+    const availableRowsPerPage = Math.floor(containerRefHeight / rowHeight);
+    setRowsPerPage(availableRowsPerPage || 5);
+  }, []);
+
   return (
     <PageContainer>
       <StyledHeaderContainer>
@@ -158,14 +170,16 @@ const TeamsPage = () => {
         </Button>
       </StyledHeaderContainer>
 
-      <div style={{ height: 'calc(100% - 40px)' }}>
-        <CustomDataTable
-          columns={columns}
-          rows={teamsList || []}
-          loading={isFetchingTeamsList}
-          height="100%"
-          pageSize={15}
-        />
+      <div style={{ height: 'calc(100% - 40px)' }} ref={containerRef}>
+        {rowsPerPage !== null && rowsPerPage > 0 && (
+          <CustomDataTable
+            columns={columns}
+            rows={teamsList || []}
+            loading={isFetchingTeamsList}
+            height="100%"
+            pageSize={rowsPerPage}
+          />
+        )}
       </div>
 
       <CustomModal

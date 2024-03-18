@@ -1,6 +1,7 @@
 import LeaderboardView from 'components/results-window/LeaderboardView';
 import ScheduleView from 'components/results-window/ScheduleView';
 import FlexContainer from 'components/shared/FlexContainer';
+import ScheduleUpcomingGames from 'components/tournament/visualizations/schedule/ScheduleUpcomingGames';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import useLeagueService from 'services/LeagueService';
 import League from 'types/League';
@@ -12,14 +13,8 @@ const ResultsPage: React.FC<IProps> = () => {
   const { getActiveLeague } = useLeagueService();
   const highest = 1;
   const [currentActiveView, setCurentActiveView] = useState(1);
-  const [activeLeague, setActiveLeague] = useState<League | null>(null);
+  const [activeLeague, setActiveLeague] = useState<League>();
   const timerRef = useRef<number>();
-
-  window.electron.ipcRenderer.on('tournament-updated', async (result) => {
-    console.log(result);
-    const league = await getActiveLeague();
-    console.log(league);
-  });
 
   const currentActiveElement = useMemo(() => {
     switch (currentActiveView) {
@@ -40,12 +35,12 @@ const ResultsPage: React.FC<IProps> = () => {
 
     const getLeague = async () => {
       const league = await getActiveLeague();
-      setActiveLeague(league);
+      setActiveLeague(league || undefined);
     };
 
     timerRef.current = setInterval(async () => {
       const league = await getActiveLeague();
-      setActiveLeague(league);
+      setActiveLeague(league || undefined);
       setCurentActiveView((curr) => {
         if (curr + 1 > highest) {
           return 0;
@@ -61,6 +56,16 @@ const ResultsPage: React.FC<IProps> = () => {
   return (
     <FlexContainer flexDirection="column" height="100%" alignItems="flex-start">
       {currentActiveElement}
+      <ScheduleUpcomingGames
+        activeLeague={activeLeague}
+        disableNewWindowOpen
+        style={{
+          marginLeft: '0px',
+          marginBottom: '0px',
+          marginRight: '0px',
+          width: '100%',
+        }}
+      />
     </FlexContainer>
   );
 };

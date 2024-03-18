@@ -5,6 +5,7 @@ export enum DocType {
   League = 'league',
   Game = 'game',
   Group = 'group',
+  TournamentStage = 'tournamentStage',
 }
 export class IPouchDB {
   _id: string;

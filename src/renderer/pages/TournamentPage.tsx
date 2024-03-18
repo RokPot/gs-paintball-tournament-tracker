@@ -32,13 +32,16 @@ import TournamentDetails from 'components/tournament/TournamentDetails';
 import TournamentGroups from 'components/tournament/TournamentGroups';
 import TournamentResults from 'components/tournament/TournamentResults';
 import TournamentScheduleContainer from 'components/tournament/TournamentScheduleContainer';
+import ScheduleUpcomingGames from 'components/tournament/visualizations/schedule/ScheduleUpcomingGames';
 import useLeagueQueries from 'hooks/league/useLeagueQueries';
 import useTournamentQueries from 'hooks/tournament/useTournamentQueries';
 import { useCallback, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import useAddGame from 'services/queries/game/useAddGame';
 import useAddGroup from 'services/queries/group/useAddGroup';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
 import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
+import useLeaguesList from 'services/queries/league/useLeaguesList';
 import Game from 'types/Game';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
@@ -84,10 +87,6 @@ enum TournamentTabsLabel {
 
 const TournamentPage = () => {
   const [activeTab, setActiveTab] = useState(TournamentTabs.tournamentDetails);
-  const { setSelectedLeague, setSelectedLeagueTournament } = useLeagueQueries();
-  const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
-  const { addOrEditTournament } = useTournamentQueries();
-  const { invalidateSelectedLeague } = useLeagueInvalidations();
   const [
     allowAutomaticTournamentAssignment,
     setAllowAutomaticTournamentAssignment,
@@ -96,11 +95,20 @@ const TournamentPage = () => {
     useState<{ isOpen: boolean; tournament?: Tournament }>({ isOpen: false });
   const [isInitializeTournamentModalOpen, setIsInitializeTournamentModalOpen] =
     useState(false);
+
+  const { setSelectedLeague, setSelectedLeagueTournament } = useLeagueQueries();
+  const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
+  const { addOrEditTournament } = useTournamentQueries();
+  const { invalidateSelectedLeague } = useLeagueInvalidations();
   const { addGamesBulk } = useAddGame();
   const { addGroupsBulk } = useAddGroup();
+  const { leaguesList } = useLeaguesList();
 
+  const params = useParams();
   const theme = useTheme();
+
   const selectedTournament = activeLeague?.activeTournament;
+
   const setSelectedTournament = useCallback(
     async (tournament?: Tournament) => {
       await setSelectedLeagueTournament(tournament, activeLeague);
@@ -149,7 +157,8 @@ const TournamentPage = () => {
     if (
       !activeLeague ||
       activeLeague?.activeTournament ||
-      !allowAutomaticTournamentAssignment
+      !allowAutomaticTournamentAssignment ||
+      params?.leagueId
     ) {
       if (activeLeague?.activeTournament) {
         setAllowAutomaticTournamentAssignment(false);
@@ -171,7 +180,28 @@ const TournamentPage = () => {
       }
     }
     setAllowAutomaticTournamentAssignment(false);
-  }, [allowAutomaticTournamentAssignment, activeLeague, setSelectedTournament]);
+  }, [
+    allowAutomaticTournamentAssignment,
+    activeLeague,
+    setSelectedTournament,
+    params?.leagueId,
+  ]);
+
+  useEffect(() => {
+    const { leagueId } = params;
+    if (!leagueId) {
+      return;
+    }
+    const trySetNewActiveLeague = async () => {
+      const leagueToSetActive = leaguesList?.find(
+        (league) => league.id === leagueId,
+      );
+      await setSelectedLeague(leagueToSetActive);
+      setAddOrEditTournamentModalProps({ isOpen: true });
+    };
+    trySetNewActiveLeague();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const generateTournament = useCallback(() => {
     setIsInitializeTournamentModalOpen(true);
@@ -214,7 +244,7 @@ const TournamentPage = () => {
                 <Button variant="contained" onClick={generateTournament}>
                   <Typography variant="p1">
                     <FontAwesomeIcon icon={faRightLong} />
-                    Begin Tournament
+                    Initialize Tournament
                     <FontAwesomeIcon icon={faLeftLong} />
                   </Typography>
                 </Button>
@@ -317,6 +347,7 @@ const TournamentPage = () => {
           {activeTab === TournamentTabs.schedule && (
             <TournamentScheduleContainer activeLeague={activeLeague} />
           )}
+          <ScheduleUpcomingGames activeLeague={activeLeague} />
         </FlexContainer>
       ) : (
         activeLeague && (

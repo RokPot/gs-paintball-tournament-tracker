@@ -1,10 +1,9 @@
 import FlexContainer from 'components/shared/FlexContainer';
 import ScheduleContainer from 'components/tournament/visualizations/schedule/ScheduleContainer';
-import ScheduleUpcomingGames from 'components/tournament/visualizations/schedule/ScheduleUpcomingGames';
 import League from 'types/League';
 
 interface IProps {
-  activeLeague: League | null;
+  activeLeague?: League;
 }
 
 const ScheduleView: React.FC<IProps> = ({ activeLeague }) => {
@@ -18,15 +17,10 @@ const ScheduleView: React.FC<IProps> = ({ activeLeague }) => {
       alignItems="flex-start"
       flexDirection="column"
     >
-      <ScheduleContainer activeLeague={activeLeague} disableEditting />
-      <ScheduleUpcomingGames
+      <ScheduleContainer
         activeLeague={activeLeague}
-        style={{
-          marginLeft: '0px',
-          marginBottom: '0px',
-          marginRight: '0px',
-          width: '100%',
-        }}
+        disableEditting
+        disableNewWindowOpen
       />
     </FlexContainer>
   );

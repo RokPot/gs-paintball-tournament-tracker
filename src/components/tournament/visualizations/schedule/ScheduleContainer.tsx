@@ -26,9 +26,14 @@ interface ScheduleRow {
 interface IProps {
   activeLeague: League;
   disableEditting?: boolean;
+  disableNewWindowOpen?: boolean;
 }
 
-const ScheduleContainer = ({ activeLeague, disableEditting }: IProps) => {
+const ScheduleContainer = ({
+  activeLeague,
+  disableEditting,
+  disableNewWindowOpen,
+}: IProps) => {
   const selectedTournament = activeLeague.activeTournament!;
   const { updateGameWithMatchesAndRecalculate } = useGameQueries();
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
@@ -44,7 +49,7 @@ const ScheduleContainer = ({ activeLeague, disableEditting }: IProps) => {
     setGameForEditModal(undefined);
     setGameForEditModal(undefined);
   };
-  console.log(selectedTournament?.groups?.[0]?.games);
+
   useEffect(() => {
     if (
       !selectedTournament?.groups?.length ||
@@ -159,29 +164,31 @@ const ScheduleContainer = ({ activeLeague, disableEditting }: IProps) => {
       style={{ paddingTop: '8px' }}
       position="relative"
     >
-      <Tooltip title="Open Schedule In New Window" arrow placement="left">
-        <IconButton
-          onClick={() => {
-            window.electron.ipcRenderer.sendMessage(
-              'open-new-window',
-              'new_window.html',
-            );
-          }}
-          style={{
-            width: '40px',
-            position: 'absolute',
-            right: '8px',
-            top: '8px',
-          }}
-        >
-          <FontAwesomeIcon
-            icon={faArrowUpRightFromSquare}
-            width={15}
-            height={15}
-            color={theme.palette.primary.main}
-          />
-        </IconButton>
-      </Tooltip>
+      {!disableNewWindowOpen && (
+        <Tooltip title="Open Schedule In New Window" arrow placement="left">
+          <IconButton
+            onClick={() => {
+              window.electron.ipcRenderer.sendMessage(
+                'open-new-window',
+                'new_window.html',
+              );
+            }}
+            style={{
+              width: '40px',
+              position: 'absolute',
+              right: '8px',
+              top: '0px',
+            }}
+          >
+            <FontAwesomeIcon
+              icon={faArrowUpRightFromSquare}
+              width={15}
+              height={15}
+              color={theme.palette.primary.main}
+            />
+          </IconButton>
+        </Tooltip>
+      )}
 
       {scheduleRows?.map((scheduleRow, index) => {
         if (scheduleRow.showDivider) {

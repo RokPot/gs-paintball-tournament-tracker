@@ -11,7 +11,7 @@ interface IProps {
   to?: string;
 }
 
-function CustomMenuItem({ path, icon, title, to }: IProps) {
+const CustomMenuItem = ({ path, icon, title, to }: IProps) => {
   const { pathname } = useLocation();
   const isPathActive = !!matchPath(path, pathname);
   const theme = useTheme();
@@ -34,6 +34,6 @@ function CustomMenuItem({ path, icon, title, to }: IProps) {
       <Typography color={theme.palette.primary.dark}>{title}</Typography>
     </MenuItem>
   );
-}
+};
 
 export default CustomMenuItem;

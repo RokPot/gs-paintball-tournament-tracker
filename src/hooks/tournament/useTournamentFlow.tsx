@@ -10,6 +10,7 @@ import { GameState, GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
 import MatchState from 'types/MatchState';
 import Tournament from 'types/Tournament';
+import TournamentGroup from 'types/TournamentGroup';
 import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentStatus } from 'types/TournamentStatus';
 import {
@@ -414,6 +415,29 @@ const useTournamentFlow = (tournament?: Tournament) => {
     tournament,
   ]);
 
+  const confirmNextTournamentStage = useCallback(
+    async (nextTournamentStageGroup: TournamentGroup) => {
+      if (!tournament) {
+        return;
+      }
+      const currentNextTournamentGroupIndex = tournament.groups.findIndex(
+        (group) => group.id === nextTournamentStageGroup.id,
+      );
+
+      if (currentNextTournamentGroupIndex < 0) {
+        tournament.groups.push(nextTournamentStageGroup);
+      } else {
+        tournament.groups[currentNextTournamentGroupIndex] =
+          nextTournamentStageGroup;
+      }
+      tournament.state.status = TournamentStatus.inProgress;
+
+      await updateTournament(tournament);
+      await invalidateSelectedLeague();
+    },
+    [invalidateSelectedLeague, tournament, updateTournament],
+  );
+
   return useMemo(() => {
     return {
       currentStage,
@@ -428,6 +452,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
       showFinishMatchPopup,
       setFinishMatchModal,
       isProcessing,
+      confirmNextTournamentStage,
     };
   }, [
     currentStage,
@@ -442,6 +467,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
     showFinishMatchPopup,
     setFinishMatchModal,
     isProcessing,
+    confirmNextTournamentStage,
   ]);
 };
 

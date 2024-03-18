@@ -6,7 +6,7 @@ import League from 'types/League';
 import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
 
 interface IProps {
-  activeLeague: League | null;
+  activeLeague?: League;
 }
 
 const LeaderboardView: React.FC<IProps> = ({ activeLeague }) => {
@@ -31,7 +31,7 @@ const LeaderboardView: React.FC<IProps> = ({ activeLeague }) => {
   }, [activeTournament]);
   return (
     <FlexContainer width="100%" height="100%">
-      <LeaderboardList showHeader teams={leaderboardTeam} />
+      <LeaderboardList showHeader hideFooter teams={leaderboardTeam} />
     </FlexContainer>
   );
 };

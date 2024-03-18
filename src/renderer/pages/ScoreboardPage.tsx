@@ -45,6 +45,7 @@ const ScoreboardPage: React.FC<IProps> = () => {
     hasGameTimeRanOut,
     showFinishMatchPopup,
     isProcessing,
+    confirmNextTournamentStage,
   } = useTournamentFlow(tournament);
   const finishMatchInternal = useCallback(
     async (match: Match) => {
@@ -52,6 +53,8 @@ const ScoreboardPage: React.FC<IProps> = () => {
     },
     [finishMatch],
   );
+
+  console.log(tournament?.schedule);
 
   if (isMobile) {
     return (
@@ -81,6 +84,7 @@ const ScoreboardPage: React.FC<IProps> = () => {
         showFinishMatchPopup={showFinishMatchPopup}
         isCurrentlyInCountdown={timingBreak}
         isTournamentFinished={!!tournament?.state?.isTournamentFinished}
+        confirmNextTournamentStage={confirmNextTournamentStage}
       />
     </PageContainer>
   );

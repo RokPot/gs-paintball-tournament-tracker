@@ -1,15 +1,28 @@
-import { faCaretRight, faLeftRight } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowUpRightFromSquare,
+  faCaretRight,
+  faLeftRight,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Typography, lighten, styled, useTheme } from '@mui/material';
+import {
+  IconButton,
+  Tooltip,
+  Typography,
+  lighten,
+  styled,
+  useTheme,
+} from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import { CSSProperties, useEffect, useState } from 'react';
 import { GameState } from 'types/GameState';
 import League from 'types/League';
 import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
+import { TournamentStatus } from 'types/TournamentStatus';
 
 interface IProps {
-  activeLeague: League;
+  activeLeague?: League;
   style?: CSSProperties;
+  disableNewWindowOpen?: boolean;
 }
 
 const StyledFlexContainer = styled(FlexContainer)`
@@ -22,7 +35,11 @@ const StyledFlexContainer = styled(FlexContainer)`
   padding: 8px;
 `;
 
-const ScheduleUpcomingGames: React.FC<IProps> = ({ activeLeague, style }) => {
+const ScheduleUpcomingGames: React.FC<IProps> = ({
+  activeLeague,
+  style,
+  disableNewWindowOpen,
+}) => {
   const theme = useTheme();
 
   const [upcomingGames, setUpcomingGames] = useState<TournamentScheduleGame[]>(
@@ -40,6 +57,13 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({ activeLeague, style }) => {
     setUpcomingGames(notFinishedScheduledGames?.slice(0, 2) || []);
   }, [activeLeague?.activeTournament]);
 
+  if (
+    !activeLeague?.activeTournament ||
+    activeLeague?.activeTournament.state.isTournamentFinished ||
+    activeLeague?.activeTournament.state.status !== TournamentStatus.inProgress
+  ) {
+    return null;
+  }
   return (
     <StyledFlexContainer
       flexDirection="row"
@@ -56,7 +80,7 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({ activeLeague, style }) => {
       </Typography>
 
       {upcomingGames.map((upcomingGame, index) => (
-        <>
+        <div key={index}>
           <Typography
             variant="p1Medium"
             style={{ textDecoration: 'underline' }}
@@ -76,8 +100,31 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({ activeLeague, style }) => {
               color={theme.palette.primary.main}
             />
           )}
-        </>
+        </div>
       ))}
+      {!disableNewWindowOpen && (
+        <Tooltip title="Open Schedule In New Window" arrow placement="left">
+          <IconButton
+            onClick={() => {
+              window.electron.ipcRenderer.sendMessage(
+                'open-new-window',
+                'new_window.html',
+              );
+            }}
+            style={{
+              width: '40px',
+              marginLeft: 'auto',
+            }}
+          >
+            <FontAwesomeIcon
+              icon={faArrowUpRightFromSquare}
+              width={15}
+              height={15}
+              color={theme.palette.primary.main}
+            />
+          </IconButton>
+        </Tooltip>
+      )}
     </StyledFlexContainer>
   );
 };

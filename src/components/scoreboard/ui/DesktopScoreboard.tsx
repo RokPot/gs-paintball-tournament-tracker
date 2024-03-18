@@ -4,6 +4,7 @@ import FlexContainer from 'components/shared/FlexContainer';
 import { memo, useMemo } from 'react';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
 import { Match } from 'types/Match';
+import TournamentGroup from 'types/TournamentGroup';
 import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentStatus } from 'types/TournamentStatus';
 import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
@@ -26,6 +27,9 @@ interface IProps {
   startStopMatch: () => void;
   finishMatch: (match: Match) => Promise<void>;
   setShowFinishMatchPopup: (showFinishPopup: boolean) => void;
+  confirmNextTournamentStage: (
+    nextTournamentStageGroup: TournamentGroup,
+  ) => Promise<void>;
 }
 
 const DesktopScoreboard: React.FC<IProps> = ({
@@ -39,6 +43,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
   finishMatch,
   setShowFinishMatchPopup,
   isCurrentlyInCountdown,
+  confirmNextTournamentStage,
 }) => {
   const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
 
@@ -52,6 +57,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
   const isTournamentNotStartedYet = ![
     TournamentStatus.inProgress,
     TournamentStatus.finished,
+    TournamentStatus.stageChange,
   ].includes(tournament?.state?.status || TournamentStatus.created);
   const isTournamentFinished =
     tournament?.state?.status === TournamentStatus.finished;
@@ -219,6 +225,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
         canClose
       >
         <StartTournament
+          status={tournament?.state.status}
           tournamentSelected={!!tournament}
           onTournamentStart={async () => {
             await beginTournament();
@@ -226,7 +233,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
         />
       </CustomModal>
       <StageChangeTournamentModal
-        onTournamentContinueStage={() => {}}
+        onTournamentContinueStage={confirmNextTournamentStage}
         tournament={tournament}
       />
       <FinishedTournamentModal

@@ -4,6 +4,7 @@ import Team from 'types/Team';
 import TournamentGroup from 'types/TournamentGroup';
 import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
+import { TournamentStage } from 'types/TournamentStage';
 import TournamentState from 'types/TournamentState';
 import { PouchDBDto } from 'types/dto/PouchDBDto';
 
@@ -11,8 +12,6 @@ export interface ITournament extends PouchDBDto {
   id: string;
 
   teams?: Team[];
-
-  groups?: TournamentGroup[];
 
   state: TournamentState;
 
@@ -28,5 +27,5 @@ export interface ITournament extends PouchDBDto {
 
   leaderboard?: LeaderboardTeam[];
 
-  schedule?: TournamentScheduleGame[];
+  stages?: TournamentStage[];
 }

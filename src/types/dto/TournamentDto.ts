@@ -26,4 +26,6 @@ export interface TournamentDto extends PouchDBDto {
   leaderboardTeamIds: string[];
 
   schedule?: TournamentScheduleDto[];
+
+  stages:
 }
