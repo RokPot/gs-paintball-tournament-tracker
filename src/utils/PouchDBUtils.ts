@@ -142,7 +142,6 @@ export const mapTournamentsFromResponse = (
     const newTournament = new Tournament({
       ...teamInResult,
       leaderboard: [],
-      schedule: [],
     });
     tournaments.push(newTournament);
   });
@@ -177,7 +176,6 @@ export const getTournamentsList = (result: PouchDB.Query.Response<any>) => {
     // todo rokpot
     const newTournament: Tournament = new Tournament({
       ...rootDoc,
-      schedule: rootDoc.schedule as any,
     });
 
     const teams = mapTeamsFromResponse(
@@ -185,19 +183,48 @@ export const getTournamentsList = (result: PouchDB.Query.Response<any>) => {
       otherDocs.filter((val) => val.value.type === DocType.Team),
     );
 
-    const groups = mapGroupsFromResponse(
-      rootDoc?.groupIds,
-      otherDocs.filter((val) => val.value.type === DocType.Group),
-    );
-
     newTournament.teams = teams;
-    newTournament.groups = groups;
     leagues.push(newTournament);
   });
   return leagues;
 };
 
 export const getGroupsList = (result: PouchDB.Query.Response<any>) => {
+  const groups: TournamentGroup[] = [];
+  const groupedResults = groupBy(result.rows, (row: any) => row.id);
+  Object.keys(groupedResults)?.forEach((key) => {
+    const { rootDoc, otherDocs } =
+      getRootElementAndLinkedDocs<TournamentGroupDto>(
+        groupedResults[key],
+        DocType.Group,
+      );
+
+    if (!rootDoc) {
+      return;
+    }
+
+    const teams = mapTeamsFromResponse(
+      rootDoc?.teamIds,
+      otherDocs.filter((val) => val.value.type === DocType.Team),
+    );
+    const games = mapGamesFromResponse(
+      rootDoc?.gameIds,
+      teams,
+      otherDocs.filter((val) => val.value.type === DocType.Game),
+    );
+
+    const newTournament: TournamentGroup = new TournamentGroup({
+      ...rootDoc,
+      games,
+      teams,
+    });
+
+    groups.push(newTournament);
+  });
+  return groups;
+};
+
+export const getStagesList = (result: PouchDB.Query.Response<any>) => {
   const groups: TournamentGroup[] = [];
   const groupedResults = groupBy(result.rows, (row: any) => row.id);
   Object.keys(groupedResults)?.forEach((key) => {
