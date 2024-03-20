@@ -16,7 +16,7 @@ import FlexContainer from 'components/shared/FlexContainer';
 import { CSSProperties, useEffect, useState } from 'react';
 import { GameState } from 'types/GameState';
 import League from 'types/League';
-import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
+import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentStatus } from 'types/TournamentStatus';
 
 interface IProps {
@@ -51,7 +51,7 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
       return;
     }
     const notFinishedScheduledGames =
-      activeLeague?.activeTournament.schedule?.filter(
+      activeLeague?.activeTournament.currentStage?.schedule?.filter(
         (scheduledGame) => scheduledGame.game.gameState === GameState.created,
       );
     setUpcomingGames(notFinishedScheduledGames?.slice(0, 2) || []);

@@ -3,7 +3,7 @@ import { GameState, GameWinner } from 'types/GameState';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
-import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
+import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentStatus } from 'types/TournamentStatus';
 import { TournamentType } from 'types/TournamentType';

@@ -5,11 +5,10 @@ import AddOrEditGame from 'components/game/AddOrEditGame';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import useGameQueries from 'hooks/game/useGameQueries';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Game from 'types/Game';
 import League from 'types/League';
-import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
-import { generateTournamentSchedule } from 'utils/tournamentUtils';
+import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { ReactComponent as EmptyState } from '../../../../../assets/icons/EmptyInbox.svg';
 import ScheduleRowGame from './ScheduleRowGame';
 import ScheduleRowGroup, { StyledDivider } from './ScheduleRowGroup';
@@ -39,8 +38,22 @@ const ScheduleContainer = ({
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
   const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
   const theme = useTheme();
-  const { numberOfTeamSize } = selectedTournament.settings;
-  const switchGames = true;
+  const { numberOfTeamSize, switchGames } = selectedTournament.settings;
+
+  const currentSchedule = useMemo(() => {
+    if (!selectedTournament?.currentStageSchedule) {
+      return undefined;
+    }
+    return selectedTournament.currentStageSchedule;
+  }, [selectedTournament?.currentStageSchedule]);
+
+  const currentGroups = useMemo(() => {
+    if (!selectedTournament?.currentStageGroups) {
+      return undefined;
+    }
+    return selectedTournament.currentStageGroups;
+  }, [selectedTournament.currentStageGroups]);
+
   const onEditGame = (game: Game) => {
     setGameForEditModal(game);
   };
@@ -51,25 +64,16 @@ const ScheduleContainer = ({
   };
 
   useEffect(() => {
-    if (
-      !selectedTournament?.groups?.length ||
-      !selectedTournament?.schedule?.length
-    ) {
-      if (selectedTournament?.groups?.length) {
-        selectedTournament.schedule = generateTournamentSchedule(
-          selectedTournament?.groups,
-          selectedTournament.settings,
-        );
-      }
+    if (!currentGroups?.length || !currentSchedule?.length) {
       return;
     }
     const newScheduledRows: ScheduleRow[] = [];
     let currentGroupedGamesLength = 0;
     const maxGroupedGames = switchGames ? 2 : 1;
-    selectedTournament?.schedule?.forEach((scheduledGame, index) => {
-      const previousScheduledGame = selectedTournament?.schedule?.[index - 1];
+    currentSchedule?.forEach((scheduledGame, index) => {
+      const previousScheduledGame = currentSchedule[index - 1];
       const currentScheduledGame = scheduledGame;
-      const nextScheduledGame = selectedTournament?.schedule?.[index + 1];
+      const nextScheduledGame = currentSchedule[index + 1];
 
       const isNextGroupDifferent =
         index > 0 &&
@@ -111,7 +115,7 @@ const ScheduleContainer = ({
       if (maxGroupedGames !== currentGroupedGamesLength) {
         if (
           nextScheduledGame?.group.id !== currentScheduledGame.group.id &&
-          index + 1 < (selectedTournament.schedule?.length || 0)
+          index + 1 < (currentSchedule?.length || 0)
         ) {
           // newScheduledRows.push({ showDivider: true });
           currentGroupedGamesLength = 0;
@@ -119,14 +123,9 @@ const ScheduleContainer = ({
       }
     });
     setScheduleRows(newScheduledRows);
-  }, [
-    selectedTournament,
-    selectedTournament?.groups?.length,
-    selectedTournament?.schedule,
-    switchGames,
-  ]);
+  }, [currentGroups, currentSchedule, selectedTournament, switchGames]);
 
-  if (!selectedTournament?.groups?.length) {
+  if (!currentGroups?.length) {
     return (
       <FlexContainer
         justifyContent="center"
@@ -141,7 +140,7 @@ const ScheduleContainer = ({
     );
   }
 
-  if (!selectedTournament?.schedule?.length) {
+  if (!currentSchedule?.length) {
     return (
       <FlexContainer
         justifyContent="center"

@@ -134,7 +134,7 @@ const AddOrEditTournament = ({
             endDate: values.endDate.toISOString(),
             startDate: values.startDate.toISOString(),
 
-            groups: tournament?.groups || [],
+            stages: tournament?.stages || [],
 
             state: new TournamentState({
               id: tournament?.state?.id || v4(),

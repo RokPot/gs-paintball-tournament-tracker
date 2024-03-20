@@ -25,9 +25,11 @@ const TournamentDetailsList = ({ tournament }: IProps) => {
       }
     };
     const totalGames =
-      tournament?.groups.reduce(
+      tournament?.stages?.reduce(
         (prev, curr) =>
-          curr.games.filter((game) => checkForGameState(game)).length,
+          curr.groups
+            .flatMap((group) => group.games)
+            .filter((game) => checkForGameState(game)).length,
         0,
       ) || 0;
     return totalGames <= 0 ? 'Tournament has not started yet' : totalGames;

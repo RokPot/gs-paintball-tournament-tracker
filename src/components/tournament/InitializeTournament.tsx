@@ -15,8 +15,8 @@ import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
 import { TournamentGroupSettings } from 'types/TournamentGroupSettings';
-import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
+import TournamentStage from 'types/TournamentStage';
 import { TournamentType, TournamentTypeLabels } from 'types/TournamentType';
 import { shuffleArray } from 'utils/arrayUtils';
 import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
@@ -39,9 +39,8 @@ interface IProps {
   tournament: Tournament;
   className?: string;
   onConfirm: (
-    groups: TournamentGroup[],
+    stages: TournamentStage[],
     settings: TournamentSettings,
-    schedule: TournamentScheduleGame[],
   ) => Promise<void>;
 }
 
@@ -50,24 +49,23 @@ const InitializeTournament: React.FC<IProps> = ({
   className,
   onConfirm,
 }) => {
-  const [groups, setGroups] = useState(tournament.groups);
-  const [schedule, setSchedule] = useState(tournament.schedule || []);
+  const [stages, setStages] = useState(tournament.stages);
   const [isProcessing, setIsProcessing] = useState(false);
   const [tournamentSettings, setTournamentSettings] = useState(
     tournament.settings,
   );
   const theme = useTheme();
 
-  const generateNewGroups = useCallback(
+  const generateNewStages = useCallback(
     (newTournamentSettings: TournamentSettings) => {
       const numberOfGroups = newTournamentSettings.numberOfGroups || 1;
       const shuffledTeams = shuffleArray(tournament.teams);
-      const newGroups: TournamentGroup[] = [];
+      const initialStageGroups: TournamentGroup[] = [];
 
       // set new empty groups
       for (let i = 0; i < numberOfGroups; i += 1) {
         const newId = v4();
-        newGroups.push(
+        initialStageGroups.push(
           new TournamentGroup({
             games: [],
             groupIndex: i + 1,
@@ -82,41 +80,55 @@ const InitializeTournament: React.FC<IProps> = ({
 
       // push teams to groups
       for (let i = 0, groupIndex = 0; i < shuffledTeams.length; i += 1) {
-        newGroups[groupIndex].teams.push(shuffledTeams[i]);
+        initialStageGroups[groupIndex].teams.push(shuffledTeams[i]);
         groupIndex = groupIndex + 1 >= numberOfGroups ? 0 : groupIndex + 1;
       }
 
       if (newTournamentSettings.type === TournamentType.roundRobin) {
-        for (let i = 0; i < newGroups.length; i += 1) {
-          if (newGroups[i].teams.length > 1) {
+        for (let i = 0; i < initialStageGroups.length; i += 1) {
+          if (initialStageGroups[i].teams.length > 1) {
             const { games: roundRobinGames } = generateGamesForRoundRobin(
-              newGroups[i].teams,
+              initialStageGroups[i].teams,
               tournament.gameSettings,
             );
-            newGroups[i].games = roundRobinGames;
+            initialStageGroups[i].games = roundRobinGames;
           }
         }
       } else if (
         newTournamentSettings.type === TournamentType.singleElimination ||
         newTournamentSettings.type === TournamentType.doubleElimination
       ) {
-        for (let i = 0; i < newGroups.length; i += 1) {
-          if (newGroups[i].teams.length > 1) {
+        for (let i = 0; i < initialStageGroups.length; i += 1) {
+          if (initialStageGroups[i].teams.length > 1) {
             const {
               games: bracketGames,
               totalNumberOfRounds: numberOfBracketRounds,
             } = generateGamesForEliminationBrackets(
-              newGroups[i].teams,
+              initialStageGroups[i].teams,
               tournament.gameSettings,
             );
 
-            newGroups[i].games = bracketGames;
-            newGroups[i].settings = {
+            initialStageGroups[i].games = bracketGames;
+            initialStageGroups[i].settings = {
               bracketNumberOfRounds: numberOfBracketRounds,
             };
           }
         }
       }
+      const initialStageSchedule = generateTournamentSchedule(
+        initialStageGroups,
+        newTournamentSettings,
+      );
+      const newStageId = v4();
+      const initialStage = new TournamentStage({
+        _id: newStageId,
+        id: newStageId,
+        groups: initialStageGroups,
+        stage: 1,
+        schedule: initialStageSchedule,
+      });
+
+      const newStages: TournamentStage[] = [initialStage];
 
       if (numberOfGroups > 1) {
         const nextStageTeams: Team[] = [];
@@ -124,7 +136,7 @@ const InitializeTournament: React.FC<IProps> = ({
         const groupSettings: TournamentGroupSettings = {
           bracketNumberOfRounds: 0,
         };
-
+        const nextStageGroups: TournamentGroup[] = [];
         for (let i = 0; i < numberOfGroups; i += 1) {
           nextStageTeams.push(
             new Team({
@@ -190,10 +202,10 @@ const InitializeTournament: React.FC<IProps> = ({
           groupSettings.bracketNumberOfRounds = totalNumberOfBracketRounds;
         }
         const newId = v4();
-        newGroups.push(
+        nextStageGroups.push(
           new TournamentGroup({
             games: nextStageGames,
-            groupIndex: newGroups.length + 1,
+            groupIndex: 1,
             id: newId,
             _id: newId,
             teams: nextStageTeams,
@@ -204,20 +216,33 @@ const InitializeTournament: React.FC<IProps> = ({
             settings: groupSettings,
           }),
         );
+        const nextStageId = v4();
+        const nextStageSchedule = generateTournamentSchedule(
+          nextStageGroups,
+          newTournamentSettings,
+        );
+        const nextStage: TournamentStage = new TournamentStage({
+          _id: nextStageId,
+          id: nextStageId,
+          groups: nextStageGroups,
+          stage: 2,
+          schedule: nextStageSchedule,
+        });
+        newStages.push(nextStage);
       }
-      return newGroups;
+      return newStages;
     },
     [tournament.teams, tournament.gameSettings],
   );
 
   const confirmTournamentSettings = async () => {
     try {
+      if (!stages) {
+        return;
+      }
       setIsProcessing(true);
-      onConfirm(
-        groups,
-        { ...tournament.settings, ...tournamentSettings },
-        schedule,
-      );
+
+      onConfirm(stages, { ...tournament.settings, ...tournamentSettings });
     } catch (e) {
       console.error(e);
     } finally {
@@ -227,16 +252,12 @@ const InitializeTournament: React.FC<IProps> = ({
 
   const generateNewTournamentDraft = useCallback(
     (newTournamentSettings: TournamentSettings) => {
-      const newGroups = generateNewGroups(newTournamentSettings);
-      const newSchedule = generateTournamentSchedule(
-        newGroups,
-        newTournamentSettings,
-      );
+      const newStages = generateNewStages(newTournamentSettings);
+
       setTournamentSettings(newTournamentSettings);
-      setGroups(newGroups);
-      setSchedule(newSchedule);
+      setStages(newStages);
     },
-    [generateNewGroups],
+    [generateNewStages],
   );
 
   useEffect(() => {
@@ -332,55 +353,33 @@ const InitializeTournament: React.FC<IProps> = ({
             Shuffle
           </Button>
         </FlexContainer>
-        {tournamentSettings.numberOfGroups > 1 && (
-          <Typography variant="h4Medium" width="100%" marginLeft="16px">
-            Stage 1
-          </Typography>
-        )}
-        <FlexContainer
-          flexDirection="row"
-          alignItems="flex-start"
-          width="100%"
-          flexWrap="wrap"
-          gap={16}
-        >
-          {groups
-            ?.filter((group) => group.stage === 1)
-            .map((group, index) => (
-              <FlexContainer
-                flexDirection="row"
-                alignItems="center"
-                key={index}
-                gap={15}
-              >
-                <TournamentGroupCard group={group} />
-
-                <TournamentTypesPreview group={group} />
-              </FlexContainer>
-            ))}
-        </FlexContainer>
-        {tournamentSettings.numberOfGroups > 1 && groups?.length > 1 && (
-          <FlexContainer
-            flexDirection="column"
-            justifyContent="center"
-            alignItems="flex-start"
-            width="100%"
-          >
+        {stages?.map((tournamentStage, index) => (
+          <FlexContainer flexDirection="column" width="100%" key={index}>
             <Typography variant="h4Medium" width="100%" marginLeft="16px">
-              Stage 2
+              Stage {index + 1}
             </Typography>
             <FlexContainer
               flexDirection="row"
-              alignItems="center"
+              alignItems="flex-start"
               width="100%"
-              justifyContent="flex-start"
+              flexWrap="wrap"
+              gap={16}
             >
-              <TournamentGroupCard group={groups[groups.length - 1]} />
+              {tournamentStage.groups.map((group, groupIndex) => (
+                <FlexContainer
+                  flexDirection="row"
+                  alignItems="center"
+                  key={groupIndex}
+                  gap={15}
+                >
+                  <TournamentGroupCard group={group} />
 
-              <TournamentTypesPreview group={groups[groups.length - 1]} />
+                  <TournamentTypesPreview group={group} />
+                </FlexContainer>
+              ))}
             </FlexContainer>
           </FlexContainer>
-        )}
+        ))}
       </FlexContainer>
       <FlexContainer
         width="100%"

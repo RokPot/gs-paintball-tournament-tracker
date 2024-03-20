@@ -10,7 +10,7 @@ interface IProps {
 const TournamentActivity = ({ activeLeague }: IProps) => {
   const selectedTournament = activeLeague?.activeTournament;
 
-  if (!selectedTournament?.groups?.length) {
+  if (!selectedTournament?.stages?.length) {
     return (
       <FlexContainer
         justifyContent="center"

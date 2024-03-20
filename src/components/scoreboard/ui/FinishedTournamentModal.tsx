@@ -46,13 +46,17 @@ const FinishedTournamentModal: React.FC<IProps> = ({ tournament }) => {
       return;
     }
     setIsModalOpen(true);
-    calculateLeaderboard(tournament?.groups[0]);
+    if (!tournament.currentStage) {
+      return;
+    }
+    calculateLeaderboard(tournament.currentStage?.groups[0]);
   }, [
     calculateLeaderboard,
-    tournament?.groups,
+    tournament?.currentStage,
     tournament?.state.isTournamentFinished,
     tournament?.state?.status,
   ]);
+
   return (
     <CustomModal
       isModalOpen={isModalOpen}
@@ -68,23 +72,24 @@ const FinishedTournamentModal: React.FC<IProps> = ({ tournament }) => {
         justifyContent="center"
         gap={16}
       >
-        {tournament?.groups?.length! > 1 && (
-          <CustomTabs
-            items={
-              tournament?.groups?.map((group) => ({
-                label: `Group ${group.groupIndex}`,
-                value: group.id,
-              })) || []
-            }
-            onTabChanged={(newTabGroupId) => {
-              calculateLeaderboard(
-                tournament?.groups?.find(
-                  (group) => group.id === newTabGroupId,
-                )!,
-              );
-            }}
-          />
-        )}
+        {tournament?.currentStage &&
+          tournament?.currentStage?.groups?.length > 1 && (
+            <CustomTabs
+              items={
+                tournament?.currentStage?.groups?.map((group) => ({
+                  label: `Group ${group.groupIndex}`,
+                  value: group.id,
+                })) || []
+              }
+              onTabChanged={(newTabGroupId) => {
+                calculateLeaderboard(
+                  tournament?.currentStage?.groups?.find(
+                    (group) => group.id === newTabGroupId,
+                  )!,
+                );
+              }}
+            />
+          )}
         <LeaderboardList teams={leaderboard} />
         <Button onClick={() => navigate(routes.getTournamentRoute())}>
           <Typography variant="p1Medium">Go to Tournaments</Typography>

@@ -18,7 +18,11 @@ const TournamentResults = ({ activeLeague }: IProps) => {
 
   const [leaderboard, setLeaderboard] = useState<LeaderboardTeam[]>([]);
 
-  const calculateLeaderboard = (group: TournamentGroup) => {
+  const calculateLeaderboard = (group?: TournamentGroup) => {
+    if (!group) {
+      return;
+    }
+
     const newLeaderboard = calculateTournamentGroupLeaderboard(
       group,
       selectedTournament!.settings,
@@ -28,13 +32,13 @@ const TournamentResults = ({ activeLeague }: IProps) => {
   };
 
   useEffect(() => {
-    if (!selectedTournament?.groups?.length) {
+    if (!selectedTournament?.stages?.length) {
       return;
     }
-    calculateLeaderboard(selectedTournament?.groups?.[0]!);
+    calculateLeaderboard(selectedTournament?.currentStage?.groups?.[0]);
   }, []);
 
-  if (!selectedTournament?.groups?.length) {
+  if (!selectedTournament?.stages?.length) {
     return (
       <FlexContainer
         justifyContent="center"
@@ -52,13 +56,15 @@ const TournamentResults = ({ activeLeague }: IProps) => {
   return (
     <FlexContainer flexDirection="column" gap={8} height="100%">
       <CustomTabs
-        items={selectedTournament.groups.map((group) => ({
-          label: `Group ${group.groupIndex}`,
-          value: group.id,
-        }))}
+        items={
+          selectedTournament?.currentStage?.groups?.map((group) => ({
+            label: `Group ${group.groupIndex}`,
+            value: group.id,
+          })) || []
+        }
         onTabChanged={(newTabGroupId) => {
           calculateLeaderboard(
-            selectedTournament.groups.find(
+            selectedTournament?.currentStage?.groups.find(
               (group) => group.id === newTabGroupId,
             )!,
           );

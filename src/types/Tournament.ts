@@ -9,11 +9,10 @@ import {
 import { TournamentDto } from './dto/TournamentDto';
 import { DocType, IPouchDB } from './interfaces/IPouchDB';
 import { ITournament } from './interfaces/ITournament';
-import { TournamentScheduleGame } from './TournamentScheduleGame';
 import TournamentState from './TournamentState';
+import TournamentStage from './TournamentStage';
+import TournamentScheduleGame from './TournamentScheduleGame';
 import TournamentGroup from './TournamentGroup';
-import { TournamentScheduleDto } from './dto/TournamentScheduleDto';
-import { TournamentStage } from './TournamentStage';
 
 export default class Tournament extends IPouchDB {
   id: string;
@@ -64,16 +63,34 @@ export default class Tournament extends IPouchDB {
       endDate: this.endDate?.toISOString(),
       startDate: this.startDate?.toISOString(),
       leaderboardTeamIds: this.leaderboard?.map((team) => team._id) || [],
-      schedule:
-        this.schedule?.map(
-          (schedule) =>
-            ({
-              gameId: schedule.game.id,
-              gameNumber: schedule.gameNumber,
-              groupId: schedule.group.id,
-              id: schedule.id,
-            }) as TournamentScheduleDto,
-        ) || [],
+      stages: this.stages?.map((stage) => stage._id) || [],
     };
   };
+
+  public get currentStage(): TournamentStage | undefined {
+    return this.stages?.find(
+      (tournamentStage) => tournamentStage.stage === this.state.stage,
+    );
+  }
+
+  public get previousStage(): TournamentStage | undefined {
+    return this.stages?.find(
+      (tournamentStage) =>
+        tournamentStage.stage === (this.state.stage - 1 || 1),
+    );
+  }
+
+  public get currentStageSchedule(): TournamentScheduleGame[] | undefined {
+    if (!this.currentStage) {
+      return undefined;
+    }
+    return this.currentStage?.schedule;
+  }
+
+  public get currentStageGroups(): TournamentGroup[] | undefined {
+    if (!this.currentStage) {
+      return undefined;
+    }
+    return this.currentStage?.groups;
+  }
 }

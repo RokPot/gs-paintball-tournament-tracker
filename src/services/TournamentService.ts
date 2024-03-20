@@ -3,21 +3,20 @@ import { omit } from 'lodash';
 import { useCallback } from 'react';
 import Tournament from 'types/Tournament';
 import { TournamentDto } from 'types/dto/TournamentDto';
-import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { DocType } from 'types/interfaces/IPouchDB';
 import usePouchDB, { pouchDbName } from './pouchDB';
-import useGroupService from './GroupService';
+import useStageService from './StageService';
 
 const useTournamentService = () => {
   const db = usePouchDB(pouchDbName);
-  const { getGroups } = useGroupService();
+  const { getStages } = useStageService();
 
   const addNewTournament = useCallback(
     async (tournament: TournamentDto) => {
       const res = await db.post(tournament);
       const newTournament = new Tournament({
         ...(await db.get<TournamentDto>(res.id)),
-        schedule: [],
+        stages: [],
       });
 
       return newTournament;
@@ -37,7 +36,7 @@ const useTournamentService = () => {
 
       const updatedTournament = new Tournament({
         ...(await db.get<TournamentDto>(tournament._id)),
-        schedule: [],
+        stages: [],
       });
 
       return updatedTournament;
@@ -85,34 +84,16 @@ const useTournamentService = () => {
       const tournamentsList = getTournamentsList(result);
       const tournament =
         tournamentsList?.length > 0 ? tournamentsList[0] : null;
-      if (tournament?.groups) {
-        const groups = await getGroups(
-          tournament.groups.map((group) => group._id),
-        );
-        tournament.groups = groups;
-      }
 
-      if (tournament?.schedule) {
-        const schedule: TournamentScheduleGame[] = [];
-        tournament?.schedule.forEach((scheduledGame) => {
-          const scheduledGameDto = scheduledGame as any;
-          const scheduledGameGroup = tournament?.groups.find(
-            (group) => group.id === scheduledGameDto.groupId,
-          );
-          const scheduledActiveGame = scheduledGameGroup?.games.find(
-            (game) => game.id === scheduledGameDto.gameId,
-          );
-          schedule.push({
-            ...scheduledGame,
-            group: scheduledGameGroup!,
-            game: scheduledActiveGame!,
-          });
-        });
-        tournament.schedule = schedule;
+      if (tournament?.stages) {
+        const stages = await getStages(
+          tournament?.stages.map((stage) => stage._id),
+        );
+        tournament.stages = stages;
       }
       return tournament;
     },
-    [db, getGroups],
+    [db, getStages],
   );
 
   const getTournaments = useCallback(async () => {

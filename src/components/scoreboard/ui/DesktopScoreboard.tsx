@@ -5,7 +5,7 @@ import { memo, useMemo } from 'react';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
 import { Match } from 'types/Match';
 import TournamentGroup from 'types/TournamentGroup';
-import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
+import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentStatus } from 'types/TournamentStatus';
 import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
 import GameTimerStoreRenderComponent from '../GameTimerStoreRenderComponent';

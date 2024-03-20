@@ -54,7 +54,7 @@ const ScoreboardPage: React.FC<IProps> = () => {
     [finishMatch],
   );
 
-  console.log(tournament?.schedule);
+  console.log(tournament?.currentStageSchedule);
 
   if (isMobile) {
     return (

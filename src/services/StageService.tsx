@@ -1,17 +1,20 @@
 import { omit } from 'lodash';
 import { useCallback } from 'react';
-import { TournamentDto } from 'types/dto/TournamentDto';
-import { TournamentGroupDto } from 'types/dto/TournamentGroupDto';
+import TournamentScheduleGame from 'types/TournamentScheduleGame';
+import TournamentStage from 'types/TournamentStage';
+import { TournamentStageDto } from 'types/dto/TournamentStageDto';
 import { DocType } from 'types/interfaces/IPouchDB';
-import { getGroupsList } from 'utils/PouchDBUtils';
+import { getStagesDtoList } from 'utils/PouchDBUtils';
+import useGroupService from './GroupService';
 import usePouchDB, { pouchDbName } from './pouchDB';
 
-const useGroupService = () => {
+const useStageService = () => {
   const db = usePouchDB(pouchDbName);
+  const { getGroups } = useGroupService();
 
   const addNewStage = useCallback(
-    async (group: TournamentGroupDto) => {
-      await db.post(group);
+    async (stage: TournamentStageDto) => {
+      await db.post(stage);
 
       return true;
     },
@@ -19,20 +22,20 @@ const useGroupService = () => {
   );
 
   const addNewStageBatch = useCallback(
-    async (groups: TournamentGroupDto[]) => {
-      await db.bulkDocs(groups);
+    async (stage: TournamentStageDto[]) => {
+      await db.bulkDocs(stage);
       return true;
     },
     [db],
   );
 
   const updateStage = useCallback(
-    async (group: TournamentGroupDto) => {
-      const res = await db.get(group._id);
+    async (stage: TournamentStageDto) => {
+      const res = await db.get(stage._id);
 
       const toUpdate = {
         ...res,
-        ...omit(group, ['_rev', '_id']),
+        ...omit(stage, ['_rev', '_id']),
       };
       await db.put(toUpdate);
 
@@ -42,9 +45,9 @@ const useGroupService = () => {
   );
 
   const deleteStage = useCallback(
-    async (group: TournamentGroupDto) => {
-      const fetchedGroup = await db.get<TournamentGroupDto>(group._id);
-      await db.remove(fetchedGroup._id, fetchedGroup._rev);
+    async (stage: TournamentStageDto) => {
+      const fetchedStage = await db.get<TournamentStageDto>(stage._id);
+      await db.remove(fetchedStage._id, fetchedStage._rev);
 
       return true;
     },
@@ -52,29 +55,63 @@ const useGroupService = () => {
   );
 
   const getStage = useCallback(
-    async (groupId: string) => {
+    async (stageId: string) => {
       const myMapFunction = (doc: any, emit: any) => {
-        if (doc.docType === DocType.Group) {
-          if (groupId === doc._id) {
-            emit(doc, DocType.Group);
-            if (doc.teamIds) {
+        if (doc.docType === DocType.TournamentStage) {
+          if (stageId === doc._id) {
+            emit(doc, DocType.TournamentStage);
+            if (doc.groupIds) {
               doc.teamIds.forEach((item: any) => {
-                emit(doc._id, { _id: item, type: DocType.Team });
+                emit(doc._id, { _id: item, type: DocType.Group });
               });
             }
-            if (doc.gameIds) {
-              doc.gameIds.forEach((item: any) => {
+            if (doc.scheduleIds) {
+              doc.teamIds.forEach((item: any) => {
                 emit(doc._id, { _id: item, type: DocType.Game });
               });
             }
           }
         }
       };
-      const result = await db.query<TournamentDto[]>(myMapFunction, {
+
+      const result = await db.query<TournamentStageDto[]>(myMapFunction, {
         include_docs: true,
       });
-      const groupsList = getGroupsList(result);
-      const group = groupsList?.length > 0 ? groupsList[0] : null;
+      const stagesDtoList = getStagesDtoList(result);
+      const stagesList: TournamentStage[] = [];
+      for (let i = 0; i < stagesDtoList?.length; i += 1) {
+        const currentDtoStage = stagesDtoList[i];
+        if (currentDtoStage?.groupIds) {
+          // eslint-disable-next-line no-await-in-loop
+          const groups = await getGroups(stagesDtoList[i].groupIds);
+
+          const schedule: TournamentScheduleGame[] = [];
+
+          currentDtoStage.schedule?.forEach((scheduledGame) => {
+            const scheduledGameDto = scheduledGame as any;
+            const scheduledGameGroup = groups?.find(
+              (group) => group.id === scheduledGameDto.groupId,
+            );
+            const scheduledActiveGame = scheduledGameGroup?.games.find(
+              (game) => game.id === scheduledGameDto.gameId,
+            );
+            schedule.push({
+              ...scheduledGame,
+              group: scheduledGameGroup!,
+              game: scheduledActiveGame!,
+            });
+          });
+          stagesList.push(
+            new TournamentStage({
+              ...omit(currentDtoStage, ['groupIds', 'schedule']),
+              schedule,
+              groups,
+            }),
+          );
+        }
+      }
+
+      const group = stagesDtoList?.length > 0 ? stagesDtoList[0] : null;
       return group;
     },
     [db],
@@ -87,24 +124,57 @@ const useGroupService = () => {
           doc.docType === DocType.TournamentStage &&
           ((stageIds && stageIds.includes(doc._id)) || !stageIds)
         ) {
-          emit(doc, DocType.Group);
-          if (doc.gameIds) {
+          emit(doc, DocType.TournamentStage);
+          if (doc.groupIds) {
             doc.teamIds.forEach((item: any) => {
-              emit(doc._id, { _id: item, type: DocType.Team });
+              emit(doc._id, { _id: item, type: DocType.Group });
             });
           }
-          if (doc.groupIds) {
-            doc.gameIds.forEach((item: any) => {
+          if (doc.scheduleIds) {
+            doc.teamIds.forEach((item: any) => {
               emit(doc._id, { _id: item, type: DocType.Game });
             });
           }
         }
       };
-      const result = await db.query<TournamentGroupDto[]>(myMapFunction, {
+
+      const result = await db.query<TournamentStageDto[]>(myMapFunction, {
         include_docs: true,
       });
-      const groups = getGroupsList(result);
-      return groups.sort((a, b) => a.groupIndex - b.groupIndex);
+      const stagesDtoList = getStagesDtoList(result);
+      const stagesList: TournamentStage[] = [];
+      for (let i = 0; i < stagesDtoList?.length; i += 1) {
+        const currentDtoStage = stagesDtoList[i];
+        if (currentDtoStage?.groupIds) {
+          // eslint-disable-next-line no-await-in-loop
+          const groups = await getGroups(stagesDtoList[i].groupIds);
+
+          const schedule: TournamentScheduleGame[] = [];
+
+          currentDtoStage.schedule?.forEach((scheduledGame) => {
+            const scheduledGameDto = scheduledGame as any;
+            const scheduledGameGroup = groups?.find(
+              (group) => group.id === scheduledGameDto.groupId,
+            );
+            const scheduledActiveGame = scheduledGameGroup?.games.find(
+              (game) => game.id === scheduledGameDto.gameId,
+            );
+            schedule.push({
+              ...scheduledGame,
+              group: scheduledGameGroup!,
+              game: scheduledActiveGame!,
+            });
+          });
+          stagesList.push(
+            new TournamentStage({
+              ...omit(currentDtoStage, ['groupIds', 'schedule']),
+              schedule,
+              groups,
+            }),
+          );
+        }
+      }
+      return stagesList.sort((a, b) => a.stage - b.stage);
     },
     [db],
   );
@@ -119,4 +189,4 @@ const useGroupService = () => {
   };
 };
 
-export default useGroupService;
+export default useStageService;

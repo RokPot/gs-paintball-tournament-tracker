@@ -11,7 +11,8 @@ import { Match } from 'types/Match';
 import MatchState from 'types/MatchState';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
-import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
+import TournamentScheduleGame from 'types/TournamentScheduleGame';
+
 import { TournamentStatus } from 'types/TournamentStatus';
 import {
   FlowState,
@@ -46,19 +47,33 @@ const useTournamentFlow = (tournament?: Tournament) => {
   const [showFinishMatchPopup, setShowFinishMatchPopup] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const currentSchedule = useMemo(() => {
+    if (!tournament?.currentStageSchedule) {
+      return undefined;
+    }
+    return tournament.currentStageSchedule;
+  }, [tournament?.currentStageSchedule]);
+
+  const currentGroups = useMemo(() => {
+    if (!tournament?.currentStageGroups) {
+      return undefined;
+    }
+    return tournament.currentStageGroups;
+  }, [tournament?.currentStageGroups]);
+
   const currentStage = useMemo(
     () => tournament?.state?.stage,
     [tournament?.state?.stage],
   );
 
   const activeScheduledGame = useMemo(() => {
-    if (!tournament) {
+    if (!tournament || !currentSchedule) {
       return undefined;
     }
-    return tournament.schedule?.find(
+    return currentSchedule?.find(
       (scheduledGame) => tournament.state.activeGameId === scheduledGame.id,
     );
-  }, [tournament]);
+  }, [currentSchedule, tournament]);
 
   const tournamentSettings = useMemo(() => {
     if (!tournament) {
@@ -126,16 +141,16 @@ const useTournamentFlow = (tournament?: Tournament) => {
   );
 
   const beginTournament = useCallback(async () => {
-    if (!tournament || !tournament?.schedule) {
+    if (!tournament || !currentSchedule) {
       return;
     }
     tournament.state.status = TournamentStatus.inProgress;
 
     // Begin tournament
-    const newPairedGame1 = tournament.schedule[0];
+    const newPairedGame1 = currentSchedule[0];
     const newPairedGame2 =
-      tournament.schedule.length > 1 && tournament.settings.switchGames
-        ? tournament.schedule[1]
+      currentSchedule.length > 1 && tournament.settings.switchGames
+        ? currentSchedule[1]
         : undefined;
 
     newPairedGame1.game.gameState = GameState.playing;
@@ -144,14 +159,14 @@ const useTournamentFlow = (tournament?: Tournament) => {
       newPairedGame1,
       newPairedGame2,
     );
-  }, [setNewActiveGroupAndGames, tournament]);
+  }, [currentSchedule, setNewActiveGroupAndGames, tournament]);
 
   const finishGame = useCallback(
     async (game: Game, gameWinner: GameWinner) => {
       const finishedGame = finishSelectedGame(game, gameWinner);
       const nextEliminationsGame = prepareNextGameIfEliminationsTournament(
         game,
-        tournament?.groups?.find(
+        currentGroups?.find(
           (group) => group.id === activeScheduledGame?.group?.id,
         ),
         currentStageTournamentType,
@@ -169,8 +184,8 @@ const useTournamentFlow = (tournament?: Tournament) => {
     },
     [
       activeScheduledGame?.group?.id,
+      currentGroups,
       currentStageTournamentType,
-      tournament?.groups,
       updateGameData,
     ],
   );
@@ -180,7 +195,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
       game: TournamentScheduleGame,
       timeLeft: number,
     ): Promise<FlowState> => {
-      if (!tournament || !tournamentSettings || !tournament.schedule) {
+      if (!tournament || !tournamentSettings || !currentSchedule) {
         return FlowState.NotDefined;
       }
       const isGame1ActiveGame = activeScheduledGame?.id === game.id;
@@ -207,7 +222,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
         }
       }
       const newGroupAndGames = switchToNextScheduledGames(
-        tournament.schedule,
+        currentSchedule,
         tournamentSettings,
         currentStageTournamentType!,
         isGame1ActiveGame ? currentTmpGame1! : currentTmpGame2!,
@@ -230,6 +245,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
     [
       tournament,
       tournamentSettings,
+      currentSchedule,
       activeScheduledGame?.id,
       currentScheduledGame1,
       currentScheduledGame2,
@@ -283,7 +299,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
 
   const finishMatch = useCallback(
     async (match: Match) => {
-      if (!activeScheduledGame) {
+      if (!activeScheduledGame || !currentGroups || !tournament) {
         return;
       }
       try {
@@ -297,7 +313,7 @@ const useTournamentFlow = (tournament?: Tournament) => {
           timeLeft,
         );
         if (afterFinishedMatchStatus === FlowState.NoGamesAvailable) {
-          const currentStageGamesThatAreNotYetFinished = tournament?.groups
+          const currentStageGamesThatAreNotYetFinished = currentGroups
             .filter((group) => group.stage === tournament.state.stage)
             .map((group) =>
               group.games.filter(
@@ -329,12 +345,12 @@ const useTournamentFlow = (tournament?: Tournament) => {
     [
       activeScheduledGame,
       addMatchAndDataToGame,
+      currentGroups,
       finishTournament,
       getDuration,
       goToNextTournamentStage,
       onAfterFinishedMatchProcedure,
-      tournament?.groups,
-      tournament?.state.stage,
+      tournament,
       tournamentSettings?.numberOfGroups,
       tournamentSettings?.secondStageType,
     ],
@@ -417,19 +433,21 @@ const useTournamentFlow = (tournament?: Tournament) => {
 
   const confirmNextTournamentStage = useCallback(
     async (nextTournamentStageGroup: TournamentGroup) => {
-      if (!tournament) {
+      if (!tournament || !currentGroups) {
         return;
       }
-      const currentNextTournamentGroupIndex = tournament.groups.findIndex(
-        (group) => group.id === nextTournamentStageGroup.id,
-      );
+      console.log(nextTournamentStageGroup);
+      // todo rokpot handle next tournament stage
+      // const currentNextTournamentGroupIndex = currentGroups.findIndex(
+      //   (group) => group.id === nextTournamentStageGroup.id,
+      // );
 
-      if (currentNextTournamentGroupIndex < 0) {
-        tournament.groups.push(nextTournamentStageGroup);
-      } else {
-        tournament.groups[currentNextTournamentGroupIndex] =
-          nextTournamentStageGroup;
-      }
+      // if (currentNextTournamentGroupIndex < 0) {
+      //   tournament.groups.push(nextTournamentStageGroup);
+      // } else {
+      //   tournament.groups[currentNextTournamentGroupIndex] =
+      //     nextTournamentStageGroup;
+      // }
       tournament.state.status = TournamentStatus.inProgress;
 
       await updateTournament(tournament);

@@ -1,5 +1,5 @@
 import TournamentGroup from './TournamentGroup';
-import { TournamentScheduleGame } from './TournamentScheduleGame';
+import TournamentScheduleGame from './TournamentScheduleGame';
 import { TournamentScheduleDto } from './dto/TournamentScheduleDto';
 import { TournamentStageDto } from './dto/TournamentStageDto';
 import { DocType, IPouchDB } from './interfaces/IPouchDB';
@@ -38,6 +38,7 @@ export default class TournamentStage extends IPouchDB {
               gameNumber: schedule.gameNumber,
               groupId: schedule.group.id,
               id: schedule.id,
+              index: schedule.index,
             }) as TournamentScheduleDto,
         ) || [],
     };

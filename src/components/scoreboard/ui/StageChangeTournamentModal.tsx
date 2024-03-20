@@ -31,8 +31,8 @@ const StageChangeTournamentModal: React.FC<IProps> = ({
   const [nextStageGroup, setNextStageGroup] = useState<TournamentGroup>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const calculateLeaderboard = useCallback(
-    (group: TournamentGroup) => {
-      if (!tournament) {
+    (group?: TournamentGroup) => {
+      if (!tournament || !group) {
         return;
       }
       const newLeaderboard = calculateTournamentGroupLeaderboard(
@@ -57,12 +57,13 @@ const StageChangeTournamentModal: React.FC<IProps> = ({
     if (!tournament) {
       return;
     }
-    const previousStageGroups = tournament?.groups?.filter(
-      (group) => group.stage === (tournament.state.stage - 1 || 1),
-    );
+    const previousStageGroups = tournament?.stages?.find(
+      (tournamentStage) =>
+        tournamentStage.stage === (tournament.state.stage - 1 || 1),
+    )?.groups;
     const previousStageGroupWinners: { groupIndex: number; teams: Team[] }[] =
       [];
-    previousStageGroups.forEach((previousStageGroup) => {
+    previousStageGroups?.forEach((previousStageGroup) => {
       const groupLeaderboard = calculateTournamentGroupLeaderboard(
         previousStageGroup,
         tournament.settings,
@@ -137,16 +138,13 @@ const StageChangeTournamentModal: React.FC<IProps> = ({
       nextStageGames.push(...bracketGames);
       groupSettings.bracketNumberOfRounds = totalNumberOfBracketRounds;
     }
-    const currentStageGroup = tournament.groups.find(
-      (group) => group.stage === tournament.state.stage,
-    );
-    if (!currentStageGroup) {
+    if (!tournament.currentStage) {
       return;
     }
-    currentStageGroup.games = nextStageGames;
-    currentStageGroup.teams = nextStageTeams;
-    currentStageGroup.settings = groupSettings;
-    setNextStageGroup(currentStageGroup);
+    tournament.currentStage.groups[0].games = nextStageGames;
+    tournament.currentStage.groups[0].teams = nextStageTeams;
+    tournament.currentStage.groups[0].settings = groupSettings;
+    setNextStageGroup(tournament.currentStage.groups[0]);
   }, [tournament]);
 
   useEffect(() => {
@@ -157,13 +155,13 @@ const StageChangeTournamentModal: React.FC<IProps> = ({
       return;
     }
     setIsModalOpen(true);
-    calculateLeaderboard(tournament?.groups[0]);
+    calculateLeaderboard(tournament?.currentStage?.groups[0]);
 
     generateNextStageGames();
   }, [
     calculateLeaderboard,
     generateNextStageGames,
-    tournament?.groups,
+    tournament?.currentStage?.groups,
     tournament?.state.isTournamentFinished,
     tournament?.state?.status,
   ]);
@@ -184,29 +182,30 @@ const StageChangeTournamentModal: React.FC<IProps> = ({
         gap={16}
         position="relative"
       >
-        {tournament?.groups?.length! > 1 && (
-          <CustomTabs
-            items={
-              tournament?.groups
-                ?.filter(
-                  (group) =>
-                    (tournament.state.stage === 1 && group.stage === 1) ||
-                    group.stage === tournament.state.stage - 1,
-                )
-                .map((group) => ({
-                  label: `Group ${group.groupIndex}`,
-                  value: group.id,
-                })) || []
-            }
-            onTabChanged={(newTabGroupId) => {
-              calculateLeaderboard(
-                tournament?.groups?.find(
-                  (group) => group.id === newTabGroupId,
-                )!,
-              );
-            }}
-          />
-        )}
+        {tournament?.previousStage &&
+          tournament?.previousStage.groups?.length! > 1 && (
+            <CustomTabs
+              items={
+                tournament?.previousStage.groups
+                  ?.filter(
+                    (group) =>
+                      (tournament.state.stage === 1 && group.stage === 1) ||
+                      group.stage === tournament.state.stage - 1,
+                  )
+                  .map((group) => ({
+                    label: `Group ${group.groupIndex}`,
+                    value: group.id,
+                  })) || []
+              }
+              onTabChanged={(newTabGroupId) => {
+                calculateLeaderboard(
+                  tournament?.previousStage?.groups?.find(
+                    (group) => group.id === newTabGroupId,
+                  )!,
+                );
+              }}
+            />
+          )}
         <LeaderboardList teams={leaderboard} />
         <TournamentTypesPreview group={nextStageGroup} />
 

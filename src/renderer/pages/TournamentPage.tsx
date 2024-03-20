@@ -42,11 +42,9 @@ import useAddGroup from 'services/queries/group/useAddGroup';
 import useActiveLeague from 'services/queries/league/useActiveLeague';
 import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
 import useLeaguesList from 'services/queries/league/useLeaguesList';
-import Game from 'types/Game';
 import Tournament from 'types/Tournament';
-import TournamentGroup from 'types/TournamentGroup';
-import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
+import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
 
 const StyledLoadingContainer = styled('div')(
@@ -128,26 +126,31 @@ const TournamentPage = () => {
   };
 
   const initializeTournament = async (
-    groups: TournamentGroup[],
+    stages: TournamentStage[],
     settings: TournamentSettings,
-    schedule: TournamentScheduleGame[],
   ) => {
     if (!selectedTournament) {
       return;
     }
     // In groups there are games and also teams split.
     // If there is second stage those games we're also generated already
-    selectedTournament.groups = groups;
+    // todo rokpot properly initialize tournament with the new stages
+
+    // selectedTournament.groups = groups;
     selectedTournament.settings = settings;
-    selectedTournament.schedule = schedule;
+    // selectedTournament.stages = [
+    //   {
+    //     id: v4(),
+    //   },
+    // ];
     selectedTournament.state.status = TournamentStatus.initialized;
-    await addGamesBulk(
-      groups.reduce((prev: Game[], curr) => {
-        prev.push(...curr.games);
-        return prev;
-      }, []),
-    );
-    await addGroupsBulk(groups);
+    // await addGamesBulk(
+    //   groups.reduce((prev: Game[], curr) => {
+    //     prev.push(...curr.games);
+    //     return prev;
+    //   }, []),
+    // );
+    // await addGroupsBulk(groups);
     await addOrEditTournament(selectedTournament, activeLeague, true);
     await invalidateSelectedLeague();
     setIsInitializeTournamentModalOpen(false);

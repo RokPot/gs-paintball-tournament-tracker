@@ -4,7 +4,7 @@ import { GameSettings } from 'types/GameSettings';
 import { GameState } from 'types/GameState';
 import Team from 'types/Team';
 import TournamentGroup from 'types/TournamentGroup';
-import { TournamentScheduleGame } from 'types/TournamentScheduleGame';
+import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentType } from 'types/TournamentType';
 import { v4 } from 'uuid';
@@ -514,6 +514,7 @@ const generateRoundRobinSchedule = (
           gameNumber: currentGameNumber,
           group: mostCurrentGroup,
           id: v4(),
+          index: scheduledGames.length,
         });
         currentGameNumber += 1;
       }
@@ -526,6 +527,7 @@ const generateRoundRobinSchedule = (
           gameNumber: currentGameNumber,
           group: mostCurrentGroup,
           id: v4(),
+          index: scheduledGames.length,
         });
         currentGameNumber += 1;
       }
@@ -543,6 +545,7 @@ const generateRoundRobinSchedule = (
           gameNumber: currentGameNumber,
           group: mostCurrentGroup,
           id: v4(),
+          index: scheduledGames.length,
         });
         currentGameNumber += 1;
       }
@@ -626,6 +629,7 @@ const generateSingleEliminationSchedule = (
           gameNumber: currentGameNumber,
           group: mostCurrentGroup,
           id: v4(),
+          index: scheduledGames.length,
         });
         currentGameNumber += 1;
       }
@@ -638,6 +642,7 @@ const generateSingleEliminationSchedule = (
           gameNumber: currentGameNumber,
           group: mostCurrentGroup,
           id: v4(),
+          index: scheduledGames.length,
         });
         currentGameNumber += 1;
       }
@@ -655,6 +660,7 @@ const generateSingleEliminationSchedule = (
           gameNumber: currentGameNumber,
           group: mostCurrentGroup,
           id: v4(),
+          index: scheduledGames.length,
         });
         currentGameNumber += 1;
       }

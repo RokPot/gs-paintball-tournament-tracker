@@ -11,7 +11,7 @@ interface IProps {
 const TournamentGroups: React.FC<IProps> = ({ activeLeague }) => {
   const selectedTournament = activeLeague?.activeTournament;
 
-  if (!selectedTournament?.groups?.length) {
+  if (!selectedTournament?.stages?.length) {
     return (
       <FlexContainer
         justifyContent="center"
@@ -33,7 +33,7 @@ const TournamentGroups: React.FC<IProps> = ({ activeLeague }) => {
       flexWrap="wrap"
       alignItems="stretch"
     >
-      {selectedTournament.groups
+      {selectedTournament?.currentStage?.groups
         .filter((group) => group.stage === selectedTournament.state.stage)
         .sort((a, b) => a.groupIndex - b.groupIndex)
         .map((group, index) => (

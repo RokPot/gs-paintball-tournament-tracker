@@ -6,4 +6,6 @@ export interface TournamentScheduleDto {
   groupId: string;
 
   gameId: string;
+
+  index: number;
 }

@@ -11,6 +11,7 @@ import { LeagueDto } from 'types/dto/LeagueDto';
 import { TeamDto } from 'types/dto/TeamDto';
 import { TournamentDto } from 'types/dto/TournamentDto';
 import { TournamentGroupDto } from 'types/dto/TournamentGroupDto';
+import { TournamentStageDto } from 'types/dto/TournamentStageDto';
 import { DocType } from 'types/interfaces/IPouchDB';
 
 interface PouchDBResponse<T> {
@@ -142,6 +143,7 @@ export const mapTournamentsFromResponse = (
     const newTournament = new Tournament({
       ...teamInResult,
       leaderboard: [],
+      stages: [],
     });
     tournaments.push(newTournament);
   });
@@ -176,6 +178,7 @@ export const getTournamentsList = (result: PouchDB.Query.Response<any>) => {
     // todo rokpot
     const newTournament: Tournament = new Tournament({
       ...rootDoc,
+      stages: [],
     });
 
     const teams = mapTeamsFromResponse(
@@ -224,39 +227,22 @@ export const getGroupsList = (result: PouchDB.Query.Response<any>) => {
   return groups;
 };
 
-export const getStagesList = (result: PouchDB.Query.Response<any>) => {
-  const groups: TournamentGroup[] = [];
+export const getStagesDtoList = (result: PouchDB.Query.Response<any>) => {
+  const stages: TournamentStageDto[] = [];
   const groupedResults = groupBy(result.rows, (row: any) => row.id);
   Object.keys(groupedResults)?.forEach((key) => {
-    const { rootDoc, otherDocs } =
-      getRootElementAndLinkedDocs<TournamentGroupDto>(
-        groupedResults[key],
-        DocType.Group,
-      );
+    const { rootDoc } = getRootElementAndLinkedDocs<TournamentStageDto>(
+      groupedResults[key],
+      DocType.TournamentStage,
+    );
 
     if (!rootDoc) {
       return;
     }
 
-    const teams = mapTeamsFromResponse(
-      rootDoc?.teamIds,
-      otherDocs.filter((val) => val.value.type === DocType.Team),
-    );
-    const games = mapGamesFromResponse(
-      rootDoc?.gameIds,
-      teams,
-      otherDocs.filter((val) => val.value.type === DocType.Game),
-    );
-
-    const newTournament: TournamentGroup = new TournamentGroup({
-      ...rootDoc,
-      games,
-      teams,
-    });
-
-    groups.push(newTournament);
+    stages.push(rootDoc);
   });
-  return groups;
+  return stages;
 };
 
 export const getGamesList = (result: PouchDB.Query.Response<any>) => {

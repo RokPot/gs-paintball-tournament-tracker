@@ -9,8 +9,6 @@ export interface TournamentDto extends PouchDBDto {
 
   teamIds: string[];
 
-  groupIds: string[];
-
   state: TournamentState;
 
   name: string;
@@ -27,5 +25,5 @@ export interface TournamentDto extends PouchDBDto {
 
   schedule?: TournamentScheduleDto[];
 
-  stages:
+  stages: string[];
 }

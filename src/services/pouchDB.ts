@@ -2,7 +2,7 @@ import * as PouchDB from 'pouchdb-browser';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import plugin from 'pouchdb-upsert';
 
-export const pouchDbName = 'dbVersion4';
+export const pouchDbName = 'dbVersion5';
 
 PouchDB.default.plugin(plugin);
 const usePouchDB = (dbName: string) => {

@@ -13,18 +13,16 @@ const LeaderboardView: React.FC<IProps> = ({ activeLeague }) => {
   const [leaderboardTeam, setLeaderboardTeam] = useState<LeaderboardTeam[]>([]);
   const activeTournament = activeLeague?.activeTournament;
   useEffect(() => {
-    if (!activeTournament || !activeTournament.groups?.length) {
+    if (!activeTournament || !activeTournament.stages?.length) {
       return;
     }
-    console.log(
-      calculateTournamentGroupLeaderboard(
-        activeTournament.groups[0],
-        activeTournament.settings,
-      ),
-    );
+
+    if (!activeTournament.currentStageGroups) {
+      return;
+    }
     setLeaderboardTeam(
       calculateTournamentGroupLeaderboard(
-        activeTournament.groups[0],
+        activeTournament.currentStageGroups?.[0],
         activeTournament.settings,
       ),
     );

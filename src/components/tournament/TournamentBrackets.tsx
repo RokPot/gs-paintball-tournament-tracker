@@ -41,7 +41,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
   //     activeLeague?.activeTournament?.teams || [],
   //   );
 
-  if (!selectedTournament?.groups?.length) {
+  if (!selectedTournament?.stages?.length) {
     return (
       <FlexContainer
         justifyContent="center"
@@ -70,7 +70,7 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
         height="100%"
         alignItems="flex-start"
       >
-        {selectedTournament?.groups
+        {selectedTournament?.currentStage?.groups
           ?.filter((group) => group.stage === selectedTournament.state.stage)
           .map((group, index) => (
             <FlexContainer
