@@ -567,15 +567,13 @@ const generateSingleEliminationSchedule = (
   const { switchGames, switchGroups } = settings;
 
   const innerGroups = [
-    ...(JSON.parse(
-      JSON.stringify(groups.filter((group) => group.stage === 1)),
-    ) as TournamentGroup[]),
+    ...(JSON.parse(JSON.stringify(groups)) as TournamentGroup[]),
   ];
   const totalGames = innerGroups.reduce((prev, curr) => {
     return prev + (curr?.games?.length || 0);
   }, 0);
 
-  let mostCurrentGroup = innerGroups.filter((group) => group.stage === 1)[0];
+  let mostCurrentGroup = innerGroups?.[0];
   let currentGameNumber = 0;
   let pairedGame1: Game = mostCurrentGroup.games[0];
   let pairedGame2: Game | null = switchGames ? mostCurrentGroup.games[1] : null;
@@ -675,11 +673,12 @@ const generateSingleEliminationSchedule = (
 export const generateTournamentSchedule = (
   groups?: TournamentGroup[],
   settings?: TournamentSettings,
+  type?: TournamentType,
 ) => {
-  if (!groups?.length || !settings) {
+  if (!groups?.length || !settings || !type) {
     return [];
   }
-  switch (settings.type) {
+  switch (type) {
     case TournamentType.roundRobin:
       return generateRoundRobinSchedule(groups, settings);
     case TournamentType.singleElimination:

@@ -118,6 +118,7 @@ const InitializeTournament: React.FC<IProps> = ({
       const initialStageSchedule = generateTournamentSchedule(
         initialStageGroups,
         newTournamentSettings,
+        newTournamentSettings.type,
       );
       const newStageId = v4();
       const initialStage = new TournamentStage({
@@ -220,6 +221,7 @@ const InitializeTournament: React.FC<IProps> = ({
         const nextStageSchedule = generateTournamentSchedule(
           nextStageGroups,
           newTournamentSettings,
+          newTournamentSettings.secondStageType,
         );
         const nextStage: TournamentStage = new TournamentStage({
           _id: nextStageId,
@@ -289,11 +291,15 @@ const InitializeTournament: React.FC<IProps> = ({
               });
             }}
           >
-            {[1, 2, 3, 4, 5, 6]?.map((numberOfGroups, index) => (
-              <MenuItem key={index} value={numberOfGroups}>
-                {numberOfGroups}
-              </MenuItem>
-            ))}
+            {[1, 2, 3, 4, 5, 6]
+              .filter(
+                (val) => val === 1 || tournament?.teams?.length >= val * 2,
+              )
+              .map((numberOfGroups, index) => (
+                <MenuItem key={index} value={numberOfGroups}>
+                  {numberOfGroups}
+                </MenuItem>
+              ))}
           </Select>
         </FormControl>
         <FormControl>
