@@ -1,4 +1,3 @@
-import useTeamService from 'services/TeamService';
 import League from 'types/League';
 import { useCallback } from 'react';
 import Tournament from 'types/Tournament';
@@ -8,19 +7,20 @@ import {
   snackbarSuccessOptions,
 } from 'utils/snackbarUtils';
 import { processError } from 'utils/requestsUtils';
-import useLeagueInvalidations from '../../services/queries/league/useLeagueInvalidations';
-import useUpdateLeague from '../../services/queries/league/useUpdateLeague';
-import useAddLeague from '../../services/queries/league/useAddLeague';
-import useDeleteLeague from '../../services/queries/league/useDeleteLeague';
+import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import { TeamQueries } from 'services/queries/team/TeamQueries';
 
-const useLeagueQueries = () => {
-  const { addNewLeaderBoardTeams } = useTeamService();
+const useLeagueFlows = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { invalidateSelectedLeague, invalidateLeaguesList } =
-    useLeagueInvalidations();
-  const { updateExistingLeagueMutate } = useUpdateLeague();
-  const { addLeagueMutate } = useAddLeague();
-  const { deleteExistingLeagueMutate } = useDeleteLeague();
+    LeagueQueries.useLeagueInvalidations();
+  const { mutateAsync: updateExistingLeagueMutate } =
+    LeagueQueries.useUpdateLeague();
+  const { mutateAsync: addLeagueMutate } = LeagueQueries.useAddLeague();
+  const { mutateAsync: deleteExistingLeagueMutate } =
+    LeagueQueries.useDeleteLeague();
+  const { mutateAsync: addNewLeaderBoardTeams } =
+    TeamQueries.useAddLeaderboardTeams();
 
   const setSelectedLeagueTournament = useCallback(
     async (tournament?: Tournament, selectedLeague?: League | null) => {
@@ -116,4 +116,4 @@ const useLeagueQueries = () => {
   };
 };
 
-export default useLeagueQueries;
+export default useLeagueFlows;

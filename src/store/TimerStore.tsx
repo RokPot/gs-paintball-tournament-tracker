@@ -22,6 +22,7 @@ interface TimerStoreState {
     onStartCountdown?: () => void,
   ) => void;
   stopTimer: () => void;
+  resetTimer: () => void;
 }
 
 const useTimerStore = create<TimerStoreState>((set, get) => ({
@@ -100,6 +101,15 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
   },
   getDuration: () => {
     return { duration: get().duration, currentDuration: get().currentDuration };
+  },
+  resetTimer: () => {
+    set(() => ({
+      duration: 0,
+      currentDuration: 0,
+      breakDuration: 0,
+      timingBreak: false,
+      timingGame: false,
+    }));
   },
 }));
 

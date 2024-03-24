@@ -2,10 +2,10 @@ import { Button, Card, Typography, alpha, styled } from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import { memo, useMemo } from 'react';
-import useActiveLeague from 'services/queries/league/useActiveLeague';
+import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import { Match } from 'types/Match';
-import TournamentGroup from 'types/TournamentGroup';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
+import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
 import BreakTimerStoreRenderComponent from '../BreakTimerStoreRenderComponent';
 import GameTimerStoreRenderComponent from '../GameTimerStoreRenderComponent';
@@ -27,9 +27,7 @@ interface IProps {
   startStopMatch: () => void;
   finishMatch: (match: Match) => Promise<void>;
   setShowFinishMatchPopup: (showFinishPopup: boolean) => void;
-  confirmNextTournamentStage: (
-    nextTournamentStageGroup: TournamentGroup,
-  ) => Promise<void>;
+  confirmNextTournamentStage: (nextStage: TournamentStage) => Promise<void>;
 }
 
 const DesktopScoreboard: React.FC<IProps> = ({
@@ -45,7 +43,8 @@ const DesktopScoreboard: React.FC<IProps> = ({
   isCurrentlyInCountdown,
   confirmNextTournamentStage,
 }) => {
-  const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
+  const { data: activeLeague, isLoading: isFetchingActiveLeague } =
+    LeagueQueries.useActiveLeague();
 
   const tournament = useMemo(
     () => activeLeague?.activeTournament,
@@ -61,6 +60,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
   ].includes(tournament?.state?.status || TournamentStatus.created);
   const isTournamentFinished =
     tournament?.state?.status === TournamentStatus.finished;
+
   return (
     <FlexContainer
       justifyContent="center"

@@ -3,16 +3,21 @@ import Game from 'types/Game';
 import { GameSettings } from 'types/GameSettings';
 import { GameState } from 'types/GameState';
 import Team from 'types/Team';
+import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
+import TournamentStage from 'types/TournamentStage';
 import { TournamentType } from 'types/TournamentType';
 import { v4 } from 'uuid';
+import { shuffleArray } from './arrayUtils';
+import { generateGamesForRoundRobin } from './tournament/roundRobinUtils';
 import {
   getNextGame,
   getNextGamePair,
   getNextGroup,
 } from './tournamentFlowUtils';
+import { calculateTournamentGroupLeaderboard } from './tournamentResultUtils';
 
 export const generateGamesForLayer = (
   roundToGenerate: number,
@@ -690,4 +695,222 @@ export const generateTournamentSchedule = (
     default:
       return [];
   }
+};
+
+const getLeaderboardForPreviousStageGroups = (
+  previousStageGroups?: TournamentGroup[],
+  settings?: TournamentSettings,
+  numberOfTopTeamsToProceedToNextStage: number = 2,
+) => {
+  if (!previousStageGroups || !settings) {
+    return undefined;
+  }
+  const previousStageGroupWinners: { groupIndex: number; teams: Team[] }[] = [];
+  previousStageGroups?.forEach((previousStageGroup) => {
+    const groupLeaderboard = calculateTournamentGroupLeaderboard(
+      previousStageGroup,
+      settings,
+    );
+    if (!groupLeaderboard?.length) {
+      return;
+    }
+    previousStageGroupWinners.push({
+      groupIndex: previousStageGroup.groupIndex,
+      teams: groupLeaderboard
+        .slice(0, numberOfTopTeamsToProceedToNextStage)
+        .map((leaderboardTeam) => leaderboardTeam.team),
+    });
+  });
+  return previousStageGroupWinners;
+};
+
+export const generateNewGames = (
+  teams?: Team[],
+  gameSettings?: GameSettings,
+  type?: TournamentType,
+) => {
+  if (!teams?.length || !gameSettings || !type) {
+    return {
+      games: [],
+      totalNumberOfRounds: 0,
+    };
+  }
+  switch (type) {
+    case TournamentType.roundRobin:
+      return generateGamesForRoundRobin(teams, gameSettings);
+    case TournamentType.singleElimination:
+      return generateGamesForEliminationBrackets(teams, gameSettings);
+    case TournamentType.doubleElimination:
+      return {
+        games: [],
+        totalNumberOfRounds: 0,
+      };
+    case TournamentType.training:
+      return {
+        games: [],
+        totalNumberOfRounds: 0,
+      };
+    default:
+      return {
+        games: [],
+        totalNumberOfRounds: 0,
+      };
+  }
+};
+
+export const generateNewStage = (
+  teams: Team[],
+  stageNumber: number,
+  numberOfGroups: number,
+  tournamentType: TournamentType,
+  tournament: Tournament,
+  tournamentSettings: TournamentSettings,
+) => {
+  const newStageGroups: TournamentGroup[] = [];
+
+  // 1. Set new empty groups
+  for (let i = 0; i < numberOfGroups; i += 1) {
+    const newId = v4();
+    newStageGroups.push(
+      new TournamentGroup({
+        games: [],
+        groupIndex: i + 1,
+        _id: newId,
+        id: newId,
+        teams: [],
+        groupType: tournamentType,
+        stage: 1,
+      }),
+    );
+  }
+
+  // 2. Push teams to groups
+  for (let i = 0, groupIndex = 0; i < teams.length; i += 1) {
+    newStageGroups[groupIndex].teams.push(teams[i]);
+    groupIndex = groupIndex + 1 >= numberOfGroups ? 0 : groupIndex + 1;
+  }
+
+  // 3. Generate games for new groups
+  for (let i = 0; i < newStageGroups.length; i += 1) {
+    const { games, totalNumberOfRounds } = generateNewGames(
+      newStageGroups[i].teams,
+      tournament.gameSettings,
+      tournamentType,
+    );
+    newStageGroups[i].games = games;
+    newStageGroups[i].settings = {
+      bracketNumberOfRounds: totalNumberOfRounds || 0,
+    };
+  }
+
+  // 4. Generate Schedule for groups
+  const newStageSchedule = generateTournamentSchedule(
+    newStageGroups,
+    tournamentSettings,
+    tournamentType,
+  );
+
+  const newStageId = v4();
+  const newStage = new TournamentStage({
+    _id: newStageId,
+    id: newStageId,
+    groups: newStageGroups,
+    stage: stageNumber,
+    schedule: newStageSchedule,
+  });
+  return newStage;
+};
+
+export const generateNextTournamentStage = (
+  tournament?: Tournament,
+  type?: TournamentType,
+) => {
+  const numberOfTopTeamsToProceedToNextStage = 2;
+  if (!tournament || !type) {
+    return undefined;
+  }
+  const previousStageGroupWinners = getLeaderboardForPreviousStageGroups(
+    tournament?.previousStage?.groups,
+    tournament.settings,
+    numberOfTopTeamsToProceedToNextStage,
+  );
+
+  if (!previousStageGroupWinners) {
+    return undefined;
+  }
+
+  let nextStageTeams: Team[] = [];
+
+  for (let i = 0; i < tournament.settings.numberOfGroups; i += 1) {
+    nextStageTeams.push(...previousStageGroupWinners[i].teams);
+  }
+
+  switch (tournament.settings.secondStageType) {
+    case TournamentType.roundRobin: {
+      nextStageTeams = shuffleArray(nextStageTeams);
+      break;
+    }
+    case TournamentType.singleElimination: {
+      const seededTeamsGrouped: Team[][] = [];
+      for (let i = 0; i < numberOfTopTeamsToProceedToNextStage; i += 1) {
+        const seedTeams: Team[] = [];
+        for (let j = 0; j < tournament.settings.numberOfGroups; j += 1) {
+          const seedTeam =
+            nextStageTeams[i + j * numberOfTopTeamsToProceedToNextStage];
+          if (seedTeam) {
+            seedTeams.push(seedTeam);
+          }
+        }
+        if (tournament.settings.numberOfGroups > 2) {
+          seedTeams.reverse();
+        }
+        seededTeamsGrouped.push(seedTeams);
+      }
+      nextStageTeams = seededTeamsGrouped.flat(1);
+      break;
+    }
+    default:
+      break;
+  }
+
+  return generateNewStage(
+    nextStageTeams,
+    (tournament?.previousStage?.stage || 1) + 1,
+    Math.ceil((tournament?.previousStage?.groups?.length || 0) / 2),
+    type,
+    tournament,
+    tournament.settings,
+  );
+
+  // groupSettings.bracketNumberOfRounds = totalNumberOfRounds || 0;
+
+  // const newGroupId = v4();
+  // const nextStageGroup = new TournamentGroup({
+  //   id: newGroupId,
+  //   _id: newGroupId,
+  //   groupIndex: 1,
+  //   games: nextStageGames,
+  //   stage: (tournament?.previousStage?.stage || 1) + 1,
+  //   groupType:
+  //     tournament.settings.secondStageType || TournamentType.singleElimination,
+  //   teams: nextStageTeams,
+  //   settings: groupSettings,
+  // });
+
+  // const schedule = generateTournamentSchedule(
+  //   [nextStageGroup],
+  //   tournament.settings,
+  //   tournament.settings.secondStageType,
+  // );
+
+  // const newId = v4();
+  // const newStage = new TournamentStage({
+  //   id: newId,
+  //   _id: newId,
+  //   groups: [nextStageGroup],
+  //   schedule,
+  //   stage: (tournament?.previousStage?.stage || 1) + 1,
+  // });
+
+  // return newStage;
 };

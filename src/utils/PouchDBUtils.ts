@@ -164,7 +164,7 @@ export const getRootElementAndLinkedDocs = <T>(
 };
 
 export const getTournamentsList = (result: PouchDB.Query.Response<any>) => {
-  const leagues: Tournament[] = [];
+  const tournaments: { tournament: Tournament; stageIds?: string[] }[] = [];
   const groupedResults = groupBy(result.rows, (row: any) => row.id);
   Object.keys(groupedResults)?.forEach((key) => {
     const { rootDoc, otherDocs } = getRootElementAndLinkedDocs<TournamentDto>(
@@ -178,7 +178,6 @@ export const getTournamentsList = (result: PouchDB.Query.Response<any>) => {
     // todo rokpot
     const newTournament: Tournament = new Tournament({
       ...rootDoc,
-      stages: [],
     });
 
     const teams = mapTeamsFromResponse(
@@ -187,9 +186,9 @@ export const getTournamentsList = (result: PouchDB.Query.Response<any>) => {
     );
 
     newTournament.teams = teams;
-    leagues.push(newTournament);
+    tournaments.push({ tournament: newTournament, stageIds: rootDoc.stageIds });
   });
-  return leagues;
+  return tournaments;
 };
 
 export const getGroupsList = (result: PouchDB.Query.Response<any>) => {

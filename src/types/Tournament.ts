@@ -63,7 +63,7 @@ export default class Tournament extends IPouchDB {
       endDate: this.endDate?.toISOString(),
       startDate: this.startDate?.toISOString(),
       leaderboardTeamIds: this.leaderboard?.map((team) => team._id) || [],
-      stages: this.stages?.map((stage) => stage._id) || [],
+      stageIds: this.stages?.map((stage) => stage._id) || [],
     };
   };
 

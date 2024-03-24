@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
-import useUpdateGame from 'services/queries/game/useUpdateGame';
+import { GameQueries } from 'services/queries/game/GameQueries';
 import Game from 'types/Game';
 import { GameWinner } from 'types/GameState';
 import MatchState from 'types/MatchState';
 
-const useGameQueries = () => {
-  const { updateGame } = useUpdateGame();
+const useGameFlows = () => {
+  const { mutateAsync: updateGame } = GameQueries.useUpdateGame();
 
   const updateGameData = useCallback(
     async (game: Game) => {
@@ -45,4 +45,4 @@ const useGameQueries = () => {
   return { updateGameData, updateGameWithMatchesAndRecalculate };
 };
 
-export default useGameQueries;
+export default useGameFlows;

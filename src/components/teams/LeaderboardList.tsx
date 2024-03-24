@@ -119,6 +119,8 @@ const LeaderboardList: React.FC<IProps> = ({
     setRowsPerPage(availableRowsPerPage || 5);
   }, []);
 
+  const areRowsPerPageAvailable = rowsPerPage !== null && rowsPerPage > 0;
+
   return (
     <FlexContainer
       width="100%"
@@ -127,7 +129,7 @@ const LeaderboardList: React.FC<IProps> = ({
       height="100%"
       ref={containerRef}
     >
-      {!teams?.length && (
+      {!teams?.length && areRowsPerPageAvailable && (
         <Typography
           variant="body2"
           color={(theme) => theme.palette.text.secondary}
@@ -136,8 +138,7 @@ const LeaderboardList: React.FC<IProps> = ({
         </Typography>
       )}
       {(teams?.length! > 0 || (showHeader && !teams?.length)) &&
-        rowsPerPage !== null &&
-        rowsPerPage > 0 && (
+        areRowsPerPageAvailable && (
           <CustomDataTable
             height="100%"
             columns={columns}

@@ -3,7 +3,6 @@ import { GameState, GameStateLabels } from 'types/GameState';
 
 interface IStyledGameStatusCircleProps {
   color?: string;
-  shouldAnimate?: boolean;
 }
 
 const StyledGameStatusCircle = styled('div')(
@@ -21,8 +20,8 @@ const StyledAnimatedGameStatusCircle = styled(StyledGameStatusCircle)(
   (props: IStyledGameStatusCircleProps & { theme?: Theme }) => css`
     -webkit-animation: glow linear 5s infinite;
     animation: glow linear 5s infinite;
-    ${props.shouldAnimate &&
-    `@-webkit-keyframes glow {
+
+    @-webkit-keyframes glow {
       0% {
         background-color: transparent;
       }
@@ -43,7 +42,7 @@ const StyledAnimatedGameStatusCircle = styled(StyledGameStatusCircle)(
       100% {
         background-color: transparent;
       }
-    }`}
+    }
   `,
 );
 
@@ -83,10 +82,7 @@ const ScheduleGameStatus: React.FC<IProps> = ({ gameState }) => {
   }
   return (
     <Tooltip title={GameStateLabels[gameState]} arrow>
-      <StyledAnimatedGameStatusCircle
-        shouldAnimate
-        color={getGameStatusColor()}
-      />
+      <StyledAnimatedGameStatusCircle color={getGameStatusColor()} />
     </Tooltip>
   );
 };

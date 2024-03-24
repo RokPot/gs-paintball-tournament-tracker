@@ -22,12 +22,12 @@ import AddOrEditTeam from 'components/teams/AddOrEditTeam';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
 import TournamentShortList from 'components/tournament/TournamentListShort';
-import useLeagueQueries from 'hooks/league/useLeagueQueries';
-import useTournamentQueries from 'hooks/tournament/useTournamentQueries';
+import useLeagueFlows from 'hooks/league/useLeagueFlows';
+import useTournamentFlows from 'hooks/tournament/useTournamentFlows';
 import { useState } from 'react';
-import useTeamService from 'services/TeamService';
-import useActiveLeague from 'services/queries/league/useActiveLeague';
-import useLeaguesList from 'services/queries/league/useLeaguesList';
+import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import { TeamQueries } from 'services/queries/team/TeamQueries';
+import { TournamentQueries } from 'services/queries/tournament/TournamentQueries';
 import League from 'types/League';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
@@ -81,14 +81,19 @@ const LeaguesPage = () => {
 
   const [selectedRowLeague, setSelectedRowLeague] = useState<League>();
   const [editRowLeague, setEditRowLeague] = useState<League>();
-  const { addNewTeam, addNewLeaderBoardTeam } = useTeamService();
+  const { mutateAsync: addNewTeam } = TeamQueries.useAddTeam();
+  const { mutateAsync: addNewLeaderBoardTeam } =
+    TeamQueries.useAddLeaderboardTeam();
   const theme = useTheme();
 
   const { addOrEditLeague, deleteExistingLeague, setSelectedLeague } =
-    useLeagueQueries();
-  const { leaguesList, isFetchingLeaguesList } = useLeaguesList();
-  const { activeLeague } = useActiveLeague();
-  const { addOrEditTournament } = useTournamentQueries();
+    useLeagueFlows();
+  const { data: leaguesList, isLoading: isFetchingLeaguesList } =
+    LeagueQueries.useLeaguesList();
+  const { data: activeLeague } = LeagueQueries.useActiveLeague();
+  const { mutateAsync: updateTournament } =
+    TournamentQueries.useUpdateTournament();
+  const { addNewTournamentToLeague } = useTournamentFlows();
   const confirmLeague = async (league: League, isEdit: boolean) => {
     await addOrEditLeague(league, isEdit);
     setIsLeagueModalOpen(false);
@@ -111,8 +116,11 @@ const LeaguesPage = () => {
     tournament: Tournament,
     isEdit: boolean,
   ) => {
-    await addOrEditTournament(tournament, selectedRowLeague, isEdit);
-
+    if (isEdit) {
+      await addNewTournamentToLeague(tournament, selectedRowLeague);
+    } else {
+      await updateTournament(tournament);
+    }
     setIsTournamentAddModalOpen(false);
   };
 

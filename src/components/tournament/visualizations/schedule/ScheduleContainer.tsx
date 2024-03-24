@@ -4,7 +4,7 @@ import { IconButton, Tooltip, Typography, useTheme } from '@mui/material';
 import AddOrEditGame from 'components/game/AddOrEditGame';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
-import useGameQueries from 'hooks/game/useGameQueries';
+import useGameFlows from 'hooks/game/useGameFlows';
 import { useEffect, useMemo, useState } from 'react';
 import Game from 'types/Game';
 import League from 'types/League';
@@ -34,7 +34,7 @@ const ScheduleContainer = ({
   disableNewWindowOpen,
 }: IProps) => {
   const selectedTournament = activeLeague.activeTournament!;
-  const { updateGameWithMatchesAndRecalculate } = useGameQueries();
+  const { updateGameWithMatchesAndRecalculate } = useGameFlows();
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
   const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
   const theme = useTheme();

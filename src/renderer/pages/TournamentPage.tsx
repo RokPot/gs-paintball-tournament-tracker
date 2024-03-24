@@ -33,19 +33,18 @@ import TournamentGroups from 'components/tournament/TournamentGroups';
 import TournamentResults from 'components/tournament/TournamentResults';
 import TournamentScheduleContainer from 'components/tournament/TournamentScheduleContainer';
 import ScheduleUpcomingGames from 'components/tournament/visualizations/schedule/ScheduleUpcomingGames';
-import useLeagueQueries from 'hooks/league/useLeagueQueries';
-import useTournamentQueries from 'hooks/tournament/useTournamentQueries';
+import useLeagueFlows from 'hooks/league/useLeagueFlows';
+import useTournamentFlows from 'hooks/tournament/useTournamentFlows';
+import { useSnackbar } from 'notistack';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import useAddGame from 'services/queries/game/useAddGame';
-import useAddGroup from 'services/queries/group/useAddGroup';
-import useActiveLeague from 'services/queries/league/useActiveLeague';
-import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
-import useLeaguesList from 'services/queries/league/useLeaguesList';
+import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import { TournamentQueries } from 'services/queries/tournament/TournamentQueries';
 import Tournament from 'types/Tournament';
 import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
+import { snackbarSuccessOptions } from 'utils/snackbarUtils';
 
 const StyledLoadingContainer = styled('div')(
   (props) => css`
@@ -85,25 +84,36 @@ enum TournamentTabsLabel {
 
 const TournamentPage = () => {
   const [activeTab, setActiveTab] = useState(TournamentTabs.tournamentDetails);
+
   const [
     allowAutomaticTournamentAssignment,
     setAllowAutomaticTournamentAssignment,
   ] = useState(true);
+
   const [addOrEditTournamentModalProps, setAddOrEditTournamentModalProps] =
     useState<{ isOpen: boolean; tournament?: Tournament }>({ isOpen: false });
+
   const [isInitializeTournamentModalOpen, setIsInitializeTournamentModalOpen] =
     useState(false);
 
-  const { setSelectedLeague, setSelectedLeagueTournament } = useLeagueQueries();
-  const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
-  const { addOrEditTournament } = useTournamentQueries();
-  const { invalidateSelectedLeague } = useLeagueInvalidations();
-  const { addGamesBulk } = useAddGame();
-  const { addGroupsBulk } = useAddGroup();
-  const { leaguesList } = useLeaguesList();
+  const { setSelectedLeague, setSelectedLeagueTournament } = useLeagueFlows();
+
+  const { data: activeLeague, isLoading: isFetchingActiveLeague } =
+    LeagueQueries.useActiveLeague();
+
+  const { addNewTournamentToLeague, initializeTournament } =
+    useTournamentFlows();
+
+  const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
+
+  const { mutateAsync: updateTournament } =
+    TournamentQueries.useUpdateTournament();
+
+  const { data: leaguesList } = LeagueQueries.useLeaguesList();
 
   const params = useParams();
   const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
 
   const selectedTournament = activeLeague?.activeTournament;
 
@@ -119,40 +129,27 @@ const TournamentPage = () => {
     tournament: Tournament,
     isEdit: boolean,
   ) => {
-    await addOrEditTournament(tournament, activeLeague, isEdit);
+    if (isEdit) {
+      await updateTournament(tournament);
+      enqueueSnackbar('Tournament updated', snackbarSuccessOptions);
+    } else {
+      await addNewTournamentToLeague(tournament, activeLeague);
+    }
     await invalidateSelectedLeague();
 
     setAddOrEditTournamentModalProps({ isOpen: false });
   };
 
-  const initializeTournament = async (
-    stages: TournamentStage[],
+  const initializeTournamentInternal = async (
+    stage: TournamentStage,
     settings: TournamentSettings,
   ) => {
     if (!selectedTournament) {
       return;
     }
-    // In groups there are games and also teams split.
-    // If there is second stage those games we're also generated already
-    // todo rokpot properly initialize tournament with the new stages
 
-    // selectedTournament.groups = groups;
-    selectedTournament.settings = settings;
-    // selectedTournament.stages = [
-    //   {
-    //     id: v4(),
-    //   },
-    // ];
-    selectedTournament.state.status = TournamentStatus.initialized;
-    // await addGamesBulk(
-    //   groups.reduce((prev: Game[], curr) => {
-    //     prev.push(...curr.games);
-    //     return prev;
-    //   }, []),
-    // );
-    // await addGroupsBulk(groups);
-    await addOrEditTournament(selectedTournament, activeLeague, true);
-    await invalidateSelectedLeague();
+    await initializeTournament(selectedTournament, stage, settings);
+
     setIsInitializeTournamentModalOpen(false);
   };
 
@@ -398,7 +395,7 @@ const TournamentPage = () => {
       >
         <InitializeTournament
           tournament={selectedTournament!}
-          onConfirm={initializeTournament}
+          onConfirm={initializeTournamentInternal}
         />
       </CustomModal>
     </PageContainer>

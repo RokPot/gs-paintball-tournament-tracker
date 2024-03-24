@@ -3,17 +3,15 @@ import ScheduleView from 'components/results-window/ScheduleView';
 import FlexContainer from 'components/shared/FlexContainer';
 import ScheduleUpcomingGames from 'components/tournament/visualizations/schedule/ScheduleUpcomingGames';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import useLeagueService from 'services/LeagueService';
-import League from 'types/League';
+import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import { setInterval } from 'worker-timers';
 
 interface IProps {}
 
 const ResultsPage: React.FC<IProps> = () => {
-  const { getActiveLeague } = useLeagueService();
+  const { data: activeLeague, refetch } = LeagueQueries.useActiveLeague();
   const highest = 1;
   const [currentActiveView, setCurentActiveView] = useState(1);
-  const [activeLeague, setActiveLeague] = useState<League>();
   const timerRef = useRef<number>();
 
   const currentActiveElement = useMemo(() => {
@@ -34,13 +32,11 @@ const ResultsPage: React.FC<IProps> = () => {
     }
 
     const getLeague = async () => {
-      const league = await getActiveLeague();
-      setActiveLeague(league || undefined);
+      await refetch();
     };
 
     timerRef.current = setInterval(async () => {
-      const league = await getActiveLeague();
-      setActiveLeague(league || undefined);
+      await refetch();
       setCurentActiveView((curr) => {
         if (curr + 1 > highest) {
           return 0;

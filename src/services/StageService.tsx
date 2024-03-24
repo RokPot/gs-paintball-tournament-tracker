@@ -125,14 +125,14 @@ const useStageService = () => {
           ((stageIds && stageIds.includes(doc._id)) || !stageIds)
         ) {
           emit(doc, DocType.TournamentStage);
-          if (doc.groupIds) {
+          if (doc.teamIds) {
             doc.teamIds.forEach((item: any) => {
-              emit(doc._id, { _id: item, type: DocType.Group });
+              emit(doc._id, { _id: item, type: DocType.Team });
             });
           }
-          if (doc.scheduleIds) {
-            doc.teamIds.forEach((item: any) => {
-              emit(doc._id, { _id: item, type: DocType.Game });
+          if (doc.groupIds) {
+            doc.groupIds.forEach((item: any) => {
+              emit(doc._id, { _id: item, type: DocType.Group });
             });
           }
         }

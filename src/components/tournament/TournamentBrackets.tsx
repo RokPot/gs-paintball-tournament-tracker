@@ -34,12 +34,6 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
     });
     teamss.push(newTeam);
   }
-  // const { games: roundRobinGames } = generateGamesForRoundRobin(teamss);
-
-  // const { games: bracketGames, totalNumberOfRounds } =
-  //   generateGamesForEliminationBrackets(
-  //     activeLeague?.activeTournament?.teams || [],
-  //   );
 
   if (!selectedTournament?.stages?.length) {
     return (

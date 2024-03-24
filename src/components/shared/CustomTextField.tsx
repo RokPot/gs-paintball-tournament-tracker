@@ -6,7 +6,7 @@
 /* eslint-disable react/function-component-definition */
 import { faClose } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { TextField, TextFieldProps, Theme } from '@mui/material';
+import { TextField, TextFieldProps } from '@mui/material';
 import { experimentalStyled as styled, useTheme } from '@mui/material/styles';
 import clsx from 'clsx';
 import { DebouncedFunc, debounce, isEqual } from 'lodash';
@@ -88,7 +88,7 @@ const CustomTextField: FunctionComponent<
     ...textFieldProps
   } = props;
   const theme = useTheme();
-  const { InputProps, error, label } = textFieldProps;
+  const { InputProps, error } = textFieldProps;
   const [value, setValue] = useState<string | number | any>(externalValue);
   const onChangeDispatcher = useRef<DebouncedFunc<
     () => Promise<boolean>
@@ -208,8 +208,4 @@ CustomTextField.defaultProps = {
   inputStyle: {},
 };
 
-export default styled(CustomTextField)(
-  (props: CustomTextFieldProps & { theme?: Theme }) => `
-
-`,
-);
+export default styled(CustomTextField)``;

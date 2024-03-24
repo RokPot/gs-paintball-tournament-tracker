@@ -3,10 +3,10 @@ import DesktopScoreboard from 'components/scoreboard/ui/DesktopScoreboard';
 import MobileScoreboard from 'components/scoreboard/ui/MobileScoreboard';
 import LoadingIndicator from 'components/shared/LoadingIndicator';
 import PageContainer from 'components/shared/PageContainer';
-import useTournamentFlow from 'hooks/tournament/useTournamentFlow';
+import useTournamentLogic from 'hooks/tournament/useTournamentLogic';
 import { useIsResponsive } from 'hooks/ui/useIsResponsive';
 import { memo, useCallback } from 'react';
-import useActiveLeague from 'services/queries/league/useActiveLeague';
+import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import { Match } from 'types/Match';
 
 const StyledLoadingContainer = styled('div')(
@@ -32,7 +32,8 @@ interface IProps {}
 const ScoreboardPage: React.FC<IProps> = () => {
   const { isMobile } = useIsResponsive();
 
-  const { activeLeague, isFetchingActiveLeague } = useActiveLeague();
+  const { data: activeLeague, isLoading: isFetchingActiveLeague } =
+    LeagueQueries.useActiveLeague();
   const tournament = activeLeague?.activeTournament;
   const {
     finishMatch,
@@ -46,15 +47,13 @@ const ScoreboardPage: React.FC<IProps> = () => {
     showFinishMatchPopup,
     isProcessing,
     confirmNextTournamentStage,
-  } = useTournamentFlow(tournament);
+  } = useTournamentLogic(tournament);
   const finishMatchInternal = useCallback(
     async (match: Match) => {
       await finishMatch(match);
     },
     [finishMatch],
   );
-
-  console.log(tournament?.currentStageSchedule);
 
   if (isMobile) {
     return (

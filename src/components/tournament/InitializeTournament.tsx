@@ -10,21 +10,13 @@ import {
 } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import { useCallback, useEffect, useState } from 'react';
-import Game from 'types/Game';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
-import TournamentGroup from 'types/TournamentGroup';
-import { TournamentGroupSettings } from 'types/TournamentGroupSettings';
 import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentType, TournamentTypeLabels } from 'types/TournamentType';
 import { shuffleArray } from 'utils/arrayUtils';
-import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
-import {
-  generateGamesForEliminationBrackets,
-  generateTournamentSchedule,
-} from 'utils/tournamentUtils';
-import { v4 } from 'uuid';
+import { generateNewStage } from 'utils/tournamentUtils';
 import TournamentGroupCard from './TournamentGroupCard';
 import TournamentTypesPreview from './visualizations/TournamentTypesPreview';
 
@@ -39,7 +31,7 @@ interface IProps {
   tournament: Tournament;
   className?: string;
   onConfirm: (
-    stages: TournamentStage[],
+    stages: TournamentStage,
     settings: TournamentSettings,
   ) => Promise<void>;
 }
@@ -60,84 +52,21 @@ const InitializeTournament: React.FC<IProps> = ({
     (newTournamentSettings: TournamentSettings) => {
       const numberOfGroups = newTournamentSettings.numberOfGroups || 1;
       const shuffledTeams = shuffleArray(tournament.teams);
-      const initialStageGroups: TournamentGroup[] = [];
 
-      // set new empty groups
-      for (let i = 0; i < numberOfGroups; i += 1) {
-        const newId = v4();
-        initialStageGroups.push(
-          new TournamentGroup({
-            games: [],
-            groupIndex: i + 1,
-            _id: newId,
-            id: newId,
-            teams: [],
-            groupType: newTournamentSettings.type,
-            stage: 1,
-          }),
-        );
-      }
-
-      // push teams to groups
-      for (let i = 0, groupIndex = 0; i < shuffledTeams.length; i += 1) {
-        initialStageGroups[groupIndex].teams.push(shuffledTeams[i]);
-        groupIndex = groupIndex + 1 >= numberOfGroups ? 0 : groupIndex + 1;
-      }
-
-      if (newTournamentSettings.type === TournamentType.roundRobin) {
-        for (let i = 0; i < initialStageGroups.length; i += 1) {
-          if (initialStageGroups[i].teams.length > 1) {
-            const { games: roundRobinGames } = generateGamesForRoundRobin(
-              initialStageGroups[i].teams,
-              tournament.gameSettings,
-            );
-            initialStageGroups[i].games = roundRobinGames;
-          }
-        }
-      } else if (
-        newTournamentSettings.type === TournamentType.singleElimination ||
-        newTournamentSettings.type === TournamentType.doubleElimination
-      ) {
-        for (let i = 0; i < initialStageGroups.length; i += 1) {
-          if (initialStageGroups[i].teams.length > 1) {
-            const {
-              games: bracketGames,
-              totalNumberOfRounds: numberOfBracketRounds,
-            } = generateGamesForEliminationBrackets(
-              initialStageGroups[i].teams,
-              tournament.gameSettings,
-            );
-
-            initialStageGroups[i].games = bracketGames;
-            initialStageGroups[i].settings = {
-              bracketNumberOfRounds: numberOfBracketRounds,
-            };
-          }
-        }
-      }
-      const initialStageSchedule = generateTournamentSchedule(
-        initialStageGroups,
-        newTournamentSettings,
-        newTournamentSettings.type,
+      const newStages: TournamentStage[] = [];
+      const newInitialStage = generateNewStage(
+        shuffledTeams,
+        1,
+        numberOfGroups,
+        tournament.settings.type,
+        tournament,
+        tournament.settings,
       );
-      const newStageId = v4();
-      const initialStage = new TournamentStage({
-        _id: newStageId,
-        id: newStageId,
-        groups: initialStageGroups,
-        stage: 1,
-        schedule: initialStageSchedule,
-      });
-
-      const newStages: TournamentStage[] = [initialStage];
+      newStages.push(newInitialStage);
 
       if (numberOfGroups > 1) {
-        const nextStageTeams: Team[] = [];
-        const nextStageGames: Game[] = [];
-        const groupSettings: TournamentGroupSettings = {
-          bracketNumberOfRounds: 0,
-        };
-        const nextStageGroups: TournamentGroup[] = [];
+        let nextStageTeams: Team[] = [];
+        // Prepare preview for second stage
         for (let i = 0; i < numberOfGroups; i += 1) {
           nextStageTeams.push(
             new Team({
@@ -158,15 +87,6 @@ const InitializeTournament: React.FC<IProps> = ({
         }
 
         if (
-          newTournamentSettings.secondStageType === TournamentType.roundRobin
-        ) {
-          const { games: roundRobinGames } = generateGamesForRoundRobin(
-            nextStageTeams,
-            tournament.gameSettings,
-          );
-          nextStageGames.push(...roundRobinGames);
-        }
-        if (
           newTournamentSettings.secondStageType ===
           TournamentType.singleElimination
         ) {
@@ -177,74 +97,36 @@ const InitializeTournament: React.FC<IProps> = ({
             },
             [[], []],
           );
+          nextStageTeams = [
+            ...shuffleArray(firstSeedTeams),
+            ...shuffleArray(lowerSeedTeams),
+          ];
+        }
 
-          const {
-            games: bracketGames,
-            totalNumberOfRounds: numberOfBracketRounds,
-          } = generateGamesForEliminationBrackets(
-            [...shuffleArray(firstSeedTeams), ...shuffleArray(lowerSeedTeams)],
-            tournament.gameSettings,
-          );
-          nextStageGames.push(...bracketGames);
-          groupSettings.bracketNumberOfRounds = numberOfBracketRounds;
-        }
-        if (
-          newTournamentSettings.secondStageType ===
-          TournamentType.doubleElimination
-        ) {
-          const {
-            games: bracketGames,
-            totalNumberOfRounds: totalNumberOfBracketRounds,
-          } = generateGamesForEliminationBrackets(
-            nextStageTeams,
-            tournament.gameSettings,
-          );
-          nextStageGames.push(...bracketGames);
-          groupSettings.bracketNumberOfRounds = totalNumberOfBracketRounds;
-        }
-        const newId = v4();
-        nextStageGroups.push(
-          new TournamentGroup({
-            games: nextStageGames,
-            groupIndex: 1,
-            id: newId,
-            _id: newId,
-            teams: nextStageTeams,
-            groupType:
-              newTournamentSettings.secondStageType ||
-              TournamentType.roundRobin,
-            stage: 2,
-            settings: groupSettings,
-          }),
+        const newSecondStage = generateNewStage(
+          nextStageTeams,
+          2,
+          1,
+          tournament?.settings?.secondStageType ||
+            TournamentType.singleElimination,
+          tournament,
+          tournament.settings,
         );
-        const nextStageId = v4();
-        const nextStageSchedule = generateTournamentSchedule(
-          nextStageGroups,
-          newTournamentSettings,
-          newTournamentSettings.secondStageType,
-        );
-        const nextStage: TournamentStage = new TournamentStage({
-          _id: nextStageId,
-          id: nextStageId,
-          groups: nextStageGroups,
-          stage: 2,
-          schedule: nextStageSchedule,
-        });
-        newStages.push(nextStage);
+        newStages.push(newSecondStage);
       }
       return newStages;
     },
-    [tournament.teams, tournament.gameSettings],
+    [tournament],
   );
 
   const confirmTournamentSettings = async () => {
     try {
-      if (!stages) {
+      if (!stages?.length) {
         return;
       }
       setIsProcessing(true);
-
-      onConfirm(stages, { ...tournament.settings, ...tournamentSettings });
+      // Only the first is necessary others are for preview
+      onConfirm(stages[0], { ...tournament.settings, ...tournamentSettings });
     } catch (e) {
       console.error(e);
     } finally {

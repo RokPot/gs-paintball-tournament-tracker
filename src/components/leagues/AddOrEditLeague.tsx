@@ -8,8 +8,7 @@ import AddOrEditTeam from 'components/teams/AddOrEditTeam';
 import TeamsShortList from 'components/teams/TeamShortList';
 import { useFormik } from 'formik';
 import { useState } from 'react';
-import useTeamService from 'services/TeamService';
-import useTeamsList from 'services/queries/team/useTeamsList';
+import { TeamQueries } from 'services/queries/team/TeamQueries';
 import League from 'types/League';
 import Team from 'types/Team';
 import { LeagueDetailsSchema } from 'utils/schemes';
@@ -28,8 +27,8 @@ interface IProps {
 }
 
 const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
-  const { addNewTeam } = useTeamService();
-  const { teamsList } = useTeamsList();
+  const { data: teamsList } = TeamQueries.useTeamsList();
+  const { mutateAsync: addNewTeam } = TeamQueries.useAddTeam();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const formik = useFormik<AddLeague>({

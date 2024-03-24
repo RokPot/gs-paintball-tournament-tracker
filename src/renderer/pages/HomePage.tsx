@@ -19,7 +19,7 @@ import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
 import { useNavigate } from 'react-router-dom';
 import routes from 'renderer/main/Routes';
-import useLeaguesList from 'services/queries/league/useLeaguesList';
+import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 
 const StyledStackingContainer = styled('div')(
   () => css`
@@ -37,7 +37,8 @@ const HomePage: React.FC = () => {
     console.log(result);
   });
 
-  const { leaguesList, isFetchingLeaguesList } = useLeaguesList();
+  const { data: leaguesList, isLoading: isFetchingLeaguesList } =
+    LeagueQueries.useLeaguesList();
 
   return (
     <PageContainer>

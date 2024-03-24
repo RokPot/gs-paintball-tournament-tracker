@@ -70,9 +70,9 @@ const useTournamentService = () => {
                 emit(doc._id, { _id: item, type: DocType.LeaderboardTeam });
               });
             }
-            if (doc.groupIds) {
-              doc.groupIds.forEach((item: any) => {
-                emit(doc._id, { _id: item, type: DocType.Group });
+            if (doc.stageIds) {
+              doc.stageIds.forEach((item: any) => {
+                emit(doc._id, { _id: item, type: DocType.TournamentStage });
               });
             }
           }
@@ -82,13 +82,13 @@ const useTournamentService = () => {
         include_docs: true,
       });
       const tournamentsList = getTournamentsList(result);
-      const tournament =
-        tournamentsList?.length > 0 ? tournamentsList[0] : null;
+      if (tournamentsList?.length < 0) {
+        return null;
+      }
+      const { tournament, stageIds } = tournamentsList[0];
 
-      if (tournament?.stages) {
-        const stages = await getStages(
-          tournament?.stages.map((stage) => stage._id),
-        );
+      if (stageIds) {
+        const stages = await getStages(stageIds);
         tournament.stages = stages;
       }
       return tournament;
@@ -111,7 +111,9 @@ const useTournamentService = () => {
       include_docs: true,
     });
 
-    return getTournamentsList(result);
+    return getTournamentsList(result).map(
+      (tournamentResult) => tournamentResult.tournament,
+    );
   }, [db]);
 
   return {

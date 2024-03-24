@@ -23,7 +23,6 @@ import { LeagueDetailsSchema } from 'utils/schemes';
 
 interface IStyledGameStatusCircleProps {
   color?: string;
-  shouldAnimate?: boolean;
 }
 
 const StyledGameStatusCircle = styled('div')(

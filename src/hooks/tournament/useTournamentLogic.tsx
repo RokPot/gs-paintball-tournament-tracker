@@ -1,8 +1,8 @@
-import useGameQueries from 'hooks/game/useGameQueries';
+import useGameFlows from 'hooks/game/useGameFlows';
 import useCountdownSound from 'hooks/sounds/useCountdownSound';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import useLeagueInvalidations from 'services/queries/league/useLeagueInvalidations';
-import useUpdateTournament from 'services/queries/tournament/useUpdateTournament';
+import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import { TournamentQueries } from 'services/queries/tournament/TournamentQueries';
 import useTimerStore from 'store/TimerStore';
 import Game from 'types/Game';
 import { DefaultGameSettings } from 'types/GameSettings';
@@ -10,10 +10,12 @@ import { GameState, GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
 import MatchState from 'types/MatchState';
 import Tournament from 'types/Tournament';
-import TournamentGroup from 'types/TournamentGroup';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
+import TournamentStage from 'types/TournamentStage';
 
+import { useSnackbar } from 'notistack';
 import { TournamentStatus } from 'types/TournamentStatus';
+import { snackbarSuccessOptions } from 'utils/snackbarUtils';
 import {
   FlowState,
   checkIfGameIsFinishedProcedure,
@@ -21,8 +23,9 @@ import {
   prepareNextGameIfEliminationsTournament,
   switchToNextScheduledGames,
 } from 'utils/tournamentFlowUtils';
+import useTournamentFlows from './useTournamentFlows';
 
-const useTournamentFlow = (tournament?: Tournament) => {
+const useTournamentLogic = (tournament?: Tournament) => {
   const {
     setDuration,
     setBreakDuration,
@@ -31,11 +34,13 @@ const useTournamentFlow = (tournament?: Tournament) => {
     timingGame,
     startTimer,
     stopTimer,
+    resetTimer,
   } = useTimerStore();
   const { playCountdown } = useCountdownSound();
-  const { updateTournament } = useUpdateTournament();
-  const { invalidateSelectedLeague } = useLeagueInvalidations();
-  const { updateGameData } = useGameQueries();
+  const { mutateAsync: updateTournament } =
+    TournamentQueries.useUpdateTournament();
+  const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
+  const { updateGameData } = useGameFlows();
 
   const [currentScheduledGame1, setScheduledCurrentGame1] =
     useState<TournamentScheduleGame>();
@@ -46,6 +51,9 @@ const useTournamentFlow = (tournament?: Tournament) => {
   const [hasGameTimeRanOut, setHasGameTimeRanOut] = useState(false);
   const [showFinishMatchPopup, setShowFinishMatchPopup] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const { addStageToTournament } = useTournamentFlows();
+
+  const { enqueueSnackbar } = useSnackbar();
 
   const currentSchedule = useMemo(() => {
     if (!tournament?.currentStageSchedule) {
@@ -159,7 +167,8 @@ const useTournamentFlow = (tournament?: Tournament) => {
       newPairedGame1,
       newPairedGame2,
     );
-  }, [currentSchedule, setNewActiveGroupAndGames, tournament]);
+    resetTimer();
+  }, [currentSchedule, resetTimer, setNewActiveGroupAndGames, tournament]);
 
   const finishGame = useCallback(
     async (game: Game, gameWinner: GameWinner) => {
@@ -432,28 +441,19 @@ const useTournamentFlow = (tournament?: Tournament) => {
   ]);
 
   const confirmNextTournamentStage = useCallback(
-    async (nextTournamentStageGroup: TournamentGroup) => {
-      if (!tournament || !currentGroups) {
+    async (nextStage: TournamentStage) => {
+      if (!tournament) {
         return;
       }
-      console.log(nextTournamentStageGroup);
-      // todo rokpot handle next tournament stage
-      // const currentNextTournamentGroupIndex = currentGroups.findIndex(
-      //   (group) => group.id === nextTournamentStageGroup.id,
-      // );
-
-      // if (currentNextTournamentGroupIndex < 0) {
-      //   tournament.groups.push(nextTournamentStageGroup);
-      // } else {
-      //   tournament.groups[currentNextTournamentGroupIndex] =
-      //     nextTournamentStageGroup;
-      // }
       tournament.state.status = TournamentStatus.inProgress;
 
-      await updateTournament(tournament);
-      await invalidateSelectedLeague();
+      addStageToTournament(tournament, nextStage);
+      enqueueSnackbar(
+        'Tournament proceeded to next stage',
+        snackbarSuccessOptions,
+      );
     },
-    [invalidateSelectedLeague, tournament, updateTournament],
+    [addStageToTournament, enqueueSnackbar, tournament],
   );
 
   return useMemo(() => {
@@ -489,4 +489,4 @@ const useTournamentFlow = (tournament?: Tournament) => {
   ]);
 };
 
-export default useTournamentFlow;
+export default useTournamentLogic;

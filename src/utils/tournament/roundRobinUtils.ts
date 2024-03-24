@@ -287,9 +287,6 @@ export const generateGamesForRoundRobin = (
   }
 
   return {
-    shuffledGameIndicesWithSortedTeams,
-    numberOfGames,
-    numberOfRounds,
     totalNumberOfRounds,
     games: newGames,
   };

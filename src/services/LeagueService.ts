@@ -82,7 +82,7 @@ const useLeagueService = () => {
     const activeLeague = leagues?.length > 0 ? leagues[0] : null;
 
     if (!activeLeague) {
-      return null;
+      return undefined;
     }
 
     if (!activeLeague?.activeTournament) {

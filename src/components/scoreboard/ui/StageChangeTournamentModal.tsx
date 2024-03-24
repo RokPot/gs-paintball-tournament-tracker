@@ -5,22 +5,17 @@ import FlexContainer from 'components/shared/FlexContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import TournamentTypesPreview from 'components/tournament/visualizations/TournamentTypesPreview';
 import { useCallback, useEffect, useState } from 'react';
-import Game from 'types/Game';
 import LeaderboardTeam from 'types/LeadeboardTeam';
-import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
-import { TournamentGroupSettings } from 'types/TournamentGroupSettings';
+import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
-import { TournamentType } from 'types/TournamentType';
-import { shuffleArray } from 'utils/arrayUtils';
-import { generateGamesForRoundRobin } from 'utils/tournament/roundRobinUtils';
 import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
-import { generateGamesForEliminationBrackets } from 'utils/tournamentUtils';
+import { generateNextTournamentStage } from 'utils/tournamentUtils';
 
 interface IProps {
   tournament?: Tournament;
-  onTournamentContinueStage: (group: TournamentGroup) => Promise<void>;
+  onTournamentContinueStage: (nextStage: TournamentStage) => Promise<void>;
 }
 
 const StageChangeTournamentModal: React.FC<IProps> = ({
@@ -28,7 +23,7 @@ const StageChangeTournamentModal: React.FC<IProps> = ({
   onTournamentContinueStage,
 }) => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardTeam[]>([]);
-  const [nextStageGroup, setNextStageGroup] = useState<TournamentGroup>();
+  const [nextStage, setNextStage] = useState<TournamentStage>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const calculateLeaderboard = useCallback(
     (group?: TournamentGroup) => {
@@ -46,105 +41,26 @@ const StageChangeTournamentModal: React.FC<IProps> = ({
   );
 
   const onProceedToNextStageClick = useCallback(async () => {
-    if (!nextStageGroup) {
+    if (!nextStage) {
       return;
     }
-    await onTournamentContinueStage(nextStageGroup);
-  }, [nextStageGroup, onTournamentContinueStage]);
+    try {
+      await onTournamentContinueStage(nextStage);
+      setIsModalOpen(false);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [nextStage, onTournamentContinueStage]);
 
   const generateNextStageGames = useCallback(() => {
-    const numberOfTopTeamsToProceedToNextStage = 2;
     if (!tournament) {
       return;
     }
-    const previousStageGroups = tournament?.stages?.find(
-      (tournamentStage) =>
-        tournamentStage.stage === (tournament.state.stage - 1 || 1),
-    )?.groups;
-    const previousStageGroupWinners: { groupIndex: number; teams: Team[] }[] =
-      [];
-    previousStageGroups?.forEach((previousStageGroup) => {
-      const groupLeaderboard = calculateTournamentGroupLeaderboard(
-        previousStageGroup,
-        tournament.settings,
-      );
-      if (!groupLeaderboard?.length) {
-        return;
-      }
-      previousStageGroupWinners.push({
-        groupIndex: previousStageGroup.groupIndex,
-        teams: groupLeaderboard
-          .slice(0, numberOfTopTeamsToProceedToNextStage)
-          .map((leaderboardTeam) => leaderboardTeam.team),
-      });
-    });
-    const nextStageTeams: Team[] = [];
-    const nextStageGames: Game[] = [];
-    const groupSettings: TournamentGroupSettings = {
-      bracketNumberOfRounds: 0,
-    };
-
-    for (let i = 0; i < tournament.settings.numberOfGroups; i += 1) {
-      nextStageTeams.push(...previousStageGroupWinners[i].teams);
-    }
-
-    if (tournament.settings.secondStageType === TournamentType.roundRobin) {
-      const { games: roundRobinGames } = generateGamesForRoundRobin(
-        shuffleArray(nextStageTeams),
-        tournament.gameSettings,
-      );
-      nextStageGames.push(...roundRobinGames);
-    }
-    if (
-      tournament.settings.secondStageType === TournamentType.singleElimination
-    ) {
-      const seededTeamsGrouped: Team[][] = [];
-      for (let i = 0; i < numberOfTopTeamsToProceedToNextStage; i += 1) {
-        const seedTeams: Team[] = [];
-        for (let j = 0; j < tournament.settings.numberOfGroups; j += 1) {
-          const seedTeam =
-            nextStageTeams[i + j * numberOfTopTeamsToProceedToNextStage];
-          if (seedTeam) {
-            seedTeams.push(seedTeam);
-          }
-        }
-        if (tournament.settings.numberOfGroups > 2) {
-          seedTeams.reverse();
-        }
-        seededTeamsGrouped.push(seedTeams);
-      }
-      const seededShuffeledTeams = seededTeamsGrouped.flat(1);
-
-      const {
-        games: bracketGames,
-        totalNumberOfRounds: numberOfBracketRounds,
-      } = generateGamesForEliminationBrackets(
-        seededShuffeledTeams,
-        tournament.gameSettings,
-      );
-      nextStageGames.push(...bracketGames);
-      groupSettings.bracketNumberOfRounds = numberOfBracketRounds;
-    }
-    if (
-      tournament.settings.secondStageType === TournamentType.doubleElimination
-    ) {
-      const {
-        games: bracketGames,
-        totalNumberOfRounds: totalNumberOfBracketRounds,
-      } = generateGamesForEliminationBrackets(
-        nextStageTeams,
-        tournament.gameSettings,
-      );
-      nextStageGames.push(...bracketGames);
-      groupSettings.bracketNumberOfRounds = totalNumberOfBracketRounds;
-    }
-    if (!tournament.currentStage) {
-      return;
-    }
-    tournament.currentStage.groups[0].games = nextStageGames;
-    tournament.currentStage.groups[0].teams = nextStageTeams;
-    tournament.currentStage.groups[0].settings = groupSettings;
-    setNextStageGroup(tournament.currentStage.groups[0]);
+    const newStage = generateNextTournamentStage(
+      tournament,
+      tournament.settings.secondStageType,
+    );
+    setNextStage(newStage);
   }, [tournament]);
 
   useEffect(() => {
@@ -155,16 +71,18 @@ const StageChangeTournamentModal: React.FC<IProps> = ({
       return;
     }
     setIsModalOpen(true);
-    calculateLeaderboard(tournament?.currentStage?.groups[0]);
+    calculateLeaderboard(tournament?.previousStage?.groups[0]);
 
     generateNextStageGames();
   }, [
     calculateLeaderboard,
     generateNextStageGames,
-    tournament?.currentStage?.groups,
+    tournament?.previousStage?.groups,
     tournament?.state.isTournamentFinished,
     tournament?.state?.status,
   ]);
+
+  console.log(nextStage);
   return (
     <CustomModal
       isModalOpen={isModalOpen}
@@ -207,7 +125,7 @@ const StageChangeTournamentModal: React.FC<IProps> = ({
             />
           )}
         <LeaderboardList teams={leaderboard} />
-        <TournamentTypesPreview group={nextStageGroup} />
+        <TournamentTypesPreview group={nextStage?.groups[0]} />
 
         <LoadingButton
           variant="contained"

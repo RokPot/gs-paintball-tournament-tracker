@@ -15,11 +15,9 @@ import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
 import AddOrEditTeam from 'components/teams/AddOrEditTeam';
-import useTeamQueries from 'hooks/team/useTeamQueries';
+import useTeamFlows from 'hooks/team/useTeamFlows';
 import { useEffect, useRef, useState } from 'react';
-import useDeleteTeam from 'services/queries/team/useDeleteTeam';
-import useTeamInvalidations from 'services/queries/team/useTeamInvalidations';
-import useTeamsList from 'services/queries/team/useTeamsList';
+import { TeamQueries } from 'services/queries/team/TeamQueries';
 import useConfirmationModalStore from 'store/ConfirmationModalStore';
 import Team from 'types/Team';
 
@@ -36,10 +34,11 @@ const TeamsPage = () => {
   const [teamToUpsert, setTeamToUpsert] = useState<Team>();
   const { openModal } = useConfirmationModalStore();
   const theme = useTheme();
-  const { teamsList, isFetchingTeamsList } = useTeamsList();
-  const { addOrEditTeam } = useTeamQueries();
-  const { deleteTeam } = useDeleteTeam();
-  const { invalidateTeamsList } = useTeamInvalidations();
+  const { data: teamsList, isLoading: isFetchingTeamsList } =
+    TeamQueries.useTeamsList();
+  const { mutateAsync: deleteTeam } = TeamQueries.useDeleteTeam();
+  const { invalidateTeamsList } = TeamQueries.useTeamInvalidations();
+  const { addOrEditTeam } = useTeamFlows();
 
   const addNewTeam = async (team: Team, update?: boolean) => {
     addOrEditTeam(team, update);
