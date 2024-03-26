@@ -60,7 +60,6 @@ const InitializeTournament: React.FC<IProps> = ({
         numberOfGroups,
         tournament.settings.type,
         tournament,
-        tournament.settings,
       );
       newStages.push(newInitialStage);
 
@@ -110,7 +109,6 @@ const InitializeTournament: React.FC<IProps> = ({
           tournament?.settings?.secondStageType ||
             TournamentType.singleElimination,
           tournament,
-          tournament.settings,
         );
         newStages.push(newSecondStage);
       }

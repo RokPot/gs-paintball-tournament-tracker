@@ -457,15 +457,13 @@ const generateRoundRobinSchedule = (
   const { switchGames, switchGroups } = settings;
 
   const innerGroups = [
-    ...(JSON.parse(
-      JSON.stringify(groups.filter((group) => group.stage === 1)),
-    ) as TournamentGroup[]),
+    ...(JSON.parse(JSON.stringify(groups)) as TournamentGroup[]),
   ];
   const totalGames = innerGroups.reduce((prev, curr) => {
     return prev + (curr?.games?.length || 0);
   }, 0);
 
-  let mostCurrentGroup = innerGroups.filter((group) => group.stage === 1)[0];
+  let mostCurrentGroup = innerGroups[0];
   let currentGameNumber = 0;
   let pairedGame1: Game = mostCurrentGroup.games[0];
   let pairedGame2: Game | null = switchGames ? mostCurrentGroup.games[1] : null;
@@ -593,14 +591,14 @@ const generateSingleEliminationSchedule = (
   const scheduledGames: TournamentScheduleGame[] = compact([
     pairedGame1 &&
       ({
-        game: pairedGame1,
+        game: new Game(pairedGame1),
         gameNumber: 1,
         group: mostCurrentGroup,
         id: v4(),
       } as TournamentScheduleGame),
     pairedGame2 &&
       ({
-        game: pairedGame2,
+        game: new Game(pairedGame2),
         gameNumber: 2,
         group: mostCurrentGroup,
         id: v4(),
@@ -628,7 +626,7 @@ const generateSingleEliminationSchedule = (
         pairedGame1 = gamePair.game1;
         pairedGame1.gameState = GameState.finished;
         scheduledGames.push({
-          game: pairedGame1,
+          game: new Game(pairedGame1),
           gameNumber: currentGameNumber,
           group: mostCurrentGroup,
           id: v4(),
@@ -659,7 +657,7 @@ const generateSingleEliminationSchedule = (
         pairedGame1 = gamePair.game1;
         pairedGame1.gameState = GameState.finished;
         scheduledGames.push({
-          game: pairedGame1,
+          game: new Game(pairedGame1),
           gameNumber: currentGameNumber,
           group: mostCurrentGroup,
           id: v4(),
@@ -764,7 +762,6 @@ export const generateNewStage = (
   numberOfGroups: number,
   tournamentType: TournamentType,
   tournament: Tournament,
-  tournamentSettings: TournamentSettings,
 ) => {
   const newStageGroups: TournamentGroup[] = [];
 
@@ -806,7 +803,7 @@ export const generateNewStage = (
   // 4. Generate Schedule for groups
   const newStageSchedule = generateTournamentSchedule(
     newStageGroups,
-    tournamentSettings,
+    tournament.settings,
     tournamentType,
   );
 
@@ -879,38 +876,26 @@ export const generateNextTournamentStage = (
     Math.ceil((tournament?.previousStage?.groups?.length || 0) / 2),
     type,
     tournament,
-    tournament.settings,
   );
+};
 
-  // groupSettings.bracketNumberOfRounds = totalNumberOfRounds || 0;
+export const prepareGamesForTournament = (
+  tournament?: Tournament,
+  schedule?: TournamentScheduleGame[],
+) => {
+  if (!tournament || !schedule) {
+    return undefined;
+  }
 
-  // const newGroupId = v4();
-  // const nextStageGroup = new TournamentGroup({
-  //   id: newGroupId,
-  //   _id: newGroupId,
-  //   groupIndex: 1,
-  //   games: nextStageGames,
-  //   stage: (tournament?.previousStage?.stage || 1) + 1,
-  //   groupType:
-  //     tournament.settings.secondStageType || TournamentType.singleElimination,
-  //   teams: nextStageTeams,
-  //   settings: groupSettings,
-  // });
+  const newPairedGame1 = schedule[0];
+  const newPairedGame2 =
+    schedule.length > 1 && tournament.settings.switchGames
+      ? schedule[1]
+      : undefined;
 
-  // const schedule = generateTournamentSchedule(
-  //   [nextStageGroup],
-  //   tournament.settings,
-  //   tournament.settings.secondStageType,
-  // );
-
-  // const newId = v4();
-  // const newStage = new TournamentStage({
-  //   id: newId,
-  //   _id: newId,
-  //   groups: [nextStageGroup],
-  //   schedule,
-  //   stage: (tournament?.previousStage?.stage || 1) + 1,
-  // });
-
-  // return newStage;
+  newPairedGame1.game.gameState = GameState.playing;
+  return {
+    newPairedGame1,
+    newPairedGame2,
+  };
 };

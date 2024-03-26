@@ -64,44 +64,19 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
         height="100%"
         alignItems="flex-start"
       >
-        {selectedTournament?.currentStage?.groups
-          ?.filter((group) => group.stage === selectedTournament.state.stage)
-          .map((group, index) => (
-            <FlexContainer
-              flexDirection="column"
-              alignItems="center"
-              key={index}
-              gap={15}
-              flexWrap="wrap"
-            >
-              <Typography variant="h4">Group {group.groupIndex}</Typography>
-              <TournamentTypesPreview group={group} />
-            </FlexContainer>
-          ))}
+        {selectedTournament?.currentStage?.groups.map((group, index) => (
+          <FlexContainer
+            flexDirection="column"
+            alignItems="center"
+            key={index}
+            gap={15}
+            flexWrap="wrap"
+          >
+            <Typography variant="h4">Group {group.groupIndex}</Typography>
+            <TournamentTypesPreview group={group} />
+          </FlexContainer>
+        ))}
       </FlexContainer>
-
-      {/* {selectedTournament.settings.type ===
-        TournamentType.singleElimination && (
-        <BracketsContainer
-          games={bracketGames}
-          totalNumberOfRounds={totalNumberOfRounds}
-        />
-      )}
-      {selectedTournament.settings.type === TournamentType.roundRobin && (
-        <RoundRobinContainer
-          group={
-            new TournamentGroup({
-              games: roundRobinGames,
-              teams: activeLeague?.activeTournament?.teams || [],
-              id: v4(),
-              groupIndex: 1,
-              groupType: TournamentType.roundRobin,
-              stage: 1,
-              _id: v4(),
-            })
-          }
-        />
-      )} */}
     </FlexContainer>
   );
 };

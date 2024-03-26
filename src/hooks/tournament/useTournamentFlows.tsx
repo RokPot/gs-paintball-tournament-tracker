@@ -61,7 +61,7 @@ const useTournamentFlows = () => {
   const addStageToTournament = useCallback(
     async (tournament: Tournament, newStage: TournamentStage) => {
       if (!newStage || !tournament) {
-        return;
+        return undefined;
       }
       await addGames(
         newStage.groups.reduce((prev: Game[], curr) => {
@@ -79,6 +79,7 @@ const useTournamentFlows = () => {
       await updateTournament(tournament);
 
       await invalidateSelectedLeague();
+      return tournament;
     },
     [addGames, addGroups, addStage, invalidateSelectedLeague, updateTournament],
   );

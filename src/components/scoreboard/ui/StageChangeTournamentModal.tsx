@@ -82,7 +82,6 @@ const StageChangeTournamentModal: React.FC<IProps> = ({
     tournament?.state?.status,
   ]);
 
-  console.log(nextStage);
   return (
     <CustomModal
       isModalOpen={isModalOpen}
@@ -104,16 +103,10 @@ const StageChangeTournamentModal: React.FC<IProps> = ({
           tournament?.previousStage.groups?.length! > 1 && (
             <CustomTabs
               items={
-                tournament?.previousStage.groups
-                  ?.filter(
-                    (group) =>
-                      (tournament.state.stage === 1 && group.stage === 1) ||
-                      group.stage === tournament.state.stage - 1,
-                  )
-                  .map((group) => ({
-                    label: `Group ${group.groupIndex}`,
-                    value: group.id,
-                  })) || []
+                tournament?.previousStage.groups.map((group) => ({
+                  label: `Group ${group.groupIndex}`,
+                  value: group.id,
+                })) || []
               }
               onTabChanged={(newTabGroupId) => {
                 calculateLeaderboard(

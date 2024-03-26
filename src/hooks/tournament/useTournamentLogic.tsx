@@ -23,6 +23,7 @@ import {
   prepareNextGameIfEliminationsTournament,
   switchToNextScheduledGames,
 } from 'utils/tournamentFlowUtils';
+import { prepareGamesForTournament } from 'utils/tournamentUtils';
 import useTournamentFlows from './useTournamentFlows';
 
 const useTournamentLogic = (tournament?: Tournament) => {
@@ -154,18 +155,15 @@ const useTournamentLogic = (tournament?: Tournament) => {
     }
     tournament.state.status = TournamentStatus.inProgress;
 
-    // Begin tournament
-    const newPairedGame1 = currentSchedule[0];
-    const newPairedGame2 =
-      currentSchedule.length > 1 && tournament.settings.switchGames
-        ? currentSchedule[1]
-        : undefined;
+    const starterGames = prepareGamesForTournament(tournament, currentSchedule);
+    if (!starterGames) {
+      return;
+    }
 
-    newPairedGame1.game.gameState = GameState.playing;
     await setNewActiveGroupAndGames(
-      newPairedGame1,
-      newPairedGame1,
-      newPairedGame2,
+      starterGames.newPairedGame1,
+      starterGames.newPairedGame1,
+      starterGames.newPairedGame2,
     );
     resetTimer();
   }, [currentSchedule, resetTimer, setNewActiveGroupAndGames, tournament]);
@@ -323,7 +321,6 @@ const useTournamentLogic = (tournament?: Tournament) => {
         );
         if (afterFinishedMatchStatus === FlowState.NoGamesAvailable) {
           const currentStageGamesThatAreNotYetFinished = currentGroups
-            .filter((group) => group.stage === tournament.state.stage)
             .map((group) =>
               group.games.filter(
                 (game) => game.gameState !== GameState.finished,
@@ -447,13 +444,35 @@ const useTournamentLogic = (tournament?: Tournament) => {
       }
       tournament.state.status = TournamentStatus.inProgress;
 
-      addStageToTournament(tournament, nextStage);
+      await addStageToTournament(tournament, nextStage);
       enqueueSnackbar(
         'Tournament proceeded to next stage',
         snackbarSuccessOptions,
       );
+
+      const nextStageStarterGames = prepareGamesForTournament(
+        tournament,
+        nextStage.schedule,
+      );
+
+      if (!nextStageStarterGames) {
+        return;
+      }
+
+      await setNewActiveGroupAndGames(
+        nextStageStarterGames.newPairedGame1,
+        nextStageStarterGames.newPairedGame1,
+        nextStageStarterGames.newPairedGame2,
+      );
+      resetTimer();
     },
-    [addStageToTournament, enqueueSnackbar, tournament],
+    [
+      addStageToTournament,
+      enqueueSnackbar,
+      resetTimer,
+      setNewActiveGroupAndGames,
+      tournament,
+    ],
   );
 
   return useMemo(() => {
