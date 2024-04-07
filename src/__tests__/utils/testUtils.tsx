@@ -56,7 +56,7 @@ export namespace TestUtils {
       _id: `TG${index}`,
       id: `TG${index}`,
       games,
-      groupIndex: 1,
+      groupIndex: index,
       groupType: tournamentType,
       stage: 1,
       teams,
