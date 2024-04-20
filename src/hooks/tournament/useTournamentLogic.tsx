@@ -8,7 +8,6 @@ import Game from 'types/Game';
 import { DefaultGameSettings } from 'types/GameSettings';
 import { GameState, GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
-import MatchState from 'types/MatchState';
 import Tournament from 'types/Tournament';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import TournamentStage from 'types/TournamentStage';
@@ -16,13 +15,7 @@ import TournamentStage from 'types/TournamentStage';
 import { useSnackbar } from 'notistack';
 import { TournamentStatus } from 'types/TournamentStatus';
 import { snackbarSuccessOptions } from 'utils/snackbarUtils';
-import {
-  FlowState,
-  checkIfGameIsFinishedProcedure,
-  finishSelectedGame,
-  prepareNextGameIfEliminationsTournament,
-  switchToNextScheduledGames,
-} from 'utils/tournamentFlowUtils';
+import { TournamentFlow } from 'utils/tournamentFlowUtils';
 import { prepareGamesForTournament } from 'utils/tournamentUtils';
 import useTournamentFlows from './useTournamentFlows';
 
@@ -170,14 +163,15 @@ const useTournamentLogic = (tournament?: Tournament) => {
 
   const finishGame = useCallback(
     async (game: Game, gameWinner: GameWinner) => {
-      const finishedGame = finishSelectedGame(game, gameWinner);
-      const nextEliminationsGame = prepareNextGameIfEliminationsTournament(
-        game,
-        currentGroups?.find(
-          (group) => group.id === activeScheduledGame?.group?.id,
-        ),
-        currentStageTournamentType,
-      );
+      const finishedGame = TournamentFlow.finishSelectedGame(game, gameWinner);
+      const nextEliminationsGame =
+        TournamentFlow.prepareNextGameIfEliminationsTournament(
+          game,
+          currentGroups?.find(
+            (group) => group.id === activeScheduledGame?.group?.id,
+          ),
+          currentStageTournamentType,
+        );
       if (finishedGame) {
         await updateGameData(finishedGame);
       }
@@ -201,15 +195,15 @@ const useTournamentLogic = (tournament?: Tournament) => {
     async (
       game: TournamentScheduleGame,
       timeLeft: number,
-    ): Promise<FlowState> => {
+    ): Promise<TournamentFlow.FlowState> => {
       if (!tournament || !tournamentSettings || !currentSchedule) {
-        return FlowState.NotDefined;
+        return TournamentFlow.FlowState.NotDefined;
       }
       const isGame1ActiveGame = activeScheduledGame?.id === game.id;
 
       const currentTmpGame1 = isGame1ActiveGame ? game : currentScheduledGame1;
       const currentTmpGame2 = !isGame1ActiveGame ? game : currentScheduledGame2;
-      const { gameWinner } = checkIfGameIsFinishedProcedure(
+      const { gameWinner } = TournamentFlow.checkIfGameIsFinishedProcedure(
         isGame1ActiveGame ? currentTmpGame1!.game : currentTmpGame2!.game,
         timeLeft,
         tournamentSettings,
@@ -228,7 +222,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
           );
         }
       }
-      const newGroupAndGames = switchToNextScheduledGames(
+      const newGroupAndGames = TournamentFlow.switchToNextScheduledGames(
         currentSchedule,
         tournamentSettings,
         currentStageTournamentType!,
@@ -237,8 +231,8 @@ const useTournamentLogic = (tournament?: Tournament) => {
         currentTmpGame2,
       );
 
-      if (newGroupAndGames === FlowState.NoGamesAvailable) {
-        return FlowState.NoGamesAvailable;
+      if (newGroupAndGames === TournamentFlow.FlowState.NoGamesAvailable) {
+        return TournamentFlow.FlowState.NoGamesAvailable;
       }
 
       await setNewActiveGroupAndGames(
@@ -247,7 +241,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
         newGroupAndGames.newPairedGame2,
       );
       setGameAndBreakDuration(newGroupAndGames.newActiveGame);
-      return FlowState.GamesAvailable;
+      return TournamentFlow.FlowState.GamesAvailable;
     },
     [
       tournament,
@@ -261,27 +255,6 @@ const useTournamentLogic = (tournament?: Tournament) => {
       setGameAndBreakDuration,
       finishGame,
     ],
-  );
-
-  const addMatchAndDataToGame = useCallback(
-    (
-      scheduledGame: TournamentScheduleGame,
-      match: Match,
-      timeLeftInMilliseconds: number,
-    ) => {
-      if (scheduledGame.game?.matches?.length > 0) {
-        scheduledGame.game.matches.push(match);
-      } else {
-        scheduledGame.game.matches = [match];
-      }
-
-      scheduledGame.game.gameTime = timeLeftInMilliseconds / 1000;
-      scheduledGame.game.team1Wins +=
-        match.matchState === MatchState.team1Win ? 1 : 0;
-      scheduledGame.game.team2Wins +=
-        match.matchState === MatchState.team2Win ? 1 : 0;
-    },
-    [],
   );
 
   const finishTournament = useCallback(async () => {
@@ -312,14 +285,21 @@ const useTournamentLogic = (tournament?: Tournament) => {
       try {
         setIsProcessing(true);
         const { currentDuration, duration: timeLeft } = getDuration();
-        match.matchDurationInSeconds = currentDuration;
-        addMatchAndDataToGame(activeScheduledGame, match, timeLeft);
+
+        TournamentFlow.addMatchDataToGame(
+          activeScheduledGame,
+          match,
+          timeLeft,
+          currentDuration,
+        );
 
         const afterFinishedMatchStatus = await onAfterFinishedMatchProcedure(
           activeScheduledGame,
           timeLeft,
         );
-        if (afterFinishedMatchStatus === FlowState.NoGamesAvailable) {
+        if (
+          afterFinishedMatchStatus === TournamentFlow.FlowState.NoGamesAvailable
+        ) {
           const currentStageGamesThatAreNotYetFinished = currentGroups
             .map((group) =>
               group.games.filter(
@@ -350,7 +330,6 @@ const useTournamentLogic = (tournament?: Tournament) => {
     },
     [
       activeScheduledGame,
-      addMatchAndDataToGame,
       currentGroups,
       finishTournament,
       getDuration,

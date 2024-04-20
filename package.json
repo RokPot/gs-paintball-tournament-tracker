@@ -121,6 +121,7 @@
     "electron-log": "^4.4.8",
     "electron-updater": "^6.1.4",
     "formik": "^2.4.5",
+    "immer": "^10.0.4",
     "lodash": "^4.17.21",
     "notistack": "^3.0.1",
     "os-browserify": "^0.3.0",

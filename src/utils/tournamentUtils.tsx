@@ -12,11 +12,7 @@ import { TournamentType } from 'types/TournamentType';
 import { v4 } from 'uuid';
 import { shuffleArray } from './arrayUtils';
 import { generateGamesForRoundRobin } from './tournament/roundRobinUtils';
-import {
-  getNextGame,
-  getNextGamePair,
-  getNextGroup,
-} from './tournamentFlowUtils';
+import { TournamentFlow } from './tournamentFlowUtils';
 import { calculateTournamentGroupLeaderboard } from './tournamentResultUtils';
 
 export const generateGamesForLayer = (
@@ -493,7 +489,7 @@ const generateRoundRobinSchedule = (
   ]);
   currentGameNumber = scheduledGames.length + 1;
   while (scheduledGames.length < totalGames) {
-    const newGroup = getNextGroup(
+    const newGroup = TournamentFlow.getNextGroup(
       mostCurrentGroup,
       innerGroups,
       1,
@@ -504,7 +500,7 @@ const generateRoundRobinSchedule = (
     }
     mostCurrentGroup = newGroup;
     if (switchGames) {
-      const gamePair = getNextGamePair(mostCurrentGroup);
+      const gamePair = TournamentFlow.getNextGamePair(mostCurrentGroup);
       if (!gamePair) {
         break;
       }
@@ -535,7 +531,7 @@ const generateRoundRobinSchedule = (
         currentGameNumber += 1;
       }
     } else {
-      const gamePair = getNextGame(mostCurrentGroup);
+      const gamePair = TournamentFlow.getNextGame(mostCurrentGroup);
       if (!gamePair) {
         break;
       }
@@ -606,7 +602,7 @@ const generateSingleEliminationSchedule = (
   ]);
   currentGameNumber = scheduledGames.length + 1;
   while (scheduledGames.length < totalGames) {
-    const newGroup = getNextGroup(
+    const newGroup = TournamentFlow.getNextGroup(
       mostCurrentGroup,
       innerGroups,
       1,
@@ -617,7 +613,7 @@ const generateSingleEliminationSchedule = (
     }
     mostCurrentGroup = newGroup;
     if (switchGames) {
-      const gamePair = getNextGamePair(mostCurrentGroup);
+      const gamePair = TournamentFlow.getNextGamePair(mostCurrentGroup);
       if (!gamePair) {
         break;
       }
@@ -648,7 +644,7 @@ const generateSingleEliminationSchedule = (
         currentGameNumber += 1;
       }
     } else {
-      const gamePair = getNextGame(mostCurrentGroup);
+      const gamePair = TournamentFlow.getNextGame(mostCurrentGroup);
       if (!gamePair) {
         break;
       }
@@ -870,13 +866,9 @@ export const generateNextTournamentStage = (
       break;
   }
 
-  return generateNewStage(
-    nextStageTeams,
-    (tournament?.previousStage?.stage || 1) + 1,
-    Math.ceil((tournament?.previousStage?.groups?.length || 0) / 2),
-    type,
-    tournament,
-  );
+  const nextStageNumber = (tournament?.previousStage?.stage || 1) + 1;
+
+  return generateNewStage(nextStageTeams, nextStageNumber, 1, type, tournament);
 };
 
 export const prepareGamesForTournament = (

@@ -7,6 +7,9 @@ import {
   team4,
   team5,
   team6,
+  team7,
+  team8,
+  team9,
 } from '__tests__/utils/testUtils';
 import { DefaultGameSettings } from 'types/GameSettings';
 import { GameState, GameWinner } from 'types/GameState';
@@ -15,7 +18,10 @@ import { DefaultTournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
 import { TournamentType } from 'types/TournamentType';
-import { generateTournamentSchedule } from 'utils/tournamentUtils';
+import {
+  generateNextTournamentStage,
+  generateTournamentSchedule,
+} from 'utils/tournamentUtils';
 
 describe('ScheduleGeneration', () => {
   it('should generate round robin schedule', () => {
@@ -602,13 +608,570 @@ describe('ScheduleGeneration', () => {
       },
       gameSettings: DefaultGameSettings,
       stages: [previousStage],
-      settings: DefaultTournamentSettings,
+      settings: {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 2,
+        switchGames: true,
+        switchGroups: true,
+      },
       teams: [team1, team2, team3, team4, team5, team6],
     });
-
-    expect(stage1FinishedTournament.stages?.length).toBe(1);
+    const nextStage = generateNextTournamentStage(
+      stage1FinishedTournament,
+      TournamentType.singleElimination,
+    );
+    expect(nextStage).toBeDefined();
+    expect(stage1FinishedTournament.stages).toBeDefined();
+    stage1FinishedTournament!.stages!.push(nextStage!);
+    expect(stage1FinishedTournament.stages?.length).toBe(2);
     expect(stage1FinishedTournament?.stages?.[0].schedule[0].group.id).toBe(
       newGroup1.id,
     );
+    expect(stage1FinishedTournament?.currentStage?.stage).toBe(2);
+    expect(stage1FinishedTournament?.currentStage?.groups?.length).toBe(1);
+    expect(stage1FinishedTournament?.currentStage?.groups?.length).toBe(1);
+
+    expect(
+      stage1FinishedTournament?.currentStageSchedule?.[0].game.team1.id,
+    ).toBe(team1.id);
+    expect(
+      stage1FinishedTournament?.currentStageSchedule?.[0].game.team2.id,
+    ).toBe(team6.id);
+    expect(
+      stage1FinishedTournament?.currentStageSchedule?.[1].game.team1.id,
+    ).toBe(team4.id);
+    expect(
+      stage1FinishedTournament?.currentStageSchedule?.[1].game.team2.id,
+    ).toBe(team3.id);
+    expect(
+      stage1FinishedTournament?.currentStageSchedule?.[2].game.team2.teamName,
+    ).toBe('TBD');
+    expect(
+      stage1FinishedTournament?.currentStageSchedule?.[2].game.team1.teamName,
+    ).toBe('TBD');
+    expect(
+      stage1FinishedTournament?.currentStageSchedule?.[3].game.team2.teamName,
+    ).toBe('TBD');
+    expect(
+      stage1FinishedTournament?.currentStageSchedule?.[3].game.team1.teamName,
+    ).toBe('TBD');
+  });
+
+  it('should generate stage 2 schedule with 3 groups', () => {
+    const gamesForGroup1 = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 2,
+        team1,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1: team2,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+      }),
+    ];
+    const gamesForGroup2 = [
+      TestUtils.generateGame({
+        index: 4,
+        team1: team4,
+        team2: team5,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 5,
+        team1: team4,
+        team2: team6,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 6,
+        team1: team5,
+        team2: team6,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+      }),
+    ];
+    const gamesForGroup3 = [
+      TestUtils.generateGame({
+        index: 4,
+        team1: team7,
+        team2: team8,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 5,
+        team1: team7,
+        team2: team9,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 6,
+        team1: team8,
+        team2: team9,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+      }),
+    ];
+
+    const newGroup1 = TestUtils.generateTournamentGroup(
+      1,
+      gamesForGroup1,
+      [team1, team2, team3],
+      TournamentType.roundRobin,
+    );
+    const newGroup2 = TestUtils.generateTournamentGroup(
+      2,
+      gamesForGroup2,
+      [team4, team5, team6],
+      TournamentType.roundRobin,
+    );
+    const newGroup3 = TestUtils.generateTournamentGroup(
+      3,
+      gamesForGroup3,
+      [team7, team8, team9],
+      TournamentType.roundRobin,
+    );
+
+    const stage1ScheduledGames = generateTournamentSchedule(
+      [newGroup1, newGroup2, newGroup3],
+      {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 3,
+        switchGroups: true,
+        switchGames: true,
+      },
+      TournamentType.roundRobin,
+    );
+    const previousStage = new TournamentStage({
+      _id: 'stage1',
+      id: 'stage1',
+      groups: [newGroup1, newGroup2, newGroup3],
+      schedule: stage1ScheduledGames,
+      stage: 1,
+    });
+    const stage1FinishedTournament = new Tournament({
+      id: 'T1',
+      _id: 'T1',
+      name: 'Tournaament 1',
+      state: {
+        id: 'state1',
+        isGameInProgress: false,
+        isTournamentFinished: false,
+        stage: 2,
+        status: TournamentStatus.stageChange,
+      },
+      gameSettings: DefaultGameSettings,
+      stages: [previousStage],
+      settings: {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 3,
+        switchGames: true,
+        switchGroups: true,
+      },
+      teams: [team1, team2, team3, team4, team5, team6, team7, team8, team9],
+    });
+    const nextStage = generateNextTournamentStage(
+      stage1FinishedTournament,
+      TournamentType.singleElimination,
+    );
+    expect(nextStage).toBeDefined();
+    expect(stage1FinishedTournament.stages).toBeDefined();
+
+    stage1FinishedTournament!.stages!.push(nextStage!);
+
+    expect(stage1FinishedTournament.stages?.length).toBe(2);
+
+    expect(stage1FinishedTournament?.currentStage?.stage).toBe(2);
+    expect(stage1FinishedTournament?.currentStage?.groups?.length).toBe(1);
+    expect(stage1FinishedTournament?.currentStageSchedule?.length).toBe(9);
+
+    // Visualization https://www.printyourbrackets.com/6seeded.html
+    // First and Fourth games are BYE games, which means we don't take them into account
+
+    expect([team3.id, team6.id, team9.id]).toContain(
+      stage1FinishedTournament?.currentStageSchedule?.[0].game.team1.id,
+    );
+    expect([team3.id, team6.id, team9.id]).toContain(
+      stage1FinishedTournament?.currentStageSchedule?.[0].game.team2.id,
+    );
+
+    expect(
+      stage1FinishedTournament?.currentStageSchedule?.[1].game.bracketProperties
+        ?.bye,
+    ).toBe(true);
+
+    expect([team1.id, team4.id, team7.id]).toContain(
+      stage1FinishedTournament?.currentStageSchedule?.[2].game.team1.id,
+    );
+    expect([team3.id, team6.id, team9.id]).toContain(
+      stage1FinishedTournament?.currentStageSchedule?.[2].game.team2.id,
+    );
+
+    expect(
+      stage1FinishedTournament?.currentStageSchedule?.[3].game.bracketProperties
+        ?.bye,
+    ).toBe(true);
+
+    expect([team1.id, team4.id, team7.id]).toContain(
+      stage1FinishedTournament?.currentStageSchedule?.[4].game.team1.id,
+    );
+    expect('TBD round1').toBe(
+      stage1FinishedTournament?.currentStageSchedule?.[4].game.team2.teamName,
+    );
+
+    expect([team1.id, team4.id, team7.id]).toContain(
+      stage1FinishedTournament?.currentStageSchedule?.[5].game.team1.id,
+    );
+    expect('TBD round1').toBe(
+      stage1FinishedTournament?.currentStageSchedule?.[5].game.team2.teamName,
+    );
+
+    expect(['TBD']).toContain(
+      stage1FinishedTournament?.currentStageSchedule?.[6].game.team1.teamName,
+    );
+    expect(['TBD']).toContain(
+      stage1FinishedTournament?.currentStageSchedule?.[6].game.team2.teamName,
+    );
+  });
+  it('should generate stage 2 schedule with 2 groups - Round Robin', () => {
+    const gamesForGroup1 = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 2,
+        team1,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1: team2,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+      }),
+    ];
+    const gamesForGroup2 = [
+      TestUtils.generateGame({
+        index: 4,
+        team1: team4,
+        team2: team5,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 5,
+        team1: team4,
+        team2: team6,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 6,
+        team1: team5,
+        team2: team6,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+      }),
+    ];
+
+    const newGroup1 = TestUtils.generateTournamentGroup(
+      1,
+      gamesForGroup1,
+      [team1, team2, team3],
+      TournamentType.roundRobin,
+    );
+    const newGroup2 = TestUtils.generateTournamentGroup(
+      2,
+      gamesForGroup2,
+      [team4, team5, team6],
+      TournamentType.roundRobin,
+    );
+
+    const stage1ScheduledGames = generateTournamentSchedule(
+      [newGroup1, newGroup2],
+      {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 2,
+        switchGroups: true,
+        switchGames: true,
+      },
+      TournamentType.roundRobin,
+    );
+    const previousStage = new TournamentStage({
+      _id: 'stage1',
+      id: 'stage1',
+      groups: [newGroup1, newGroup2],
+      schedule: stage1ScheduledGames,
+      stage: 1,
+    });
+    const stage1FinishedTournament = new Tournament({
+      id: 'T1',
+      _id: 'T1',
+      name: 'Tournaament 1',
+      state: {
+        id: 'state1',
+        isGameInProgress: false,
+        isTournamentFinished: false,
+        stage: 2,
+        status: TournamentStatus.stageChange,
+      },
+      gameSettings: DefaultGameSettings,
+      stages: [previousStage],
+      settings: {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 2,
+        switchGames: true,
+        switchGroups: true,
+      },
+      teams: [team1, team2, team3, team4, team5, team6],
+    });
+    const nextStage = generateNextTournamentStage(
+      stage1FinishedTournament,
+      TournamentType.roundRobin,
+    );
+    expect(nextStage).toBeDefined();
+    expect(stage1FinishedTournament.stages).toBeDefined();
+    stage1FinishedTournament!.stages!.push(nextStage!);
+    expect(stage1FinishedTournament.stages?.length).toBe(2);
+
+    expect(stage1FinishedTournament?.currentStage?.stage).toBe(2);
+    expect(stage1FinishedTournament?.currentStage?.groups?.length).toBe(1);
+    expect(stage1FinishedTournament?.currentStageSchedule?.length).toBe(6);
+
+    const teamGames = [0, 0, 0, 0];
+    stage1FinishedTournament?.currentStageSchedule?.forEach((scheduledGame) => {
+      if (
+        scheduledGame.game.team1.id === team1.id ||
+        scheduledGame.game.team2.id === team1.id
+      ) {
+        teamGames[0] += 1;
+      }
+      if (
+        scheduledGame.game.team1.id === team3.id ||
+        scheduledGame.game.team2.id === team3.id
+      ) {
+        teamGames[1] += 1;
+      }
+      if (
+        scheduledGame.game.team1.id === team4.id ||
+        scheduledGame.game.team2.id === team4.id
+      ) {
+        teamGames[2] += 1;
+      }
+      if (
+        scheduledGame.game.team1.id === team6.id ||
+        scheduledGame.game.team2.id === team6.id
+      ) {
+        teamGames[3] += 1;
+      }
+    });
+    expect(teamGames.toString()).toBe([3, 3, 3, 3].toString());
+  });
+
+  it('should generate stage 2 schedule with 3 groups - Round robin', () => {
+    const gamesForGroup1 = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 2,
+        team1,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1: team2,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+      }),
+    ];
+    const gamesForGroup2 = [
+      TestUtils.generateGame({
+        index: 4,
+        team1: team4,
+        team2: team5,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 5,
+        team1: team4,
+        team2: team6,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 6,
+        team1: team5,
+        team2: team6,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+      }),
+    ];
+    const gamesForGroup3 = [
+      TestUtils.generateGame({
+        index: 4,
+        team1: team7,
+        team2: team8,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 5,
+        team1: team7,
+        team2: team9,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 6,
+        team1: team8,
+        team2: team9,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+      }),
+    ];
+
+    const newGroup1 = TestUtils.generateTournamentGroup(
+      1,
+      gamesForGroup1,
+      [team1, team2, team3],
+      TournamentType.roundRobin,
+    );
+    const newGroup2 = TestUtils.generateTournamentGroup(
+      2,
+      gamesForGroup2,
+      [team4, team5, team6],
+      TournamentType.roundRobin,
+    );
+    const newGroup3 = TestUtils.generateTournamentGroup(
+      3,
+      gamesForGroup3,
+      [team7, team8, team9],
+      TournamentType.roundRobin,
+    );
+
+    const stage1ScheduledGames = generateTournamentSchedule(
+      [newGroup1, newGroup2, newGroup3],
+      {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 3,
+        switchGroups: true,
+        switchGames: true,
+      },
+      TournamentType.roundRobin,
+    );
+    const previousStage = new TournamentStage({
+      _id: 'stage1',
+      id: 'stage1',
+      groups: [newGroup1, newGroup2, newGroup3],
+      schedule: stage1ScheduledGames,
+      stage: 1,
+    });
+    const stage1FinishedTournament = new Tournament({
+      id: 'T1',
+      _id: 'T1',
+      name: 'Tournaament 1',
+      state: {
+        id: 'state1',
+        isGameInProgress: false,
+        isTournamentFinished: false,
+        stage: 2,
+        status: TournamentStatus.stageChange,
+      },
+      gameSettings: DefaultGameSettings,
+      stages: [previousStage],
+      settings: {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 3,
+        switchGames: true,
+        switchGroups: true,
+      },
+      teams: [team1, team2, team3, team4, team5, team6, team7, team8, team9],
+    });
+    const nextStage = generateNextTournamentStage(
+      stage1FinishedTournament,
+      TournamentType.roundRobin,
+    );
+    expect(nextStage).toBeDefined();
+    expect(stage1FinishedTournament.stages).toBeDefined();
+
+    stage1FinishedTournament!.stages!.push(nextStage!);
+
+    expect(stage1FinishedTournament.stages?.length).toBe(2);
+
+    expect(stage1FinishedTournament?.currentStage?.stage).toBe(2);
+    expect(stage1FinishedTournament?.currentStage?.groups?.length).toBe(1);
+    expect(stage1FinishedTournament?.currentStageSchedule?.length).toBe(15);
+
+    const teamGames = [0, 0, 0, 0, 0, 0];
+    stage1FinishedTournament?.currentStageSchedule?.forEach((scheduledGame) => {
+      if (
+        scheduledGame.game.team1.id === team1.id ||
+        scheduledGame.game.team2.id === team1.id
+      ) {
+        teamGames[0] += 1;
+      }
+      if (
+        scheduledGame.game.team1.id === team3.id ||
+        scheduledGame.game.team2.id === team3.id
+      ) {
+        teamGames[1] += 1;
+      }
+      if (
+        scheduledGame.game.team1.id === team4.id ||
+        scheduledGame.game.team2.id === team4.id
+      ) {
+        teamGames[2] += 1;
+      }
+      if (
+        scheduledGame.game.team1.id === team6.id ||
+        scheduledGame.game.team2.id === team6.id
+      ) {
+        teamGames[3] += 1;
+      }
+      if (
+        scheduledGame.game.team1.id === team7.id ||
+        scheduledGame.game.team2.id === team7.id
+      ) {
+        teamGames[4] += 1;
+      }
+      if (
+        scheduledGame.game.team1.id === team9.id ||
+        scheduledGame.game.team2.id === team9.id
+      ) {
+        teamGames[5] += 1;
+      }
+    });
+    expect(teamGames.toString()).toBe([5, 5, 5, 5, 5, 5].toString());
   });
 });
