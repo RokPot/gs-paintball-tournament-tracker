@@ -32,13 +32,14 @@ export default class TournamentStage extends IPouchDB {
       stage: this.stage,
       schedule:
         this.schedule?.map(
-          (schedule) =>
+          (sched) =>
             ({
-              gameId: schedule.game.id,
-              gameNumber: schedule.gameNumber,
-              groupId: schedule.group.id,
-              id: schedule.id,
-              index: schedule.index,
+              gameId: sched.game.id,
+              gameNumber: sched.gameNumber,
+              groupId: sched.group.id,
+              id: sched.id,
+              index: sched.index,
+              pairedGameId: sched.pairedGameId,
             }) as TournamentScheduleDto,
         ) || [],
     };

@@ -16,7 +16,6 @@ import { useSnackbar } from 'notistack';
 import { TournamentStatus } from 'types/TournamentStatus';
 import { snackbarSuccessOptions } from 'utils/snackbarUtils';
 import { TournamentFlow } from 'utils/tournamentFlowUtils';
-import { prepareGamesForTournament } from 'utils/tournamentUtils';
 import useTournamentFlows from './useTournamentFlows';
 
 const useTournamentLogic = (tournament?: Tournament) => {
@@ -36,10 +35,6 @@ const useTournamentLogic = (tournament?: Tournament) => {
   const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
   const { updateGameData } = useGameFlows();
 
-  const [currentScheduledGame1, setScheduledCurrentGame1] =
-    useState<TournamentScheduleGame>();
-  const [currentScheduledGame2, setScheduledCurrentGame2] =
-    useState<TournamentScheduleGame>();
   const [isMatchInProgress, setIsMatchInProgress] = useState(false);
   const [firstLoad, setFirstLoad] = useState(false);
   const [hasGameTimeRanOut, setHasGameTimeRanOut] = useState(false);
@@ -129,11 +124,9 @@ const useTournamentLogic = (tournament?: Tournament) => {
       tournament.state.pairedGame2Id = newGame2?.id;
       if (newGame1) {
         await updateGameData(newGame1.game);
-        setScheduledCurrentGame1(newGame1);
       }
       if (newGame2) {
         await updateGameData(newGame2.game);
-        setScheduledCurrentGame2(newGame2);
       }
 
       await updateTournament(tournament);
@@ -148,7 +141,10 @@ const useTournamentLogic = (tournament?: Tournament) => {
     }
     tournament.state.status = TournamentStatus.inProgress;
 
-    const starterGames = prepareGamesForTournament(tournament, currentSchedule);
+    const starterGames = TournamentFlow.prepareGamesForTournament(
+      tournament,
+      currentSchedule,
+    );
     if (!starterGames) {
       return;
     }
@@ -191,72 +187,6 @@ const useTournamentLogic = (tournament?: Tournament) => {
     ],
   );
 
-  const onAfterFinishedMatchProcedure = useCallback(
-    async (
-      game: TournamentScheduleGame,
-      timeLeft: number,
-    ): Promise<TournamentFlow.FlowState> => {
-      if (!tournament || !tournamentSettings || !currentSchedule) {
-        return TournamentFlow.FlowState.NotDefined;
-      }
-      const isGame1ActiveGame = activeScheduledGame?.id === game.id;
-
-      const currentTmpGame1 = isGame1ActiveGame ? game : currentScheduledGame1;
-      const currentTmpGame2 = !isGame1ActiveGame ? game : currentScheduledGame2;
-      const { gameWinner } = TournamentFlow.checkIfGameIsFinishedProcedure(
-        isGame1ActiveGame ? currentTmpGame1!.game : currentTmpGame2!.game,
-        timeLeft,
-        tournamentSettings,
-      );
-      if (gameWinner !== GameWinner.notYet) {
-        // Complete game
-        if (isGame1ActiveGame) {
-          currentTmpGame1!.game = await finishGame(
-            currentTmpGame1!.game,
-            gameWinner,
-          );
-        } else {
-          currentTmpGame2!.game = await finishGame(
-            currentTmpGame2!.game,
-            gameWinner,
-          );
-        }
-      }
-      const newGroupAndGames = TournamentFlow.switchToNextScheduledGames(
-        currentSchedule,
-        tournamentSettings,
-        currentStageTournamentType!,
-        isGame1ActiveGame ? currentTmpGame1! : currentTmpGame2!,
-        currentTmpGame1!,
-        currentTmpGame2,
-      );
-
-      if (newGroupAndGames === TournamentFlow.FlowState.NoGamesAvailable) {
-        return TournamentFlow.FlowState.NoGamesAvailable;
-      }
-
-      await setNewActiveGroupAndGames(
-        newGroupAndGames.newActiveGame,
-        newGroupAndGames.newPairedGame1,
-        newGroupAndGames.newPairedGame2,
-      );
-      setGameAndBreakDuration(newGroupAndGames.newActiveGame);
-      return TournamentFlow.FlowState.GamesAvailable;
-    },
-    [
-      tournament,
-      tournamentSettings,
-      currentSchedule,
-      activeScheduledGame?.id,
-      currentScheduledGame1,
-      currentScheduledGame2,
-      currentStageTournamentType,
-      setNewActiveGroupAndGames,
-      setGameAndBreakDuration,
-      finishGame,
-    ],
-  );
-
   const finishTournament = useCallback(async () => {
     if (!tournament) {
       return;
@@ -293,12 +223,35 @@ const useTournamentLogic = (tournament?: Tournament) => {
           currentDuration,
         );
 
-        const afterFinishedMatchStatus = await onAfterFinishedMatchProcedure(
+        const newTournamentState = TournamentFlow.onAfterFinishedMatchProcedure(
           activeScheduledGame,
           timeLeft,
+          tournament,
         );
+
+        if (newTournamentState.gamesToUpdate.length > 0) {
+          for (let i = 0; i < newTournamentState.gamesToUpdate.length; i += 1) {
+            // eslint-disable-next-line no-await-in-loop
+            await updateGameData(newTournamentState.gamesToUpdate[i]);
+          }
+        }
+
         if (
-          afterFinishedMatchStatus === TournamentFlow.FlowState.NoGamesAvailable
+          newTournamentState?.nextGameState !==
+          TournamentFlow.FlowState.NoGamesAvailable
+        ) {
+          const { nextGameState } = newTournamentState;
+          await setNewActiveGroupAndGames(
+            nextGameState.newActiveGame,
+            nextGameState.newPairedGame1,
+            nextGameState.newPairedGame2,
+          );
+          setGameAndBreakDuration(nextGameState.newActiveGame);
+        }
+
+        if (
+          newTournamentState.flowState ===
+          TournamentFlow.FlowState.NoGamesAvailable
         ) {
           const currentStageGamesThatAreNotYetFinished = currentGroups
             .map((group) =>
@@ -334,10 +287,12 @@ const useTournamentLogic = (tournament?: Tournament) => {
       finishTournament,
       getDuration,
       goToNextTournamentStage,
-      onAfterFinishedMatchProcedure,
+      setGameAndBreakDuration,
+      setNewActiveGroupAndGames,
       tournament,
       tournamentSettings?.numberOfGroups,
       tournamentSettings?.secondStageType,
+      updateGameData,
     ],
   );
 
@@ -403,8 +358,6 @@ const useTournamentLogic = (tournament?: Tournament) => {
     setGameAndBreakDuration(activeScheduledGame);
 
     setFirstLoad(true);
-    // todo rokpot maybe we can properly populate dependencies
-    // }, [activeScheduledGame, firstLoad, tournament]);
   }, [
     activeScheduledGame,
     firstLoad,
@@ -429,7 +382,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
         snackbarSuccessOptions,
       );
 
-      const nextStageStarterGames = prepareGamesForTournament(
+      const nextStageStarterGames = TournamentFlow.prepareGamesForTournament(
         tournament,
         nextStage.schedule,
       );

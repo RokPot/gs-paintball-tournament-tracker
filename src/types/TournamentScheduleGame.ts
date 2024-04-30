@@ -11,4 +11,6 @@ export default interface TournamentScheduleGame {
   group: TournamentGroup;
 
   index: number;
+
+  pairedGameId: string;
 }

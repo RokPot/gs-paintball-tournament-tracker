@@ -92,6 +92,163 @@ describe('ScheduleGeneration', () => {
     expect(scheduledGames[5].game.id).toBe(games[5].id);
   });
 
+  it('should generate round robin schedule with games switching', () => {
+    const games = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 2,
+        team1,
+        team2: team3,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1,
+        team2: team4,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 4,
+        team1: team2,
+        team2: team3,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 5,
+        team1: team2,
+        team2: team4,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 6,
+        team1: team3,
+        team2: team4,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+    ];
+
+    const newGroup = TestUtils.generateTournamentGroup(
+      1,
+      games,
+      [team1, team2, team3, team4],
+      TournamentType.roundRobin,
+    );
+
+    const scheduledGames = generateTournamentSchedule(
+      [newGroup],
+      { ...DefaultTournamentSettings, switchGames: true },
+      TournamentType.roundRobin,
+    );
+
+    expect(scheduledGames.length).toBe(6);
+    expect(scheduledGames[0].game.id).toBe(games[0].id);
+    expect(scheduledGames[0].pairedGameId).toBe(scheduledGames[1].id);
+    expect(scheduledGames[1].game.id).toBe(games[1].id);
+    expect(scheduledGames[1].pairedGameId).toBe(scheduledGames[0].id);
+    expect(scheduledGames[2].game.id).toBe(games[2].id);
+    expect(scheduledGames[2].pairedGameId).toBe(scheduledGames[3].id);
+    expect(scheduledGames[3].game.id).toBe(games[3].id);
+    expect(scheduledGames[3].pairedGameId).toBe(scheduledGames[2].id);
+    expect(scheduledGames[4].game.id).toBe(games[4].id);
+    expect(scheduledGames[4].pairedGameId).toBe(scheduledGames[5].id);
+    expect(scheduledGames[5].game.id).toBe(games[5].id);
+    expect(scheduledGames[5].pairedGameId).toBe(scheduledGames[4].id);
+  });
+
+  it('should generate round robin schedule with games switching uneven pairs', () => {
+    const games = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 2,
+        team1,
+        team2: team3,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1,
+        team2: team4,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 4,
+        team1: team2,
+        team2: team3,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 5,
+        team1: team2,
+        team2: team4,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 6,
+        team1: team3,
+        team2: team4,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 7,
+        team1: team5,
+        team2: team6,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+    ];
+
+    const newGroup = TestUtils.generateTournamentGroup(
+      1,
+      games,
+      [team1, team2, team3, team4, team5, team6],
+      TournamentType.roundRobin,
+    );
+
+    const scheduledGames = generateTournamentSchedule(
+      [newGroup],
+      { ...DefaultTournamentSettings, switchGames: true },
+      TournamentType.roundRobin,
+    );
+
+    expect(scheduledGames.length).toBe(7);
+    expect(scheduledGames[0].game.id).toBe(games[0].id);
+    expect(scheduledGames[0].pairedGameId).toBe(scheduledGames[1].id);
+    expect(scheduledGames[1].game.id).toBe(games[1].id);
+    expect(scheduledGames[1].pairedGameId).toBe(scheduledGames[0].id);
+    expect(scheduledGames[2].game.id).toBe(games[2].id);
+    expect(scheduledGames[2].pairedGameId).toBe(scheduledGames[3].id);
+    expect(scheduledGames[3].game.id).toBe(games[3].id);
+    expect(scheduledGames[3].pairedGameId).toBe(scheduledGames[2].id);
+    expect(scheduledGames[4].game.id).toBe(games[4].id);
+    expect(scheduledGames[4].pairedGameId).toBe(scheduledGames[5].id);
+    expect(scheduledGames[5].game.id).toBe(games[5].id);
+    expect(scheduledGames[5].pairedGameId).toBe(scheduledGames[4].id);
+    expect(scheduledGames[6].game.id).toBe(games[6].id);
+    expect(scheduledGames[6].pairedGameId).toBe('NoPairedGameId');
+  });
+
   it('should generate single elimination schedule', () => {
     const games = [
       TestUtils.generateGame({

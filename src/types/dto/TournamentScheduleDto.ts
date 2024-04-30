@@ -8,4 +8,6 @@ export interface TournamentScheduleDto {
   gameId: string;
 
   index: number;
+
+  pairedGameId: string;
 }

@@ -13,10 +13,8 @@ import { DefaultTournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
 import { TournamentType } from 'types/TournamentType';
-import {
-  generateTournamentSchedule,
-  prepareGamesForTournament,
-} from 'utils/tournamentUtils';
+import { TournamentFlow } from 'utils/tournamentFlowUtils';
+import { generateTournamentSchedule } from 'utils/tournamentUtils';
 
 describe('TournamentFlow', () => {
   it('should begin fresh tournament', () => {
@@ -111,7 +109,7 @@ describe('TournamentFlow', () => {
     expect(stage1Tournament).toBeDefined();
 
     expect(stage1Tournament.state.status).toBe(TournamentStatus.inProgress);
-    const starterGames = prepareGamesForTournament(
+    const starterGames = TournamentFlow.prepareGamesForTournament(
       stage1Tournament,
       stage1Tournament.currentStageSchedule,
     );
@@ -213,7 +211,7 @@ describe('TournamentFlow', () => {
     expect(stage1Tournament).toBeDefined();
 
     expect(stage1Tournament.state.status).toBe(TournamentStatus.inProgress);
-    const starterGames = prepareGamesForTournament(
+    const starterGames = TournamentFlow.prepareGamesForTournament(
       stage1Tournament,
       stage1Tournament.currentStageSchedule,
     );
@@ -282,10 +280,5 @@ describe('TournamentFlow', () => {
     expect(stage1Tournament).toBeDefined();
 
     expect(stage1Tournament.state.status).toBe(TournamentStatus.created);
-    const starterGames = prepareGamesForTournament(
-      stage1Tournament,
-      stage1Tournament.currentStageSchedule,
-    );
-    stage1Tournament.state.status = TournamentStatus.inProgress;
   });
 });

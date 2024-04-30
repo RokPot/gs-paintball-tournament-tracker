@@ -464,29 +464,44 @@ const generateRoundRobinSchedule = (
   let pairedGame1: Game = mostCurrentGroup.games[0];
   let pairedGame2: Game | null = switchGames ? mostCurrentGroup.games[1] : null;
 
+  let scheduledGame1: TournamentScheduleGame | undefined;
+
+  let scheduledGame2: TournamentScheduleGame | undefined;
+
+  const scheduledGames: TournamentScheduleGame[] = [];
+
   if (pairedGame1) {
     pairedGame1.gameState = GameState.finished;
+    scheduledGame1 = {
+      game: pairedGame1,
+      gameNumber: 1,
+      group: mostCurrentGroup,
+      id: v4(),
+      pairedGameId: 'NoPairedGame',
+      index: 0,
+    };
   }
   if (pairedGame2) {
     pairedGame2.gameState = GameState.finished;
+    scheduledGame2 = {
+      game: pairedGame2,
+      gameNumber: 2,
+      group: mostCurrentGroup,
+      id: v4(),
+      index: 1,
+      pairedGameId: 'NoPairedGame',
+    };
   }
 
-  const scheduledGames: TournamentScheduleGame[] = compact([
-    pairedGame1 &&
-      ({
-        game: pairedGame1,
-        gameNumber: 1,
-        group: mostCurrentGroup,
-        id: v4(),
-      } as TournamentScheduleGame),
-    pairedGame2 &&
-      ({
-        game: pairedGame2,
-        gameNumber: 2,
-        group: mostCurrentGroup,
-        id: v4(),
-      } as TournamentScheduleGame),
-  ]);
+  if (scheduledGame1) {
+    scheduledGame1.pairedGameId = scheduledGame2?.id || 'NoPairedGameId';
+    scheduledGames.push(scheduledGame1);
+  }
+  if (scheduledGame2) {
+    scheduledGame2.pairedGameId = scheduledGame1?.id || 'NoPairedGameId';
+    scheduledGames.push(scheduledGame2);
+  }
+
   currentGameNumber = scheduledGames.length + 1;
   while (scheduledGames.length < totalGames) {
     const newGroup = TournamentFlow.getNextGroup(
@@ -504,31 +519,46 @@ const generateRoundRobinSchedule = (
       if (!gamePair) {
         break;
       }
-
+      let scheduledPairedGame1: TournamentScheduleGame | undefined;
+      let scheduledPairedGame2: TournamentScheduleGame | undefined;
       if (gamePair.game1) {
         pairedGame1 = gamePair.game1;
         pairedGame1.gameState = GameState.finished;
-        scheduledGames.push({
+        scheduledPairedGame1 = {
           game: pairedGame1,
           gameNumber: currentGameNumber,
           group: mostCurrentGroup,
           id: v4(),
           index: scheduledGames.length,
-        });
+          pairedGameId: 'NoPairedGameId',
+        };
+
         currentGameNumber += 1;
       }
 
       if (gamePair.game2) {
         pairedGame2 = gamePair.game2;
         pairedGame2.gameState = GameState.finished;
-        scheduledGames.push({
+        scheduledPairedGame2 = {
           game: pairedGame2,
           gameNumber: currentGameNumber,
           group: mostCurrentGroup,
           id: v4(),
           index: scheduledGames.length,
-        });
+          pairedGameId: 'NoPairedGameId',
+        };
+
         currentGameNumber += 1;
+      }
+      if (scheduledPairedGame1) {
+        scheduledPairedGame1.pairedGameId =
+          scheduledPairedGame2?.id || 'NoPairedGameId';
+        scheduledGames.push(scheduledPairedGame1);
+      }
+      if (scheduledPairedGame2) {
+        scheduledPairedGame2.pairedGameId =
+          scheduledPairedGame1?.id || 'NoPairedGameId';
+        scheduledGames.push(scheduledPairedGame2);
       }
     } else {
       const gamePair = TournamentFlow.getNextGame(mostCurrentGroup);
@@ -545,6 +575,7 @@ const generateRoundRobinSchedule = (
           group: mostCurrentGroup,
           id: v4(),
           index: scheduledGames.length,
+          pairedGameId: 'NoPairedGameId',
         });
         currentGameNumber += 1;
       }
@@ -617,31 +648,45 @@ const generateSingleEliminationSchedule = (
       if (!gamePair) {
         break;
       }
+      let scheduledPairedGame1: TournamentScheduleGame | undefined;
+      let scheduledPairedGame2: TournamentScheduleGame | undefined;
 
       if (gamePair.game1) {
         pairedGame1 = gamePair.game1;
         pairedGame1.gameState = GameState.finished;
-        scheduledGames.push({
+        scheduledPairedGame1 = {
           game: new Game(pairedGame1),
           gameNumber: currentGameNumber,
           group: mostCurrentGroup,
           id: v4(),
           index: scheduledGames.length,
-        });
+          pairedGameId: 'NoPairedGameId',
+        };
         currentGameNumber += 1;
       }
 
       if (gamePair.game2) {
         pairedGame2 = gamePair.game2;
         pairedGame2.gameState = GameState.finished;
-        scheduledGames.push({
+        scheduledPairedGame2 = {
           game: pairedGame2,
           gameNumber: currentGameNumber,
           group: mostCurrentGroup,
           id: v4(),
           index: scheduledGames.length,
-        });
+          pairedGameId: 'NoPairedGameId',
+        };
         currentGameNumber += 1;
+      }
+      if (scheduledPairedGame1) {
+        scheduledPairedGame1.pairedGameId =
+          scheduledPairedGame2?.id || 'NoPairedGameId';
+        scheduledGames.push(scheduledPairedGame1);
+      }
+      if (scheduledPairedGame2) {
+        scheduledPairedGame2.pairedGameId =
+          scheduledPairedGame1?.id || 'NoPairedGameId';
+        scheduledGames.push(scheduledPairedGame2);
       }
     } else {
       const gamePair = TournamentFlow.getNextGame(mostCurrentGroup);
@@ -658,6 +703,7 @@ const generateSingleEliminationSchedule = (
           group: mostCurrentGroup,
           id: v4(),
           index: scheduledGames.length,
+          pairedGameId: 'NoPairedGameId',
         });
         currentGameNumber += 1;
       }
@@ -869,25 +915,4 @@ export const generateNextTournamentStage = (
   const nextStageNumber = (tournament?.previousStage?.stage || 1) + 1;
 
   return generateNewStage(nextStageTeams, nextStageNumber, 1, type, tournament);
-};
-
-export const prepareGamesForTournament = (
-  tournament?: Tournament,
-  schedule?: TournamentScheduleGame[],
-) => {
-  if (!tournament || !schedule) {
-    return undefined;
-  }
-
-  const newPairedGame1 = schedule[0];
-  const newPairedGame2 =
-    schedule.length > 1 && tournament.settings.switchGames
-      ? schedule[1]
-      : undefined;
-
-  newPairedGame1.game.gameState = GameState.playing;
-  return {
-    newPairedGame1,
-    newPairedGame2,
-  };
 };
