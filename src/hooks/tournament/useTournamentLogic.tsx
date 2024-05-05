@@ -249,29 +249,23 @@ const useTournamentLogic = (tournament?: Tournament) => {
           setGameAndBreakDuration(nextGameState.newActiveGame);
         }
 
-        if (
-          newTournamentState.flowState ===
-          TournamentFlow.FlowState.NoGamesAvailable
-        ) {
-          const currentStageGamesThatAreNotYetFinished = currentGroups
-            .map((group) =>
-              group.games.filter(
-                (game) => game.gameState !== GameState.finished,
-              ),
-            )
-            .flat();
-          // If there are no more games, that means that we should check if tournament is finished, or if we need to change group or tournament stage
+        const tournamentEndState =
+          TournamentFlow.onAfterFinishedMatchEndTournamentCheck(
+            newTournamentState,
+            currentGroups,
+            tournament,
+          );
 
-          if (!currentStageGamesThatAreNotYetFinished?.length) {
-            if (
-              tournamentSettings?.secondStageType &&
-              tournamentSettings?.numberOfGroups > 1
-            ) {
-              await goToNextTournamentStage();
-              return;
-            }
+        switch (tournamentEndState) {
+          case TournamentFlow.EndTournamentCheck.GoToNextTournamentStage:
+            await goToNextTournamentStage();
+            break;
+          case TournamentFlow.EndTournamentCheck.FinishTournament:
             await finishTournament();
-          }
+            break;
+          case TournamentFlow.EndTournamentCheck.ContinueTournamentStage:
+          default:
+            break;
         }
       } catch (e) {
         console.error(e);
@@ -290,8 +284,6 @@ const useTournamentLogic = (tournament?: Tournament) => {
       setGameAndBreakDuration,
       setNewActiveGroupAndGames,
       tournament,
-      tournamentSettings?.numberOfGroups,
-      tournamentSettings?.secondStageType,
       updateGameData,
     ],
   );

@@ -4,7 +4,13 @@ import Tournament from 'types/Tournament';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentFlow } from 'utils/tournamentFlowUtils';
 
-export namespace TournamentFlowUtils {
+export namespace TournamentFlowTestUtils {
+  export enum FinishMatchState {
+    GoToNextTournamentStage = 'goToNextTournamentStage',
+    FinishTournament = 'finishTournament',
+    ContinueTournament = 'continueTournament',
+  }
+
   export const BeginFreshTournament = () => {};
 
   export const FinishScheduledGameMatch = (
@@ -26,6 +32,20 @@ export namespace TournamentFlowUtils {
       tournament,
     );
 
+    newTournamentState.gamesToUpdate.forEach((game) => {
+      const oldGameIndex = tournament.currentStageSchedule?.findIndex(
+        (schedGame) => schedGame.game.id === game.id,
+      );
+
+      if (
+        tournament.currentStageSchedule !== undefined &&
+        oldGameIndex !== undefined &&
+        oldGameIndex >= 0
+      ) {
+        tournament.currentStageSchedule[oldGameIndex].game = game;
+      }
+    });
+
     if (
       newTournamentState.flowState === TournamentFlow.FlowState.NoGamesAvailable
     ) {
@@ -42,11 +62,14 @@ export namespace TournamentFlowUtils {
           tournament.settings?.numberOfGroups > 1
         ) {
           // await goToNextTournamentStage();
-          return { newTournamentState, state: 'GoToNextTournamentStage' };
+          return {
+            newTournamentState,
+            state: FinishMatchState.GoToNextTournamentStage,
+          };
         }
-        return { newTournamentState, state: 'FinishTournament' };
+        return { newTournamentState, state: FinishMatchState.FinishTournament };
       }
     }
-    return { newTournamentState, state: 'ContinueTournament' };
+    return { newTournamentState, state: FinishMatchState.ContinueTournament };
   };
 }

@@ -1,4 +1,6 @@
 import '@testing-library/jest-dom';
+import { TournamentFlowTestUtils } from '__tests__/utils/testFlowUtils';
+
 import {
   TestUtils,
   team1,
@@ -8,6 +10,7 @@ import {
 } from '__tests__/utils/testUtils';
 import { DefaultGameSettings } from 'types/GameSettings';
 import { GameState, GameWinner } from 'types/GameState';
+import MatchState from 'types/MatchState';
 import Tournament from 'types/Tournament';
 import { DefaultTournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
@@ -280,5 +283,24 @@ describe('TournamentFlow', () => {
     expect(stage1Tournament).toBeDefined();
 
     expect(stage1Tournament.state.status).toBe(TournamentStatus.created);
+
+    const scheduledGame1 = stage1Tournament.currentStageSchedule?.[0];
+
+    const finishedMatch1State =
+      TournamentFlowTestUtils.FinishScheduledGameMatch(
+        TestUtils.generateMatch({
+          index: 1,
+          matchDurationInSeconds: 0,
+          matchState: MatchState.team1Win,
+          team1Margin: 2,
+          team2Margin: 0,
+        }),
+        scheduledGame1!,
+        { currentDuration: 60, timeLeft: 600 },
+        stage1Tournament,
+      );
+    expect(finishedMatch1State.state).toBe(
+      TournamentFlowTestUtils.FinishMatchState.ContinueTournament,
+    );
   });
 });

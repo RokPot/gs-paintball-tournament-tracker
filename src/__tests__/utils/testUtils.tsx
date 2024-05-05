@@ -2,6 +2,7 @@ import Game from 'types/Game';
 import { DefaultGameSettings } from 'types/GameSettings';
 import { GameState, GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
+import MatchState from 'types/MatchState';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
@@ -33,6 +34,15 @@ interface GenerateGameProps {
   team2Wins?: number;
   matches?: Match[];
 }
+interface GenerateMatchProps {
+  index: number;
+  matchState: MatchState;
+  team1Margin: number;
+
+  team2Margin: number;
+
+  matchDurationInSeconds: number;
+}
 
 export namespace TestUtils {
   export const generateGame = ({
@@ -61,6 +71,22 @@ export namespace TestUtils {
         team2Wins,
       }),
     );
+  };
+
+  export const generateMatch = ({
+    index,
+    matchState,
+    team1Margin,
+    team2Margin,
+    matchDurationInSeconds = 0,
+  }: GenerateMatchProps) => {
+    return {
+      id: `M${index}`,
+      matchState,
+      team1Margin,
+      team2Margin,
+      matchDurationInSeconds,
+    } as Match;
   };
 
   export const generateTournamentGroup = (

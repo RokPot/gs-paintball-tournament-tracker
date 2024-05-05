@@ -17,6 +17,12 @@ export namespace TournamentFlow {
     NotDefined = 'notDefined',
   }
 
+  export enum EndTournamentCheck {
+    GoToNextTournamentStage = 'goToNextTournamentStage',
+    FinishTournament = 'finishTournament',
+    ContinueTournamentStage = 'continueTournamentStage',
+  }
+
   type NextGameState =
     | {
         newActiveGame: TournamentScheduleGame;
@@ -29,6 +35,7 @@ export namespace TournamentFlow {
     flowState: TournamentFlow.FlowState;
     nextGameState: NextGameState;
   }
+
   export const getNextGroup = (
     currentGroup: TournamentGroup,
     groups: TournamentGroup[],
@@ -648,5 +655,36 @@ export namespace TournamentFlow {
     returnState.nextGameState = nextGameState;
 
     return returnState;
+  };
+
+  export const onAfterFinishedMatchEndTournamentCheck = (
+    newTournamentState: ProcessedFinishedMatchState,
+    currentGroups: TournamentGroup[],
+    tournament: Tournament,
+  ): EndTournamentCheck => {
+    if (
+      newTournamentState.flowState !== TournamentFlow.FlowState.NoGamesAvailable
+    ) {
+      return EndTournamentCheck.ContinueTournamentStage;
+    }
+
+    const currentStageGamesThatAreNotYetFinished = currentGroups
+      .map((group) =>
+        group.games.filter((game) => game.gameState !== GameState.finished),
+      )
+      .flat();
+    // If there are no more games, that means that we should check if tournament is finished, or if we need to change group or tournament stage
+
+    if (!currentStageGamesThatAreNotYetFinished?.length) {
+      if (
+        tournament?.settings?.secondStageType &&
+        tournament.settings?.numberOfGroups > 1
+      ) {
+        return EndTournamentCheck.GoToNextTournamentStage;
+      }
+
+      return EndTournamentCheck.FinishTournament;
+    }
+    return EndTournamentCheck.ContinueTournamentStage;
   };
 }
