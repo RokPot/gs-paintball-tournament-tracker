@@ -137,6 +137,7 @@ export namespace TestUtils {
     index: number,
     stages: TournamentStage[],
     teams: Team[],
+    settings?: TournamentSettings,
   ) => {
     return new Tournament({
       _id: `tournament${index}`,
@@ -151,7 +152,7 @@ export namespace TestUtils {
       },
       gameSettings: DefaultGameSettings,
       stages,
-      settings: DefaultTournamentSettings,
+      settings: settings || DefaultTournamentSettings,
 
       teams,
     });
@@ -189,6 +190,7 @@ export namespace TestUtils {
       1,
       [firstStage],
       teams.flatMap((flatTeams) => flatTeams),
+      tournamentSettings,
     );
   };
 }

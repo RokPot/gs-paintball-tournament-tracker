@@ -1,3 +1,4 @@
+import Game from 'types/Game';
 import { GameState } from 'types/GameState';
 import { Match } from 'types/Match';
 import Tournament from 'types/Tournament';
@@ -12,6 +13,32 @@ export namespace TournamentFlowTestUtils {
   }
 
   export const BeginFreshTournament = () => {};
+
+  export const UpdateGameInTournament = (
+    game: Game,
+    tournament: Tournament,
+  ) => {
+    const oldGameIndex = tournament.currentStageSchedule?.findIndex(
+      (schedGame) => schedGame.game.id === game.id,
+    );
+
+    if (
+      tournament.currentStageSchedule !== undefined &&
+      oldGameIndex !== undefined &&
+      oldGameIndex >= 0
+    ) {
+      tournament.currentStageSchedule[oldGameIndex].game = game;
+    }
+
+    tournament.currentStageGroups?.forEach((group) => {
+      const oldGroupGameIndex = group.games.findIndex(
+        (groupGame) => groupGame.id === game.id,
+      );
+      if (oldGroupGameIndex !== undefined && oldGroupGameIndex >= 0) {
+        group.games[oldGroupGameIndex] = game;
+      }
+    });
+  };
 
   export const FinishScheduledGameMatch = (
     match: Match,
@@ -32,43 +59,43 @@ export namespace TournamentFlowTestUtils {
       tournament,
     );
 
-    newTournamentState.gamesToUpdate.forEach((game) => {
-      const oldGameIndex = tournament.currentStageSchedule?.findIndex(
-        (schedGame) => schedGame.game.id === game.id,
-      );
-
-      if (
-        tournament.currentStageSchedule !== undefined &&
-        oldGameIndex !== undefined &&
-        oldGameIndex >= 0
-      ) {
-        tournament.currentStageSchedule[oldGameIndex].game = game;
-      }
-    });
+    newTournamentState.gamesToUpdate.forEach((game) =>
+      TournamentFlowTestUtils.UpdateGameInTournament(game, tournament),
+    );
 
     if (
-      newTournamentState.flowState === TournamentFlow.FlowState.NoGamesAvailable
+      newTournamentState?.nextGameState !==
+      TournamentFlow.FlowState.NoGamesAvailable
     ) {
-      const currentStageGamesThatAreNotYetFinished =
-        tournament.currentStageGroups
-          ?.map((group) =>
-            group.games.filter((game) => game.gameState !== GameState.finished),
-          )
-          .flat();
+      const { nextGameState } = newTournamentState;
+      tournament.state.activeGameId = nextGameState.newActiveGame.id;
+      tournament.state.pairedGame1Id = nextGameState.newPairedGame1.id;
+      tournament.state.pairedGame2Id = nextGameState.newPairedGame2?.id;
+      nextGameState.newActiveGame.game.gameState = GameState.playing;
+      TournamentFlowTestUtils.UpdateGameInTournament(
+        nextGameState.newActiveGame.game,
+        tournament,
+      );
+    }
 
-      if (!currentStageGamesThatAreNotYetFinished?.length) {
-        if (
-          tournament.settings?.secondStageType &&
-          tournament.settings?.numberOfGroups > 1
-        ) {
-          // await goToNextTournamentStage();
-          return {
-            newTournamentState,
-            state: FinishMatchState.GoToNextTournamentStage,
-          };
-        }
+    const tournamentEndState =
+      TournamentFlow.onAfterFinishedMatchEndTournamentCheck(
+        newTournamentState,
+        tournament.currentStageGroups || [],
+        tournament,
+      );
+
+    switch (tournamentEndState) {
+      case TournamentFlow.EndTournamentCheck.GoToNextTournamentStage:
+        return {
+          newTournamentState,
+          state: FinishMatchState.GoToNextTournamentStage,
+        };
+      case TournamentFlow.EndTournamentCheck.FinishTournament:
         return { newTournamentState, state: FinishMatchState.FinishTournament };
-      }
+      case TournamentFlow.EndTournamentCheck.ContinueTournamentStage:
+      default:
+        break;
     }
     return { newTournamentState, state: FinishMatchState.ContinueTournament };
   };
