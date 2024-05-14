@@ -173,6 +173,15 @@ export namespace TournamentFlow {
     };
   };
 
+  const switchToNewActiveGame = (
+    pairedGame1: TournamentScheduleGame,
+    pairedGame2?: TournamentScheduleGame,
+  ) => {
+    return pairedGame2 && pairedGame2.game.gameState !== GameState.finished
+      ? pairedGame2
+      : pairedGame1;
+  };
+
   const switchToNextRoundRobinGame = (
     schedule: TournamentScheduleGame[],
     settings: TournamentSettings,
@@ -186,7 +195,11 @@ export namespace TournamentFlow {
     }
     let newActiveGame: TournamentScheduleGame = activeGame;
 
-    let newPairedGame1: TournamentScheduleGame = activeGame;
+    const currentPairedGame1 = activeGame;
+    const currentPairedGame2: TournamentScheduleGame | undefined =
+      schedule.find((schedGame) => schedGame.id === activeGame.pairedGameId);
+
+    let newPairedGame1: TournamentScheduleGame = currentPairedGame1;
     let newPairedGame2: TournamentScheduleGame | undefined =
       availableScheduledGames.find(
         (schedGame) => schedGame.id === activeGame.pairedGameId,
@@ -197,14 +210,14 @@ export namespace TournamentFlow {
       game2Available,
       shouldSwitchToNewPair: switchToNewPair,
     } = checkIfCurrentGamesAreFinished(
-      newPairedGame1.game,
-      newPairedGame2?.game,
+      currentPairedGame1.game,
+      currentPairedGame2?.game,
     );
 
     if (game1Available || game2Available) {
       if (settings.switchGames) {
         return {
-          newActiveGame: newPairedGame2 ?? newPairedGame1,
+          newActiveGame: switchToNewActiveGame(newPairedGame1, newPairedGame2),
           newPairedGame1,
           newPairedGame2,
         };
@@ -215,7 +228,10 @@ export namespace TournamentFlow {
       if (settings.switchGames) {
         const { game1, game2 } = getNextScheduledGamePair(
           schedule,
-          activeGame.gameNumber,
+          Math.max(
+            currentPairedGame1.gameNumber,
+            currentPairedGame2?.gameNumber ?? 0,
+          ),
         );
         if (!game1) {
           return FlowState.NoGamesAvailable;
@@ -278,10 +294,9 @@ export namespace TournamentFlow {
     }
     let newActiveGame: TournamentScheduleGame = activeGame;
     let newPairedGame1: TournamentScheduleGame = activeGame;
-    let newPairedGame2: TournamentScheduleGame | undefined =
-      availableScheduledGames.find(
-        (schedGame) => schedGame.id === activeGame.pairedGameId,
-      );
+    let newPairedGame2: TournamentScheduleGame | undefined = schedule.find(
+      (schedGame) => schedGame.id === activeGame.pairedGameId,
+    );
 
     const {
       game1Available,
@@ -306,7 +321,7 @@ export namespace TournamentFlow {
       if (settings.switchGames) {
         const { game1, game2 } = getNextScheduledGamePair(
           schedule,
-          activeGame.gameNumber,
+          Math.max(newPairedGame1.gameNumber, newPairedGame2?.gameNumber ?? 0),
         );
         if (!game1) {
           return FlowState.NoGamesAvailable;
