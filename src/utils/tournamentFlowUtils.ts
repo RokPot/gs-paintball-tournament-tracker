@@ -160,16 +160,20 @@ export namespace TournamentFlow {
         game2: undefined,
       };
     }
-
+    const game1 =
+      schedule.length > currentScheduleGameIndex
+        ? schedule[currentScheduleGameIndex]
+        : undefined;
+    let game2 =
+      schedule.length > currentScheduleGameIndex + 1
+        ? schedule[currentScheduleGameIndex + 1]
+        : undefined;
+    if (game1?.group.id !== game2?.group.id) {
+      game2 = undefined;
+    }
     return {
-      game1:
-        schedule.length > currentScheduleGameIndex
-          ? schedule[currentScheduleGameIndex]
-          : undefined,
-      game2:
-        schedule.length > currentScheduleGameIndex + 1
-          ? schedule[currentScheduleGameIndex + 1]
-          : undefined,
+      game1,
+      game2,
     };
   };
 
@@ -200,10 +204,7 @@ export namespace TournamentFlow {
       schedule.find((schedGame) => schedGame.id === activeGame.pairedGameId);
 
     let newPairedGame1: TournamentScheduleGame = currentPairedGame1;
-    let newPairedGame2: TournamentScheduleGame | undefined =
-      availableScheduledGames.find(
-        (schedGame) => schedGame.id === activeGame.pairedGameId,
-      );
+    let newPairedGame2: TournamentScheduleGame | undefined = currentPairedGame2;
 
     const {
       game1Available,
