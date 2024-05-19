@@ -34,7 +34,9 @@ const ScoreboardPage: React.FC<IProps> = () => {
 
   const { data: activeLeague, isLoading: isFetchingActiveLeague } =
     LeagueQueries.useActiveLeague();
+
   const tournament = activeLeague?.activeTournament;
+
   const {
     finishMatch,
     beginTournament,
@@ -48,6 +50,7 @@ const ScoreboardPage: React.FC<IProps> = () => {
     isProcessing,
     confirmNextTournamentStage,
   } = useTournamentLogic(tournament);
+
   const finishMatchInternal = useCallback(
     async (match: Match) => {
       await finishMatch(match);
@@ -62,7 +65,11 @@ const ScoreboardPage: React.FC<IProps> = () => {
       </PageContainer>
     );
   }
-
+  console.log(
+    isMatchInProgress,
+    timingBreak,
+    !!tournament?.state?.isTournamentFinished,
+  );
   return (
     <PageContainer padding="0px">
       {(isProcessing || isFetchingActiveLeague) && (

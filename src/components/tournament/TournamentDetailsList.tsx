@@ -32,7 +32,7 @@ const TournamentDetailsList = ({ tournament }: IProps) => {
             .filter((game) => checkForGameState(game)).length,
         0,
       ) || 0;
-    return totalGames <= 0 ? 'Tournament has not started yet' : totalGames;
+    return totalGames;
   };
 
   const getYesNoFromBoolean = (booleanValue: boolean) => {

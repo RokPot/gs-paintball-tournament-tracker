@@ -332,6 +332,72 @@ describe('TournamentFlow', () => {
     expect(currentPairedGame1?.game.matches?.[0].team2Margin).toBe(0);
   });
 
+  it('should finish a game due to no time left', () => {
+    const games = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 2,
+        team1,
+        team2: team3,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1: team2,
+        team2: team3,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+      }),
+    ];
+    const stage1Tournament = TestUtils.generateStage1Tournament({
+      teams: [[team1, team2, team3]],
+      games: [games],
+      numberOfGroups: 1,
+      tournamentSettings: {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 1,
+        switchGroups: true,
+        switchGames: true,
+      },
+    });
+    expect(stage1Tournament).toBeDefined();
+
+    expect(stage1Tournament.state.status).toBe(TournamentStatus.created);
+
+    const currentActiveGame = stage1Tournament.currentStageSchedule?.[0];
+    const currentPairedGame1 = stage1Tournament.currentStageSchedule?.[0];
+
+    expect(currentActiveGame?.id).toBe(currentPairedGame1?.id);
+
+    const finishedMatch1State =
+      TournamentFlowTestUtils.FinishScheduledGameMatch(
+        TestUtils.generateMatch({
+          index: 1,
+          matchDurationInSeconds: 0,
+          matchState: MatchState.team1Win,
+          team1Margin: 2,
+          team2Margin: 0,
+        }),
+        currentActiveGame!,
+        { currentDuration: 600, timeLeft: 0 },
+        stage1Tournament,
+      );
+    expect(finishedMatch1State.state).toBe(
+      TournamentFlowTestUtils.FinishMatchState.ContinueTournament,
+    );
+    const finishedGame = stage1Tournament.currentStageSchedule?.[0];
+    expect(finishedGame?.game.team1Wins).toBe(1);
+    expect(finishedGame?.game.team2Wins).toBe(0);
+    expect(finishedGame?.game?.gameState).toBe(GameState.finished);
+  });
+
   it('should finish match, switch to next game and finish match and move back to first game', () => {
     const games = [
       TestUtils.generateGame({
@@ -1201,7 +1267,7 @@ describe('TournamentFlow', () => {
     expect(currentPairedGame2?.gameNumber).toBe(7);
   });
 
-  it('should get games from group 1 when group 2 has all finished', () => {
+  it('should stop current tournament when all current stage games are finished', () => {
     const games = [
       TestUtils.generateGame({
         index: 1,
@@ -1209,9 +1275,16 @@ describe('TournamentFlow', () => {
         team2,
         gameState: GameState.playing,
         gameWinner: GameWinner.notYet,
-        team1Wins: 1,
+        team1Wins: 2,
         team2Wins: 0,
         matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
           {
             id: 'match1',
             matchDurationInSeconds: 0,
@@ -1252,6 +1325,24 @@ describe('TournamentFlow', () => {
         team2: team3,
         gameState: GameState.created,
         gameWinner: GameWinner.notYet,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
       }),
     ];
 
@@ -1312,18 +1403,11 @@ describe('TournamentFlow', () => {
         team2: team7,
         gameState: GameState.created,
         gameWinner: GameWinner.notYet,
-        team1Wins: 2,
+        team1Wins: 1,
         team2Wins: 0,
         matches: [
           {
             id: 'match1',
-            matchDurationInSeconds: 0,
-            matchState: MatchState.team1Win,
-            team1Margin: 2,
-            team2Margin: 0,
-          },
-          {
-            id: 'match2',
             matchDurationInSeconds: 0,
             matchState: MatchState.team1Win,
             team1Margin: 2,
@@ -1351,22 +1435,31 @@ describe('TournamentFlow', () => {
 
     expect(stage1Tournament.state.status).toBe(TournamentStatus.created);
 
-    let game = stage1Tournament.currentStageSchedule?.[1];
+    let game = stage1Tournament.currentStageSchedule?.[0];
+    game!.game.gameState = GameState.finished;
+    game = stage1Tournament.currentStageSchedule?.[1];
+    game!.game.gameState = GameState.finished;
+    game = stage1Tournament.currentStageSchedule?.[2];
     game!.game.gameState = GameState.finished;
     game = stage1Tournament.currentStageSchedule?.[3];
     game!.game.gameState = GameState.finished;
     game = stage1Tournament.currentStageSchedule?.[4];
     game!.game.gameState = GameState.finished;
-    game = stage1Tournament.currentStageSchedule?.[5];
-    game!.game.gameState = GameState.finished;
 
-    let currentActiveGame = stage1Tournament.currentStageSchedule?.[0];
-    let currentPairedGame1 = stage1Tournament.currentStageSchedule?.[0];
-    let currentPairedGame2 = stage1Tournament.currentStageSchedule?.[1];
+    let currentStageGroup = stage1Tournament.currentStageGroups?.[0];
+    currentStageGroup!.games[0].gameState = GameState.finished;
+    currentStageGroup!.games[1].gameState = GameState.finished;
+    currentStageGroup!.games[2].gameState = GameState.finished;
+    currentStageGroup = stage1Tournament.currentStageGroups?.[1];
+    currentStageGroup!.games[0].gameState = GameState.finished;
+    currentStageGroup!.games[1].gameState = GameState.finished;
+
+    const currentActiveGame = stage1Tournament.currentStageSchedule?.[5];
+    const currentPairedGame1 = stage1Tournament.currentStageSchedule?.[5];
 
     expect(currentActiveGame?.id).toBe(currentPairedGame1?.id);
 
-    let finishedMatchState = TournamentFlowTestUtils.FinishScheduledGameMatch(
+    const finishedMatchState = TournamentFlowTestUtils.FinishScheduledGameMatch(
       TestUtils.generateMatch({
         index: 1,
         matchDurationInSeconds: 0,
@@ -1379,38 +1472,462 @@ describe('TournamentFlow', () => {
       stage1Tournament,
     );
     expect(finishedMatchState.state).toBe(
-      TournamentFlowTestUtils.FinishMatchState.ContinueTournament,
+      TournamentFlowTestUtils.FinishMatchState.GoToNextTournamentStage,
     );
+  });
 
-    currentActiveGame = stage1Tournament.currentStageSchedule?.find(
-      (schedGame) => schedGame.id === stage1Tournament.state.activeGameId,
-    );
-    expect(currentActiveGame?.gameNumber).toBe(3);
+  it('should go to next tournament stage and create stage 2', () => {
+    const games = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.playing,
+        gameWinner: GameWinner.notYet,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 2,
+        team1,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.notYet,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1: team2,
+        team2: team3,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
+      }),
+    ];
 
-    currentPairedGame1 = stage1Tournament.currentStageSchedule?.find(
-      (schedGame) => schedGame.id === stage1Tournament.state.pairedGame1Id,
-    );
-    currentPairedGame2 = stage1Tournament.currentStageSchedule?.find(
-      (schedGame) => schedGame.id === stage1Tournament.state.pairedGame2Id,
-    );
+    const games2 = [
+      TestUtils.generateGame({
+        index: 4,
+        team1: team5,
+        team2: team6,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+          {
+            id: 'match2',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 5,
+        team1: team5,
+        team2: team7,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+          {
+            id: 'match2',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 6,
+        team1: team6,
+        team2: team7,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+        team1Wins: 1,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
+      }),
+    ];
 
-    expect(currentPairedGame2?.game?.gameState).toBe(GameState.finished);
-    expect(currentPairedGame1?.game?.gameState).toBe(GameState.playing);
+    const stage1Tournament = TestUtils.generateStage1Tournament({
+      teams: [
+        [team1, team2, team3],
+        [team5, team6, team7],
+      ],
+      games: [games, games2],
+      numberOfGroups: 2,
+      tournamentSettings: {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 2,
+        switchGroups: true,
+        switchGames: true,
+        secondStageType: TournamentType.singleElimination,
+      },
+    });
+    expect(stage1Tournament).toBeDefined();
 
-    expect(currentPairedGame1?.game.team1Wins).toBe(2);
-    expect(currentPairedGame1?.game.team2Wins).toBe(0);
+    expect(stage1Tournament.state.status).toBe(TournamentStatus.created);
 
-    expect(currentPairedGame1?.game.matches?.length).toBe(2);
-    expect(currentPairedGame1?.game.matches?.[1].team1Margin).toBe(2);
-    expect(currentPairedGame1?.game.matches?.[1].team2Margin).toBe(0);
+    let game = stage1Tournament.currentStageSchedule?.[0];
+    game!.game.gameState = GameState.finished;
+    game = stage1Tournament.currentStageSchedule?.[1];
+    game!.game.gameState = GameState.finished;
+    game = stage1Tournament.currentStageSchedule?.[2];
+    game!.game.gameState = GameState.finished;
+    game = stage1Tournament.currentStageSchedule?.[3];
+    game!.game.gameState = GameState.finished;
+    game = stage1Tournament.currentStageSchedule?.[4];
+    game!.game.gameState = GameState.finished;
 
-    finishedMatchState = TournamentFlowTestUtils.FinishScheduledGameMatch(
+    let currentStageGroup = stage1Tournament.currentStageGroups?.[0];
+    currentStageGroup!.games[0].gameState = GameState.finished;
+    currentStageGroup!.games[1].gameState = GameState.finished;
+    currentStageGroup!.games[2].gameState = GameState.finished;
+    currentStageGroup = stage1Tournament.currentStageGroups?.[1];
+    currentStageGroup!.games[0].gameState = GameState.finished;
+    currentStageGroup!.games[1].gameState = GameState.finished;
+
+    const currentActiveGame = stage1Tournament.currentStageSchedule?.[5];
+    const currentPairedGame1 = stage1Tournament.currentStageSchedule?.[5];
+
+    expect(currentActiveGame?.id).toBe(currentPairedGame1?.id);
+
+    const finishedMatchState = TournamentFlowTestUtils.FinishScheduledGameMatch(
       TestUtils.generateMatch({
         index: 1,
         matchDurationInSeconds: 0,
         matchState: MatchState.team1Win,
-        team1Margin: 3,
-        team2Margin: -3,
+        team1Margin: 2,
+        team2Margin: 0,
+      }),
+      currentActiveGame!,
+      { currentDuration: 60, timeLeft: 600 },
+      stage1Tournament,
+    );
+    expect(finishedMatchState.state).toBe(
+      TournamentFlowTestUtils.FinishMatchState.GoToNextTournamentStage,
+    );
+
+    TournamentFlowTestUtils.GoToNextTournamentStage(stage1Tournament);
+    expect(stage1Tournament.state.stage).toBe(2);
+    expect(stage1Tournament.state.status).toBe(TournamentStatus.stageChange);
+    expect(stage1Tournament.currentStage?.stage).toBe(2);
+    expect(stage1Tournament.currentStage?.groups?.length).toBe(1);
+    expect(stage1Tournament.currentStage?.schedule?.length).toBe(4);
+  });
+
+  it('should go to next tournament stage and create stage 2 and play through it', () => {
+    const games = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.playing,
+        gameWinner: GameWinner.notYet,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 2,
+        team1,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.notYet,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1: team2,
+        team2: team3,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
+      }),
+    ];
+
+    const games2 = [
+      TestUtils.generateGame({
+        index: 4,
+        team1: team5,
+        team2: team6,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+          {
+            id: 'match2',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 5,
+        team1: team5,
+        team2: team7,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+        team1Wins: 2,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+          {
+            id: 'match2',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 6,
+        team1: team6,
+        team2: team7,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+        team1Wins: 1,
+        team2Wins: 0,
+        matches: [
+          {
+            id: 'match1',
+            matchDurationInSeconds: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: 0,
+          },
+        ],
+      }),
+    ];
+
+    const stage1Tournament = TestUtils.generateStage1Tournament({
+      teams: [
+        [team1, team2, team3],
+        [team5, team6, team7],
+      ],
+      games: [games, games2],
+      numberOfGroups: 2,
+      tournamentSettings: {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 2,
+        switchGroups: true,
+        switchGames: true,
+        secondStageType: TournamentType.singleElimination,
+      },
+    });
+    expect(stage1Tournament).toBeDefined();
+
+    expect(stage1Tournament.state.status).toBe(TournamentStatus.created);
+
+    let game = stage1Tournament.currentStageSchedule?.[0];
+    game!.game.gameState = GameState.finished;
+    game = stage1Tournament.currentStageSchedule?.[1];
+    game!.game.gameState = GameState.finished;
+    game = stage1Tournament.currentStageSchedule?.[2];
+    game!.game.gameState = GameState.finished;
+    game = stage1Tournament.currentStageSchedule?.[3];
+    game!.game.gameState = GameState.finished;
+    game = stage1Tournament.currentStageSchedule?.[4];
+    game!.game.gameState = GameState.finished;
+
+    let currentStageGroup = stage1Tournament.currentStageGroups?.[0];
+    currentStageGroup!.games[0].gameState = GameState.finished;
+    currentStageGroup!.games[1].gameState = GameState.finished;
+    currentStageGroup!.games[2].gameState = GameState.finished;
+    currentStageGroup = stage1Tournament.currentStageGroups?.[1];
+    currentStageGroup!.games[0].gameState = GameState.finished;
+    currentStageGroup!.games[1].gameState = GameState.finished;
+
+    let currentActiveGame = stage1Tournament.currentStageSchedule?.[5];
+    let currentPairedGame1 = stage1Tournament.currentStageSchedule?.[5];
+
+    expect(currentActiveGame?.id).toBe(currentPairedGame1?.id);
+
+    const finishedMatchState = TournamentFlowTestUtils.FinishScheduledGameMatch(
+      TestUtils.generateMatch({
+        index: 1,
+        matchDurationInSeconds: 0,
+        matchState: MatchState.team1Win,
+        team1Margin: 2,
+        team2Margin: 0,
+      }),
+      currentActiveGame!,
+      { currentDuration: 60, timeLeft: 600 },
+      stage1Tournament,
+    );
+    expect(finishedMatchState.state).toBe(
+      TournamentFlowTestUtils.FinishMatchState.GoToNextTournamentStage,
+    );
+
+    const startGames =
+      TournamentFlowTestUtils.GoToNextTournamentStage(stage1Tournament);
+    stage1Tournament.state.status = TournamentStatus.inProgress;
+
+    expect(stage1Tournament.state.stage).toBe(2);
+    expect(stage1Tournament.state.status).toBe(TournamentStatus.inProgress);
+    expect(stage1Tournament.currentStage?.stage).toBe(2);
+    expect(stage1Tournament.currentStage?.groups?.length).toBe(1);
+    expect(stage1Tournament.currentStage?.schedule?.length).toBe(4);
+
+    expect(startGames).toBeDefined();
+
+    expect(startGames?.newPairedGame1).toBeDefined();
+    expect(startGames?.newPairedGame2).toBeDefined();
+
+    currentActiveGame = stage1Tournament.currentStageSchedule?.[0];
+    currentPairedGame1 = stage1Tournament.currentStageSchedule?.[0];
+    let currentPairedGame2 = stage1Tournament.currentStageSchedule?.[1];
+
+    TournamentFlowTestUtils.FinishScheduledGameMatch(
+      TestUtils.generateMatch({
+        index: 1,
+        matchDurationInSeconds: 0,
+        matchState: MatchState.team1Win,
+        team1Margin: 2,
+        team2Margin: 0,
       }),
       currentActiveGame!,
       { currentDuration: 60, timeLeft: 600 },
@@ -1427,14 +1944,141 @@ describe('TournamentFlow', () => {
       (schedGame) => schedGame.id === stage1Tournament.state.pairedGame2Id,
     );
 
-    expect(currentActiveGame?.group.groupIndex).toBe(2);
-    expect(currentActiveGame?.id).toBe(currentPairedGame1?.id);
-    expect(currentActiveGame?.game?.gameState).toBe(GameState.playing);
+    expect(currentPairedGame2).toBeUndefined();
+    expect(currentActiveGame?.game.gameState).toBe(GameState.playing);
+    expect(currentActiveGame?.game.team1Wins).toBe(1);
+    expect(currentActiveGame?.game.team2Wins).toBe(0);
+    expect(currentActiveGame?.game?.matches?.length).toBe(1);
+    expect(currentActiveGame?.gameNumber).toBe(1);
 
-    expect(currentPairedGame1?.game.team1Wins).toBe(1);
-    expect(currentPairedGame1?.game.team2Wins).toBe(0);
-    expect(currentPairedGame1?.game.matches?.length).toBe(1);
-    expect(currentPairedGame1?.game.matches?.[0].team1Margin).toBe(2);
-    expect(currentPairedGame1?.game.matches?.[0].team2Margin).toBe(0);
+    TournamentFlowTestUtils.FinishScheduledGameMatch(
+      TestUtils.generateMatch({
+        index: 1,
+        matchDurationInSeconds: 0,
+        matchState: MatchState.team1Win,
+        team1Margin: 2,
+        team2Margin: 0,
+      }),
+      currentActiveGame!,
+      { currentDuration: 60, timeLeft: 600 },
+      stage1Tournament,
+    );
+    currentActiveGame = stage1Tournament.currentStageSchedule?.find(
+      (schedGame) => schedGame.id === stage1Tournament.state.activeGameId,
+    );
+
+    expect(currentActiveGame?.gameNumber).toBe(2);
+
+    TournamentFlowTestUtils.FinishScheduledGameMatch(
+      TestUtils.generateMatch({
+        index: 1,
+        matchDurationInSeconds: 0,
+        matchState: MatchState.team1Win,
+        team1Margin: 2,
+        team2Margin: 0,
+      }),
+      currentActiveGame!,
+      { currentDuration: 60, timeLeft: 600 },
+      stage1Tournament,
+    );
+    currentActiveGame = stage1Tournament.currentStageSchedule?.find(
+      (schedGame) => schedGame.id === stage1Tournament.state.activeGameId,
+    );
+
+    expect(currentActiveGame?.game.team1Wins).toBe(1);
+    expect(currentActiveGame?.gameNumber).toBe(2);
+
+    TournamentFlowTestUtils.FinishScheduledGameMatch(
+      TestUtils.generateMatch({
+        index: 1,
+        matchDurationInSeconds: 0,
+        matchState: MatchState.team1Win,
+        team1Margin: 2,
+        team2Margin: 0,
+      }),
+      currentActiveGame!,
+      { currentDuration: 60, timeLeft: 600 },
+      stage1Tournament,
+    );
+    currentActiveGame = stage1Tournament.currentStageSchedule?.find(
+      (schedGame) => schedGame.id === stage1Tournament.state.activeGameId,
+    );
+
+    expect(currentActiveGame?.game.team1Wins).toBe(0);
+    expect(currentActiveGame?.gameNumber).toBe(3);
+
+    TournamentFlowTestUtils.FinishScheduledGameMatch(
+      TestUtils.generateMatch({
+        index: 1,
+        matchDurationInSeconds: 0,
+        matchState: MatchState.team1Win,
+        team1Margin: 2,
+        team2Margin: 0,
+      }),
+      currentActiveGame!,
+      { currentDuration: 60, timeLeft: 600 },
+      stage1Tournament,
+    );
+    currentActiveGame = stage1Tournament.currentStageSchedule?.find(
+      (schedGame) => schedGame.id === stage1Tournament.state.activeGameId,
+    );
+
+    expect(currentActiveGame?.game.team1Wins).toBe(1);
+    expect(currentActiveGame?.gameNumber).toBe(3);
+
+    TournamentFlowTestUtils.FinishScheduledGameMatch(
+      TestUtils.generateMatch({
+        index: 1,
+        matchDurationInSeconds: 0,
+        matchState: MatchState.team1Win,
+        team1Margin: 2,
+        team2Margin: 0,
+      }),
+      currentActiveGame!,
+      { currentDuration: 60, timeLeft: 600 },
+      stage1Tournament,
+    );
+    currentActiveGame = stage1Tournament.currentStageSchedule?.find(
+      (schedGame) => schedGame.id === stage1Tournament.state.activeGameId,
+    );
+
+    expect(currentActiveGame?.game.team1Wins).toBe(0);
+    expect(currentActiveGame?.gameNumber).toBe(4);
+
+    TournamentFlowTestUtils.FinishScheduledGameMatch(
+      TestUtils.generateMatch({
+        index: 1,
+        matchDurationInSeconds: 0,
+        matchState: MatchState.team1Win,
+        team1Margin: 2,
+        team2Margin: 0,
+      }),
+      currentActiveGame!,
+      { currentDuration: 60, timeLeft: 600 },
+      stage1Tournament,
+    );
+    currentActiveGame = stage1Tournament.currentStageSchedule?.find(
+      (schedGame) => schedGame.id === stage1Tournament.state.activeGameId,
+    );
+
+    expect(currentActiveGame?.game.team1Wins).toBe(1);
+    expect(currentActiveGame?.gameNumber).toBe(4);
+
+    const state = TournamentFlowTestUtils.FinishScheduledGameMatch(
+      TestUtils.generateMatch({
+        index: 1,
+        matchDurationInSeconds: 0,
+        matchState: MatchState.team1Win,
+        team1Margin: 2,
+        team2Margin: 0,
+      }),
+      currentActiveGame!,
+      { currentDuration: 60, timeLeft: 600 },
+      stage1Tournament,
+    );
+
+    expect(state.state).toBe(
+      TournamentFlowTestUtils.FinishMatchState.FinishTournament,
+    );
   });
 });

@@ -10,6 +10,8 @@ import { TournamentSettings } from 'types/TournamentSettings';
 import { TournamentType } from 'types/TournamentType';
 
 export namespace TournamentFlow {
+  export const MAX_STAGES = 2;
+
   export enum FlowState {
     NoGamesAvailable = 'noGamesAvailable',
     GamesAvailable = 'gamesAvailable',
@@ -278,7 +280,15 @@ export namespace TournamentFlow {
     );
 
     if (!availableScheduledGames?.length) {
-      return FlowState.NoGamesAvailable;
+      availableScheduledGames = schedule?.filter(
+        (scheduledGame) =>
+          scheduledGame.game.gameState !== GameState.finished &&
+          scheduledGame.game?.bracketProperties?.round ===
+            currentBracketsRound + 1,
+      );
+      if (!availableScheduledGames?.length) {
+        return FlowState.NoGamesAvailable;
+      }
     }
 
     if (!availableScheduledGames?.length) {
@@ -504,10 +514,18 @@ export namespace TournamentFlow {
     }
 
     scheduledGame.game.gameTime = timeLeftInMilliseconds / 1000;
-    scheduledGame.game.team1Wins +=
-      match.matchState === MatchState.team1Win ? 1 : 0;
-    scheduledGame.game.team2Wins +=
-      match.matchState === MatchState.team2Win ? 1 : 0;
+    scheduledGame.game.team1Wins += [
+      MatchState.team1Win,
+      MatchState.draw,
+    ].includes(match.matchState)
+      ? 1
+      : 0;
+    scheduledGame.game.team2Wins += [
+      MatchState.team2Win,
+      MatchState.draw,
+    ].includes(match.matchState)
+      ? 1
+      : 0;
     return scheduledGame;
   };
 
@@ -694,7 +712,8 @@ export namespace TournamentFlow {
     if (!currentStageGamesThatAreNotYetFinished?.length) {
       if (
         tournament?.settings?.secondStageType &&
-        tournament.settings?.numberOfGroups > 1
+        tournament.settings?.numberOfGroups > 1 &&
+        tournament.state.stage < MAX_STAGES
       ) {
         return EndTournamentCheck.GoToNextTournamentStage;
       }

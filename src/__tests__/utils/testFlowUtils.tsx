@@ -3,7 +3,9 @@ import { GameState } from 'types/GameState';
 import { Match } from 'types/Match';
 import Tournament from 'types/Tournament';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
+import { TournamentStatus } from 'types/TournamentStatus';
 import { TournamentFlow } from 'utils/tournamentFlowUtils';
+import { generateNextTournamentStage } from 'utils/tournamentUtils';
 
 export namespace TournamentFlowTestUtils {
   export enum FinishMatchState {
@@ -38,6 +40,25 @@ export namespace TournamentFlowTestUtils {
         group.games[oldGroupGameIndex] = game;
       }
     });
+  };
+
+  export const GoToNextTournamentStage = (tournament: Tournament) => {
+    const nextStage = generateNextTournamentStage(
+      tournament,
+      tournament.settings.secondStageType,
+    );
+    if (nextStage) {
+      tournament.stages!.push(nextStage);
+
+      return (
+        TournamentFlow.prepareGamesForTournament(
+          tournament,
+          nextStage.schedule,
+        ) || undefined
+      );
+    }
+
+    return undefined;
   };
 
   export const FinishScheduledGameMatch = (
@@ -87,11 +108,15 @@ export namespace TournamentFlowTestUtils {
 
     switch (tournamentEndState) {
       case TournamentFlow.EndTournamentCheck.GoToNextTournamentStage:
+        tournament.state.stage += 1;
+        tournament.state.status = TournamentStatus.stageChange;
         return {
           newTournamentState,
           state: FinishMatchState.GoToNextTournamentStage,
         };
       case TournamentFlow.EndTournamentCheck.FinishTournament:
+        tournament.state.isTournamentFinished = true;
+        tournament.state.status = TournamentStatus.finished;
         return { newTournamentState, state: FinishMatchState.FinishTournament };
       case TournamentFlow.EndTournamentCheck.ContinueTournamentStage:
       default:

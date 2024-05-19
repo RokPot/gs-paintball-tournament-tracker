@@ -88,7 +88,12 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
       return;
     }
     clearInterval(timer);
-    set({ timerRef: undefined, timerFn: undefined });
+    set({
+      timerRef: undefined,
+      timerFn: undefined,
+      timingBreak: false,
+      timingGame: false,
+    });
   },
   setTimerRef: (timer) => {
     set(() => ({ timerRef: timer }));

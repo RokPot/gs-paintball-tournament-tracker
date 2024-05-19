@@ -679,13 +679,9 @@ const generateSingleEliminationSchedule = (
         currentGameNumber += 1;
       }
       if (scheduledPairedGame1) {
-        scheduledPairedGame1.pairedGameId =
-          scheduledPairedGame2?.id || 'NoPairedGameId';
         scheduledGames.push(scheduledPairedGame1);
       }
       if (scheduledPairedGame2) {
-        scheduledPairedGame2.pairedGameId =
-          scheduledPairedGame1?.id || 'NoPairedGameId';
         scheduledGames.push(scheduledPairedGame2);
       }
     } else {

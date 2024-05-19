@@ -2,8 +2,7 @@ import { Typography } from '@mui/material';
 import CustomTabs from 'components/shared/CustomTabs';
 import FlexContainer from 'components/shared/FlexContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
-import { useEffect, useState } from 'react';
-import LeaderboardTeam from 'types/LeadeboardTeam';
+import { useMemo, useState } from 'react';
 import League from 'types/League';
 import TournamentGroup from 'types/TournamentGroup';
 import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
@@ -16,27 +15,20 @@ interface IProps {
 const TournamentResults = ({ activeLeague }: IProps) => {
   const selectedTournament = activeLeague?.activeTournament;
 
-  const [leaderboard, setLeaderboard] = useState<LeaderboardTeam[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<
+    TournamentGroup | undefined
+  >(selectedTournament?.currentStage?.groups?.[0]);
 
-  const calculateLeaderboard = (group?: TournamentGroup) => {
-    if (!group) {
-      return;
+  const groupLeaderboard = useMemo(() => {
+    if (!selectedGroup) {
+      return [];
     }
 
-    const newLeaderboard = calculateTournamentGroupLeaderboard(
-      group,
+    return calculateTournamentGroupLeaderboard(
+      selectedGroup,
       selectedTournament!.settings,
     );
-
-    setLeaderboard(newLeaderboard);
-  };
-
-  useEffect(() => {
-    if (!selectedTournament?.stages?.length) {
-      return;
-    }
-    calculateLeaderboard(selectedTournament?.currentStage?.groups?.[0]);
-  }, []);
+  }, [selectedGroup, selectedTournament]);
 
   if (!selectedTournament?.stages?.length) {
     return (
@@ -63,14 +55,14 @@ const TournamentResults = ({ activeLeague }: IProps) => {
           })) || []
         }
         onTabChanged={(newTabGroupId) => {
-          calculateLeaderboard(
+          setSelectedGroup(
             selectedTournament?.currentStage?.groups.find(
               (group) => group.id === newTabGroupId,
-            )!,
+            ),
           );
         }}
       />
-      <LeaderboardList teams={leaderboard} />
+      <LeaderboardList teams={groupLeaderboard} />
     </FlexContainer>
   );
 };
