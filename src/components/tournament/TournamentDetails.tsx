@@ -4,6 +4,7 @@ import LeaderboardList from 'components/teams/LeaderboardList';
 import { useMemo } from 'react';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import League from 'types/League';
+import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
 import TournamentDetailsList from './TournamentDetailsList';
 
 interface IProps {
@@ -15,7 +16,10 @@ const TournamentDetails = ({ activeLeague }: IProps) => {
 
   const tournamentLeaderboard = useMemo(() => {
     const leadearboard: LeaderboardTeam[] = [];
-
+    calculateTournamentGroupLeaderboard(
+      selectedGroup,
+      selectedTournament!.settings,
+    );
     return leadearboard;
   }, []);
 

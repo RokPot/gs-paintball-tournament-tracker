@@ -722,3 +722,28 @@ export const calculateTournamentGroupLeaderboard = (
   // set proper rankings
   return recalculateRankings(sortedLeaderboardTeams);
 };
+
+export const calculateTournamentLeaderboard = (
+  group: TournamentGroup,
+  tournamentSettings: TournamentSettings,
+) => {
+  // Calculate team points for a group.
+  // WIN - 3 POINTS
+  // DRAW - 1 POINT
+  // LOSE - 0 POINTS
+  const leaderboardTeams = calculateTournamentGroupPoints(
+    group,
+    tournamentSettings,
+    group.finishedGames,
+  );
+
+  // If there are any teams that are tied (same points), we need to try to resolve them
+  const sortedLeaderboardTeams = checkAndResolveLeaderboardDraws(
+    leaderboardTeams,
+    group.finishedGames,
+    tournamentSettings,
+  );
+
+  // set proper rankings
+  return recalculateRankings(sortedLeaderboardTeams);
+};
