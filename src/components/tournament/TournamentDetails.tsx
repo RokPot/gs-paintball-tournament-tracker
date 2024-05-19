@@ -15,12 +15,31 @@ const TournamentDetails = ({ activeLeague }: IProps) => {
   const selectedTournament = activeLeague?.activeTournament;
 
   const tournamentLeaderboard = useMemo(() => {
-    const leadearboard: LeaderboardTeam[] = [];
-    calculateTournamentGroupLeaderboard(
-      selectedGroup,
+    if (
+      selectedTournament?.settings.secondStageType &&
+      selectedTournament?.state.stage > 1
+    ) {
+      const firstStage = selectedTournament?.stages?.find(
+        (stage) => stage.stage === 1,
+      );
+      const firstStageGroupsLeaderboard: LeaderboardTeam[] = [];
+      firstStage?.groups?.forEach((group) => {
+        firstStageGroupsLeaderboard.push(
+          ...calculateTournamentGroupLeaderboard(
+            group,
+            selectedTournament!.settings,
+          ),
+        );
+      });
+      const secondStage = selectedTournament?.currentStageGroups;
+    }
+    if (!selectedTournament?.currentStageGroups?.[0]) {
+      return [];
+    }
+    return calculateTournamentGroupLeaderboard(
+      selectedTournament?.currentStageGroups?.[0]!,
       selectedTournament!.settings,
     );
-    return leadearboard;
   }, []);
 
   if (!selectedTournament || !activeLeague) {
@@ -30,11 +49,10 @@ const TournamentDetails = ({ activeLeague }: IProps) => {
   return (
     <FlexContainer flexDirection="column">
       <TournamentDetailsList tournament={selectedTournament} />
-      <FlexContainer flexDirection="column" width="100%">
-        <Typography variant="h5">Tournament leaderboard</Typography>
 
-        <LeaderboardList teams={tournamentLeaderboard} />
-      </FlexContainer>
+      <Typography variant="h5">Tournament leaderboard</Typography>
+
+      <LeaderboardList teams={tournamentLeaderboard} />
     </FlexContainer>
   );
 };
