@@ -20,7 +20,7 @@ import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentStatus } from 'types/TournamentStatus';
 
 interface IProps {
-  activeLeague?: League;
+  activeLeague: League | undefined | null;
   style?: CSSProperties;
   disableNewWindowOpen?: boolean;
 }

@@ -3,7 +3,7 @@ import ScheduleContainer from 'components/tournament/visualizations/schedule/Sch
 import League from 'types/League';
 
 interface IProps {
-  activeLeague?: League;
+  activeLeague: League | undefined | null;
 }
 
 const ScheduleView: React.FC<IProps> = ({ activeLeague }) => {

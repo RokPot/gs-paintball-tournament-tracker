@@ -1097,7 +1097,7 @@ describe('TournamentResults', () => {
         [team5, team6, team7, team8],
       ],
       games: [games1, games2],
-      numberOfGroups: 1,
+      numberOfGroups: 2,
       tournamentSettings: {
         ...DefaultTournamentSettings,
         numberOfGroups: 2,
@@ -1119,7 +1119,7 @@ describe('TournamentResults', () => {
       numberOfGroups: 1,
       tournamentSettings: {
         ...DefaultTournamentSettings,
-        numberOfGroups: 2,
+        numberOfGroups: 1,
         switchGroups: true,
         switchGames: true,
         secondStageType: TournamentType.roundRobin,

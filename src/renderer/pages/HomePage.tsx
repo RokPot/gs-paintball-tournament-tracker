@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import routes from 'renderer/main/Routes';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
@@ -36,7 +37,13 @@ const HomePage: React.FC = () => {
   window.electron.ipcRenderer.on('buttons-response', (result) => {
     console.log(result);
   });
-
+  useEffect(() => {
+    const getdate = async () => {
+      const estimation = await navigator.storage.estimate();
+      console.log(estimation);
+    };
+    getdate();
+  }, []);
   const { data: leaguesList, isLoading: isFetchingLeaguesList } =
     LeagueQueries.useLeaguesList();
 

@@ -39,7 +39,7 @@ import { v4 } from 'uuid';
 interface IProps {
   onAccept: (tournament: Tournament, isEdit: boolean) => Promise<void>;
   onCancel: () => void;
-  league?: League;
+  league: League | undefined | null;
   tournament?: Tournament;
 }
 
@@ -207,6 +207,20 @@ const AddOrEditTournament = ({
               defaultValue={formik.values.endDate}
               sx={{ width: '100%' }}
               label="Tournament end date"
+            />
+          </FlexContainer>
+          <FlexContainer width="100%" gap={16} style={{ marginBottom: '0px' }}>
+            <CustomTextField
+              label="Entry Fee"
+              id="entryFee"
+              value={formik.values.name}
+              onChange={formik.handleChange}
+              placeholder="Entry Fee in €"
+              variant="outlined"
+              style={{ width: '100%' }}
+              helperText={String(formik?.errors?.name || ' ')}
+              debounceTime={200}
+              type="number"
             />
           </FlexContainer>
           <Typography variant="h3" marginBottom="0px !important">

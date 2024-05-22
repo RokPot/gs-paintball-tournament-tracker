@@ -6,7 +6,7 @@ import League from 'types/League';
 import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
 
 interface IProps {
-  activeLeague?: League;
+  activeLeague: League | undefined | null;
 }
 
 const LeaderboardView: React.FC<IProps> = ({ activeLeague }) => {

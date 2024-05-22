@@ -21,7 +21,7 @@ interface AddLeague {
 }
 
 interface IProps {
-  league?: League;
+  league: League | undefined | null;
   onConfirm: (league: League, isEdit: boolean) => Promise<void>;
   onClose: () => void;
 }

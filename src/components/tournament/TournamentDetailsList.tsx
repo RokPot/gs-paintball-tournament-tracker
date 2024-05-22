@@ -34,7 +34,7 @@ const TournamentDetailsList = ({ tournament }: IProps) => {
       ) || 0;
     return totalGames;
   };
-
+  console.log(tournament);
   const getYesNoFromBoolean = (booleanValue: boolean) => {
     return booleanValue ? 'Yes' : 'No';
   };
