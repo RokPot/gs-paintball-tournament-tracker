@@ -21,6 +21,7 @@ interface GenerateStage1Tournament {
   teams: Team[][];
   games: Game[][];
   tournamentSettings: TournamentSettings;
+  tournament?: Tournament;
 }
 
 interface GenerateGameProps {
@@ -192,6 +193,40 @@ export namespace TestUtils {
       teams.flatMap((flatTeams) => flatTeams),
       tournamentSettings,
     );
+  };
+
+  export const generateStage2Tournament = ({
+    tournament,
+    teams,
+    numberOfGroups = 1,
+    games,
+    tournamentSettings = DefaultTournamentSettings,
+  }: GenerateStage1Tournament) => {
+    const groups: TournamentGroup[] = [];
+    for (let i = 0; i < numberOfGroups; i += 1) {
+      groups.push(
+        TestUtils.generateTournamentGroup(
+          i + 1,
+          games[i],
+          teams[i],
+          tournamentSettings.type,
+        ),
+      );
+    }
+    const stage1ScheduledGames = generateTournamentSchedule(
+      groups,
+      tournamentSettings,
+      tournamentSettings.type,
+    );
+    const secondStage = TestUtils.generateTournamentStage(
+      1,
+      groups,
+      stage1ScheduledGames,
+      2,
+    );
+    if (tournament) {
+      tournament.stages?.push(secondStage);
+    }
   };
 }
 export const team1 = TestUtils.generateTeam(1);

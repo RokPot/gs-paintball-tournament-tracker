@@ -3,6 +3,7 @@ import { GameWinner } from 'types/GameState';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import MatchState from 'types/MatchState';
 import Team from 'types/Team';
+import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
 import { TournamentSettings } from 'types/TournamentSettings';
 import { v4 } from 'uuid';
@@ -723,27 +724,44 @@ export const calculateTournamentGroupLeaderboard = (
   return recalculateRankings(sortedLeaderboardTeams);
 };
 
-export const calculateTournamentLeaderboard = (
-  group: TournamentGroup,
-  tournamentSettings: TournamentSettings,
-) => {
-  // Calculate team points for a group.
+export const calculateTournamentLeaderboard = (tournament?: Tournament) => {
+  // Calculate team points for tournament.
   // WIN - 3 POINTS
   // DRAW - 1 POINT
   // LOSE - 0 POINTS
-  const leaderboardTeams = calculateTournamentGroupPoints(
-    group,
-    tournamentSettings,
-    group.finishedGames,
-  );
 
-  // If there are any teams that are tied (same points), we need to try to resolve them
-  const sortedLeaderboardTeams = checkAndResolveLeaderboardDraws(
-    leaderboardTeams,
-    group.finishedGames,
-    tournamentSettings,
-  );
+  if (!tournament) {
+    return [];
+  }
+  const leaderboard: LeaderboardTeam[] = [];
+  const teamsProcessed: string[] = [];
 
-  // set proper rankings
-  return recalculateRankings(sortedLeaderboardTeams);
+  for (let i = tournament?.state.stage || 1; i > 0; i -= 1) {
+    const selectedStage = tournament?.stages?.find(
+      (stage) => stage.stage === i,
+    );
+    if (selectedStage?.groups) {
+      const selectedStageLeaderboard: LeaderboardTeam[] = [];
+      selectedStage.groups?.forEach((group) =>
+        selectedStageLeaderboard.push(
+          ...calculateTournamentGroupLeaderboard(group, tournament!.settings),
+        ),
+      );
+      const filteredAndSortedSelectedStageLeaderboard = selectedStageLeaderboard
+        .filter(
+          (leaderboardTeam) =>
+            !teamsProcessed.includes(leaderboardTeam.team.id),
+        )
+        .sort((a, b) => b.totalPoints - a.totalPoints);
+
+      leaderboard.push(...filteredAndSortedSelectedStageLeaderboard);
+
+      teamsProcessed.push(
+        ...(selectedStage?.groups
+          ?.map((group) => group.teams.map((team) => team.id))
+          .flat() || []),
+      );
+    }
+  }
+  return leaderboard;
 };

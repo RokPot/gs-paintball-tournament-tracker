@@ -7,12 +7,17 @@ import {
   team4,
   team5,
   team6,
+  team7,
+  team8,
 } from '__tests__/utils/testUtils';
 import { GameState, GameWinner } from 'types/GameState';
 import MatchState from 'types/MatchState';
 import { DefaultTournamentSettings } from 'types/TournamentSettings';
 import { TournamentType } from 'types/TournamentType';
-import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
+import {
+  calculateTournamentGroupLeaderboard,
+  calculateTournamentLeaderboard,
+} from 'utils/tournamentResultUtils';
 
 describe('TournamentResults', () => {
   it('should calculate results', () => {
@@ -912,5 +917,229 @@ describe('TournamentResults', () => {
     expect(leaderboard[3].team.id).toBe(team5.id);
     expect(leaderboard[4].team.id).toBe(team4.id);
     expect(leaderboard[5].team.id).toBe(team6.id);
+  });
+
+  it('should calculate stage 2 results 2 stage 1 groups, 1 stage 2 group', () => {
+    const games1 = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2: team4,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team2,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team2,
+        team2: team4,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team3,
+        team2: team4,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+    ];
+
+    const games2 = [
+      TestUtils.generateGame({
+        index: 1,
+        team1: team5,
+        team2: team6,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team5,
+        team2: team7,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team5,
+        team2: team8,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team6,
+        team2: team7,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team6,
+        team2: team8,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team7,
+        team2: team8,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+    ];
+
+    const secondStageGames = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2: team5,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2: team6,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team2,
+        team2: team5,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team2,
+        team2: team6,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team5,
+        team2: team6,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 0,
+      }),
+    ];
+
+    const stage1Tournament = TestUtils.generateStage1Tournament({
+      teams: [
+        [team1, team2, team3, team4],
+        [team5, team6, team7, team8],
+      ],
+      games: [games1, games2],
+      numberOfGroups: 1,
+      tournamentSettings: {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 2,
+        switchGroups: true,
+        switchGames: true,
+        secondStageType: TournamentType.roundRobin,
+      },
+    });
+
+    let currentStageSchedule = stage1Tournament?.currentStageSchedule;
+    currentStageSchedule?.forEach(
+      (scheduledGame) => scheduledGame.game.gameState === GameState.finished,
+    );
+
+    TestUtils.generateStage2Tournament({
+      tournament: stage1Tournament,
+      teams: [[team1, team2, team5, team6]],
+      games: [secondStageGames],
+      numberOfGroups: 1,
+      tournamentSettings: {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 2,
+        switchGroups: true,
+        switchGames: true,
+        secondStageType: TournamentType.roundRobin,
+      },
+    });
+    stage1Tournament.state.stage = 2;
+    currentStageSchedule = stage1Tournament?.currentStageSchedule;
+    currentStageSchedule?.forEach(
+      (scheduledGame) => scheduledGame.game.gameState === GameState.finished,
+    );
+
+    const leaderboard = calculateTournamentLeaderboard(stage1Tournament);
+    expect(leaderboard.length).toBe(8);
+    expect(leaderboard[0].team.id).toBe(team1.id);
+    expect(leaderboard[1].team.id).toBe(team2.id);
+    expect(leaderboard[2].team.id).toBe(team5.id);
+    expect(leaderboard[3].team.id).toBe(team6.id);
+    expect(leaderboard[4].team.id).toBe(team3.id);
+    expect(leaderboard[5].team.id).toBe(team7.id);
+    expect(leaderboard[6].team.id).toBe(team4.id);
+    expect(leaderboard[7].team.id).toBe(team8.id);
   });
 });
