@@ -1,3 +1,4 @@
+import { BracketProperties } from 'types/BracketProperties';
 import Game from 'types/Game';
 import { DefaultGameSettings } from 'types/GameSettings';
 import { GameState, GameWinner } from 'types/GameState';
@@ -34,6 +35,7 @@ interface GenerateGameProps {
   team1Wins?: number;
   team2Wins?: number;
   matches?: Match[];
+  bracketProperties?: BracketProperties | null;
 }
 interface GenerateMatchProps {
   index: number;
@@ -56,11 +58,12 @@ export namespace TestUtils {
     team1Wins = 0,
     team2Wins = 0,
     matches = [],
+    bracketProperties = null,
   }: GenerateGameProps) => {
     return new Game(
       new Game({
         _id: `G${index}`,
-        bracketProperties: null,
+        bracketProperties,
         gameState,
         gameTime,
         id: `G${index}`,

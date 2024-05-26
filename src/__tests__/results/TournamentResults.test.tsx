@@ -1142,4 +1142,214 @@ describe('TournamentResults', () => {
     expect(leaderboard[6].team.id).toBe(team4.id);
     expect(leaderboard[7].team.id).toBe(team8.id);
   });
+
+  it('should calculate eliminations results', () => {
+    const gamesWithClearWinner = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 2,
+        team1: team3,
+        team2: team4,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        bracketProperties: {
+          bye: false,
+          round: 2,
+          isThridPlaceGame: false,
+          isFirstPlaceGame: true,
+          roundGameNumber: 1,
+          winnerNextRoundGameNumber: -1,
+        },
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1: team2,
+        team2: team4,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        bracketProperties: {
+          bye: false,
+          round: 2,
+          isThridPlaceGame: true,
+          isFirstPlaceGame: false,
+          roundGameNumber: 2,
+          winnerNextRoundGameNumber: -1,
+        },
+      }),
+    ];
+
+    const newGroup = TestUtils.generateTournamentGroup(
+      1,
+      gamesWithClearWinner,
+      [team1, team2, team3, team4],
+      TournamentType.singleElimination,
+    );
+
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
+      ...DefaultTournamentSettings,
+    });
+    expect(leaderboard.length).toBe(4);
+    expect(leaderboard[0].team.id).toBe(team1.id);
+    expect(leaderboard[1].team.id).toBe(team3.id);
+    expect(leaderboard[2].team.id).toBe(team2.id);
+    expect(leaderboard[3].team.id).toBe(team4.id);
+  });
+
+  it('should calculate eliminations results from 3 rounds', () => {
+    const gamesWithClearWinner = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        bracketProperties: {
+          bye: false,
+          round: 1,
+          isThridPlaceGame: false,
+          isFirstPlaceGame: false,
+          roundGameNumber: 1,
+          winnerNextRoundGameNumber: -1,
+        },
+      }),
+      TestUtils.generateGame({
+        index: 2,
+        team1: team3,
+        team2: team4,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        bracketProperties: {
+          bye: false,
+          round: 1,
+          isThridPlaceGame: false,
+          isFirstPlaceGame: false,
+          roundGameNumber: 1,
+          winnerNextRoundGameNumber: -1,
+        },
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1: team5,
+        team2: team6,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        bracketProperties: {
+          bye: false,
+          round: 1,
+          isThridPlaceGame: false,
+          isFirstPlaceGame: false,
+          roundGameNumber: 1,
+          winnerNextRoundGameNumber: -1,
+        },
+      }),
+      TestUtils.generateGame({
+        index: 4,
+        team1: team7,
+        team2: team8,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        bracketProperties: {
+          bye: false,
+          round: 1,
+          isThridPlaceGame: false,
+          isFirstPlaceGame: false,
+          roundGameNumber: 1,
+          winnerNextRoundGameNumber: -1,
+        },
+      }),
+      TestUtils.generateGame({
+        index: 5,
+        team1,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        bracketProperties: {
+          bye: false,
+          round: 2,
+          isThridPlaceGame: false,
+          isFirstPlaceGame: false,
+          roundGameNumber: 1,
+          winnerNextRoundGameNumber: -1,
+        },
+      }),
+      TestUtils.generateGame({
+        index: 6,
+        team1: team5,
+        team2: team7,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        bracketProperties: {
+          bye: false,
+          round: 2,
+          isThridPlaceGame: false,
+          isFirstPlaceGame: false,
+          roundGameNumber: 1,
+          winnerNextRoundGameNumber: -1,
+        },
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1,
+        team2: team5,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        bracketProperties: {
+          bye: false,
+          round: 3,
+          isThridPlaceGame: false,
+          isFirstPlaceGame: true,
+          roundGameNumber: 1,
+          winnerNextRoundGameNumber: -1,
+        },
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1: team3,
+        team2: team7,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        bracketProperties: {
+          bye: false,
+          round: 3,
+          isThridPlaceGame: true,
+          isFirstPlaceGame: false,
+          roundGameNumber: 2,
+          winnerNextRoundGameNumber: -1,
+        },
+      }),
+    ];
+
+    const newGroup = TestUtils.generateTournamentGroup(
+      1,
+      gamesWithClearWinner,
+      [team1, team2, team3, team4],
+      TournamentType.singleElimination,
+    );
+
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
+      ...DefaultTournamentSettings,
+    });
+    expect(leaderboard.length).toBe(8);
+    expect(leaderboard[0].team.id).toBe(team1.id);
+    expect(leaderboard[1].team.id).toBe(team5.id);
+    expect(leaderboard[2].team.id).toBe(team3.id);
+    expect(leaderboard[3].team.id).toBe(team7.id);
+    expect(leaderboard[4].team.id).toBe(team8.id);
+    expect(leaderboard[5].team.id).toBe(team6.id);
+    expect(leaderboard[6].team.id).toBe(team4.id);
+    expect(leaderboard[7].team.id).toBe(team2.id);
+  });
 });

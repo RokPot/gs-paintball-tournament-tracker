@@ -6,6 +6,7 @@ import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
 import { TournamentSettings } from 'types/TournamentSettings';
+import { TournamentType } from 'types/TournamentType';
 import { v4 } from 'uuid';
 
 const NotViableTiebreaker = 'notViableTieBreaker';
@@ -570,7 +571,7 @@ export const tryToResolveDraws = (
   return sortingLeaderboardTeams;
 };
 
-const calculateTournamentGroupPoints = (
+const calculateTournamentRoundRobinLeaderboardPoints = (
   group: TournamentGroup,
   tournamentSettings: TournamentSettings,
   finishedGames: Game[],
@@ -647,6 +648,118 @@ const calculateTournamentGroupPoints = (
   return leaderboardTeams;
 };
 
+const prepareLeaderboardTeamsForEliminationsGame = (
+  finishedGame: Game,
+  isFirstPlacementGame?: boolean,
+  isThirdPlacementGame?: boolean,
+) => {
+  const newId2 = v4();
+  const winningTeam =
+    finishedGame.gameWinner === GameWinner.team1
+      ? finishedGame.team1
+      : finishedGame.team2;
+  const gameRound = finishedGame.bracketProperties?.round || 1;
+  let winningTeamTotalWins = 0;
+  let winningTeamTotalLosses = 0;
+  let losingTeamTotalWins = 0;
+  let losingTeamTotalLosses = 0;
+  if (isFirstPlacementGame) {
+    winningTeamTotalWins = gameRound;
+    winningTeamTotalLosses = 0;
+    losingTeamTotalWins = gameRound - 1;
+    losingTeamTotalLosses = 1;
+  } else if (isThirdPlacementGame) {
+    winningTeamTotalWins = gameRound - 1;
+    winningTeamTotalLosses = 1;
+    losingTeamTotalWins = gameRound - 2;
+    losingTeamTotalLosses = 2;
+  } else {
+    winningTeamTotalWins = gameRound;
+    winningTeamTotalLosses = 0;
+    losingTeamTotalWins = gameRound - 1;
+    losingTeamTotalLosses = 1;
+  }
+
+  const winnerLeaderboardTeam = new LeaderboardTeam({
+    id: newId2,
+    _id: newId2,
+    rank: 0,
+    team: winningTeam,
+    totalLosses: winningTeamTotalLosses,
+    totalPoints: 0,
+    totalDraws: 0,
+    totalWins: winningTeamTotalWins,
+    previousRank: ((finishedGame.bracketProperties?.round || 1) - 1) * 3 + 3,
+  });
+
+  const losingTeam =
+    finishedGame.gameWinner === GameWinner.team1
+      ? finishedGame.team2
+      : finishedGame.team1;
+  const newId = v4();
+
+  const loserLeaderboardTeam = new LeaderboardTeam({
+    id: newId,
+    _id: newId,
+    rank: 0,
+    team: losingTeam,
+    totalLosses: losingTeamTotalLosses,
+    totalPoints: 0,
+    totalDraws: 0,
+    totalWins: losingTeamTotalWins,
+    previousRank: ((finishedGame.bracketProperties?.round || 1) - 1) * 3,
+  });
+
+  return { winnerLeaderboardTeam, loserLeaderboardTeam };
+};
+
+const calculateSingleEliminationsPoints = (finishedGames: Game[]) => {
+  const leaderboardTeams: LeaderboardTeam[] = [];
+
+  const finishedGamesReversed = [...finishedGames];
+  finishedGamesReversed.reverse();
+
+  const firstPlaceGameIndex = finishedGamesReversed.findIndex(
+    (game) => game.bracketProperties?.isFirstPlaceGame,
+  );
+  if (firstPlaceGameIndex >= 0) {
+    const firstPlaceGame = finishedGamesReversed[firstPlaceGameIndex];
+    const { loserLeaderboardTeam, winnerLeaderboardTeam } =
+      prepareLeaderboardTeamsForEliminationsGame(firstPlaceGame, true, false);
+    leaderboardTeams.push(winnerLeaderboardTeam, loserLeaderboardTeam);
+
+    finishedGamesReversed.splice(firstPlaceGameIndex, 1);
+  }
+
+  const thirdPlaceGameIndex = finishedGamesReversed.findIndex(
+    (game) => game.bracketProperties?.isThridPlaceGame,
+  );
+  if (thirdPlaceGameIndex >= 0) {
+    const firstPlaceGame = finishedGamesReversed[thirdPlaceGameIndex];
+    const { loserLeaderboardTeam, winnerLeaderboardTeam } =
+      prepareLeaderboardTeamsForEliminationsGame(firstPlaceGame, false, true);
+    leaderboardTeams.push(winnerLeaderboardTeam, loserLeaderboardTeam);
+
+    finishedGamesReversed.splice(thirdPlaceGameIndex, 1);
+  }
+  const processedTeams = [
+    ...leaderboardTeams.map((ldbTeam) => ldbTeam.team.id),
+  ];
+  finishedGamesReversed.forEach((finishedGame) => {
+    const { loserLeaderboardTeam } = prepareLeaderboardTeamsForEliminationsGame(
+      finishedGame,
+      false,
+      true,
+    );
+    if (!processedTeams.includes(loserLeaderboardTeam.team.id)) {
+      leaderboardTeams.push(loserLeaderboardTeam);
+      processedTeams.push(loserLeaderboardTeam.team.id);
+    }
+  });
+
+  return leaderboardTeams;
+};
+
 const checkAndResolveLeaderboardDraws = (
   leaderboardTeams: LeaderboardTeam[],
   finishedGames: Game[],
@@ -674,21 +787,17 @@ const checkAndResolveLeaderboardDraws = (
   return leaderboardTeamsSorted;
 };
 
-export const calculateTournamentEliminations = (
+const calculateTournamentRoundRobinLeaderboard = (
   group: TournamentGroup,
   tournamentSettings: TournamentSettings,
+  finishedGames: Game[],
 ) => {
-  // Calculate team points for a group.
-  // WIN - 3 POINTS
-  // DRAW - 1 POINT
-  // LOSE - 0 POINTS
-  const leaderboardTeams = calculateTournamentGroupPoints(
+  const leaderboardTeams = calculateTournamentRoundRobinLeaderboardPoints(
     group,
     tournamentSettings,
-    group.finishedGames,
+    finishedGames,
   );
 
-  // If there are any teams that are tied (same points), we need to try to resolve them
   const sortedLeaderboardTeams = checkAndResolveLeaderboardDraws(
     leaderboardTeams,
     group.finishedGames,
@@ -697,6 +806,16 @@ export const calculateTournamentEliminations = (
 
   // set proper rankings
   return recalculateRankings(sortedLeaderboardTeams);
+};
+
+export const calculateTournamentSingleEliminationLeaderboard = (
+  group: TournamentGroup,
+) => {
+  const leaderboardTeams = calculateSingleEliminationsPoints(
+    group.finishedGames,
+  );
+
+  return recalculateRankings(leaderboardTeams);
 };
 
 export const calculateTournamentGroupLeaderboard = (
@@ -707,32 +826,25 @@ export const calculateTournamentGroupLeaderboard = (
   // WIN - 3 POINTS
   // DRAW - 1 POINT
   // LOSE - 0 POINTS
-  const leaderboardTeams = calculateTournamentGroupPoints(
-    group,
-    tournamentSettings,
-    group.finishedGames,
-  );
-
-  // If there are any teams that are tied (same points), we need to try to resolve them
-  const sortedLeaderboardTeams = checkAndResolveLeaderboardDraws(
-    leaderboardTeams,
-    group.finishedGames,
-    tournamentSettings,
-  );
-
-  // set proper rankings
-  return recalculateRankings(sortedLeaderboardTeams);
+  switch (group.groupType) {
+    case TournamentType.singleElimination:
+      return calculateTournamentSingleEliminationLeaderboard(group);
+    case TournamentType.roundRobin:
+    default: {
+      return calculateTournamentRoundRobinLeaderboard(
+        group,
+        tournamentSettings,
+        group.finishedGames,
+      );
+    }
+  }
 };
 
 export const calculateTournamentLeaderboard = (tournament?: Tournament) => {
-  // Calculate team points for tournament.
-  // WIN - 3 POINTS
-  // DRAW - 1 POINT
-  // LOSE - 0 POINTS
-
   if (!tournament) {
     return [];
   }
+
   const leaderboard: LeaderboardTeam[] = [];
   const teamsProcessed: string[] = [];
 
