@@ -1,7 +1,7 @@
 import { Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import League from 'types/League';
-import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
+import EmptyState from '../../../assets/icons/EmptyInbox.svg';
 
 interface IProps {
   activeLeague: League;
@@ -17,7 +17,7 @@ const TournamentActivity = ({ activeLeague }: IProps) => {
         alignItems="center"
         flexDirection="column"
       >
-        <EmptyState />
+        <img src={EmptyState} alt="empty" />
         <Typography variant="h3">
           Tournament has not yet been initialized.
         </Typography>

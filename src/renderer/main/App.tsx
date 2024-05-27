@@ -1,6 +1,7 @@
 import { CssBaseline, GlobalStyles, ThemeProvider, alpha } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SnackbarProvider } from 'notistack';
+import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import ConfirmationModal from '../../components/shared/ConfirmationModal';
 import { theme } from '../../theme/theme';
@@ -13,6 +14,18 @@ import TeamsPage from '../pages/TeamsPage';
 import TournamentPage from '../pages/TournamentPage';
 import routes from './Routes';
 
+function fallbackRender({ error, resetErrorBoundary }: any) {
+  // Call resetErrorBoundary() to reset the error boundary and retry the render.
+  alert(error);
+  return (
+    <div role="alert">
+      <p>Something went wrong:</p>
+      <pre style={{ color: 'red' }}>
+        {error.message} Error: {error} {resetErrorBoundary}
+      </pre>
+    </div>
+  );
+}
 const App = () => {
   const queryClient = new QueryClient();
   return (
@@ -34,29 +47,44 @@ const App = () => {
           },
         }}
       />
-      <SnackbarProvider
-        maxSnack={5}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+      <ErrorBoundary
+        fallbackRender={fallbackRender}
+        onReset={(details) => {
+          // Reset the state of your app so the error doesn't happen again
+          console.log(details);
+          alert(details);
+        }}
       >
-        <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
-            <Routes>
-              <Route path="/results" element={<ResultsPage />} />
+        <SnackbarProvider
+          maxSnack={5}
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        >
+          <QueryClientProvider client={queryClient}>
+            <MemoryRouter>
+              <Routes>
+                <Route path="/results" element={<ResultsPage />} />
 
-              <Route path={routes.HOME} element={<Layout />}>
-                <Route path={routes.HOME} element={<HomePage />} />
+                <Route path={routes.HOME} element={<Layout />}>
+                  <Route path={routes.HOME} element={<HomePage />} />
 
-                <Route path={routes.LEAGUES} element={<LeaguesPage />} />
-                <Route path={routes.TEAMS} element={<TeamsPage />} />
-                <Route path={routes.TOURNAMENT} element={<TournamentPage />} />
-                <Route path={routes.SCOREBOARD} element={<ScoreboardPage />} />
-              </Route>
-            </Routes>
-          </MemoryRouter>
+                  <Route path={routes.LEAGUES} element={<LeaguesPage />} />
+                  <Route path={routes.TEAMS} element={<TeamsPage />} />
+                  <Route
+                    path={routes.TOURNAMENT}
+                    element={<TournamentPage />}
+                  />
+                  <Route
+                    path={routes.SCOREBOARD}
+                    element={<ScoreboardPage />}
+                  />
+                </Route>
+              </Routes>
+            </MemoryRouter>
 
-          <ConfirmationModal />
-        </QueryClientProvider>
-      </SnackbarProvider>
+            <ConfirmationModal />
+          </QueryClientProvider>
+        </SnackbarProvider>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 };

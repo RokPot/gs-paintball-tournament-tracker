@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Game from 'types/Game';
 import League from 'types/League';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
-import { ReactComponent as EmptyState } from '../../../../../assets/icons/EmptyInbox.svg';
+import EmptyState from '../../../../../assets/icons/EmptyInbox.svg';
 import ScheduleRowGame from './ScheduleRowGame';
 import ScheduleRowGroup, { StyledDivider } from './ScheduleRowGroup';
 
@@ -132,7 +132,8 @@ const ScheduleContainer = ({
         alignItems="center"
         flexDirection="column"
       >
-        <EmptyState />
+        <img src={EmptyState} alt="empty" />
+
         <Typography variant="h3">
           Tournament has not yet been initialized.
         </Typography>
@@ -147,7 +148,8 @@ const ScheduleContainer = ({
         alignItems="center"
         flexDirection="column"
       >
-        <EmptyState />
+        <img src={EmptyState} alt="empty" />
+
         <Typography variant="h3">No schedule.</Typography>
       </FlexContainer>
     );

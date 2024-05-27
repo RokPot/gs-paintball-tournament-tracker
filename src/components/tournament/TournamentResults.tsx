@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react';
 import League from 'types/League';
 import TournamentGroup from 'types/TournamentGroup';
 import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
-import { ReactComponent as EmptyState } from '../../../assets/icons/EmptyInbox.svg';
+import EmptyState from '../../../assets/icons/EmptyInbox.svg';
 
 interface IProps {
   activeLeague: League;
@@ -37,7 +37,8 @@ const TournamentResults = ({ activeLeague }: IProps) => {
         alignItems="center"
         flexDirection="column"
       >
-        <EmptyState />
+        <img src={EmptyState} alt="empty" />
+
         <Typography variant="h3">
           Tournament has not yet been initialized.
         </Typography>
