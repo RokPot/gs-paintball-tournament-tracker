@@ -48,7 +48,8 @@
     "start:renderer": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack serve --config ./.erb/configs/webpack.config.renderer.dev.ts",
     "test": "jest",
     "typecheck": "tsc",
-    "eslint": "eslint"
+    "eslint": "eslint",
+    "svg": "npx @svgr/cli --config-file ./svg/.svgrrc.js -- svg/icons && prettier --write ./src/assets/icons"
   },
   "browserslist": [],
   "prettier": {
@@ -150,6 +151,7 @@
     "@electron/rebuild": "^3.3.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.11",
     "@svgr/webpack": "^8.1.0",
+    "@svgr/cli": "^8.1.0",
     "@tanstack/eslint-plugin-query": "^5.8.3",
     "@teamsupercell/typings-for-css-modules-loader": "^2.5.2",
     "@testing-library/jest-dom": "^6.1.3",
