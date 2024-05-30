@@ -1,9 +1,9 @@
 import { Typography } from '@mui/material';
+import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import FlexContainer from 'components/shared/FlexContainer';
 import League from 'types/League';
 import Team from 'types/Team';
 import { v4 } from 'uuid';
-import EmptyState from '../../../assets/icons/EmptyInbox.svg';
 import TournamentTypesPreview from './visualizations/TournamentTypesPreview';
 
 interface IProps {
@@ -42,7 +42,8 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
         alignItems="center"
         flexDirection="column"
       >
-        <img src={EmptyState} alt="empty" />
+        <EmptyInboxIcon />
+
         <Typography variant="h3">
           Tournament has not yet been initialized.
         </Typography>

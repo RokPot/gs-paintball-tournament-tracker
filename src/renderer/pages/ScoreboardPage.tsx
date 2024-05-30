@@ -65,11 +65,7 @@ const ScoreboardPage: React.FC<IProps> = () => {
       </PageContainer>
     );
   }
-  console.log(
-    isMatchInProgress,
-    timingBreak,
-    !!tournament?.state?.isTournamentFinished,
-  );
+
   return (
     <PageContainer padding="0px">
       {(isProcessing || isFetchingActiveLeague) && (

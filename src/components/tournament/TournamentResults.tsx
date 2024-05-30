@@ -1,4 +1,5 @@
 import { Typography } from '@mui/material';
+import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import CustomTabs from 'components/shared/CustomTabs';
 import FlexContainer from 'components/shared/FlexContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
@@ -6,7 +7,6 @@ import { useMemo, useState } from 'react';
 import League from 'types/League';
 import TournamentGroup from 'types/TournamentGroup';
 import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
-import EmptyState from '../../../assets/icons/EmptyInbox.svg';
 
 interface IProps {
   activeLeague: League;
@@ -37,7 +37,7 @@ const TournamentResults = ({ activeLeague }: IProps) => {
         alignItems="center"
         flexDirection="column"
       >
-        <img src={EmptyState} alt="empty" />
+        <EmptyInboxIcon />
 
         <Typography variant="h3">
           Tournament has not yet been initialized.

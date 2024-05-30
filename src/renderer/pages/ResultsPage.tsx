@@ -47,8 +47,7 @@ const ResultsPage: React.FC<IProps> = () => {
     getLeague();
     return () => clearInterval(timerRef?.current);
   }, []);
-  console.log(currentActiveView);
-  // todo rokpot transitons, create views
+
   return (
     <FlexContainer flexDirection="column" height="100%" alignItems="flex-start">
       {currentActiveElement}

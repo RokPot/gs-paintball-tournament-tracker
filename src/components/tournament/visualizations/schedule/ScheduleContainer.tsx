@@ -1,6 +1,7 @@
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IconButton, Tooltip, Typography, useTheme } from '@mui/material';
+import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import AddOrEditGame from 'components/game/AddOrEditGame';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
@@ -9,7 +10,6 @@ import { useEffect, useMemo, useState } from 'react';
 import Game from 'types/Game';
 import League from 'types/League';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
-import EmptyState from '../../../../../assets/icons/EmptyInbox.svg';
 import ScheduleRowGame from './ScheduleRowGame';
 import ScheduleRowGroup, { StyledDivider } from './ScheduleRowGroup';
 
@@ -132,7 +132,7 @@ const ScheduleContainer = ({
         alignItems="center"
         flexDirection="column"
       >
-        <img src={EmptyState} alt="empty" />
+        <EmptyInboxIcon />
 
         <Typography variant="h3">
           Tournament has not yet been initialized.
@@ -148,7 +148,7 @@ const ScheduleContainer = ({
         alignItems="center"
         flexDirection="column"
       >
-        <img src={EmptyState} alt="empty" />
+        <EmptyInboxIcon />
 
         <Typography variant="h3">No schedule.</Typography>
       </FlexContainer>

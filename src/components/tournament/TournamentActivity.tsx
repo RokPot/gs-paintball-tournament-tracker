@@ -1,7 +1,7 @@
 import { Typography } from '@mui/material';
+import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import FlexContainer from 'components/shared/FlexContainer';
 import League from 'types/League';
-import EmptyState from '../../../assets/icons/EmptyInbox.svg';
 
 interface IProps {
   activeLeague: League;
@@ -9,7 +9,6 @@ interface IProps {
 
 const TournamentActivity = ({ activeLeague }: IProps) => {
   const selectedTournament = activeLeague?.activeTournament;
-  console.log(selectedTournament);
   if (!selectedTournament?.stages?.length) {
     return (
       <FlexContainer
@@ -17,7 +16,7 @@ const TournamentActivity = ({ activeLeague }: IProps) => {
         alignItems="center"
         flexDirection="column"
       >
-        <img src={EmptyState} alt="empty" />
+        <EmptyInboxIcon />
         <Typography variant="h3">
           Tournament has not yet been initialized.
         </Typography>
