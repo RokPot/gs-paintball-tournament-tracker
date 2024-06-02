@@ -72,6 +72,10 @@ const AddOrEditTournament = ({
 }: IProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const canEditInProgressTournament =
+    (!!tournament && tournament?.state?.status === TournamentStatus.created) ||
+    !tournament;
+
   const formik = useFormik<AddTournament>({
     initialValues: {
       name: tournament?.name || '',
@@ -198,12 +202,14 @@ const AddOrEditTournament = ({
           <FlexContainer width="100%" justifyContent="space-between" gap={8}>
             <DesktopDatePicker
               onChange={(date) => formik.setFieldValue('startDate', date)}
+              disabled={!canEditInProgressTournament}
               defaultValue={formik.values.startDate}
               label="Tournament start date"
               sx={{ width: '100%' }}
             />
             <DesktopDatePicker
               onChange={(date) => formik.setFieldValue('endDate', date)}
+              disabled={!canEditInProgressTournament}
               defaultValue={formik.values.endDate}
               sx={{ width: '100%' }}
               label="Tournament end date"
@@ -215,6 +221,7 @@ const AddOrEditTournament = ({
               id="entryFee"
               value={formik.values.name}
               onChange={formik.handleChange}
+              disabled={!canEditInProgressTournament}
               placeholder="Entry Fee in €"
               variant="outlined"
               style={{ width: '100%' }}
@@ -232,15 +239,17 @@ const AddOrEditTournament = ({
           >
             Add teams from league that will participate in this tournament asd
           </Typography>
-          <TeamMultiSelect
-            selectedTeams={formik?.values?.teams}
-            onTeamsChanged={(teams) => formik.setFieldValue('teams', teams)}
-            options={league?.teams}
-          />
+          {canEditInProgressTournament && (
+            <TeamMultiSelect
+              selectedTeams={formik?.values?.teams}
+              onTeamsChanged={(teams) => formik.setFieldValue('teams', teams)}
+              options={league?.teams}
+            />
+          )}
 
           <TeamsShortList
             teams={formik?.values?.teams}
-            showRemoveButton
+            showRemoveButton={canEditInProgressTournament}
             onRemoveTeam={(team) => {
               const selectedTeams = formik.values.teams;
               selectedTeams?.splice(
@@ -271,6 +280,7 @@ const AddOrEditTournament = ({
           <FormControl fullWidth>
             <InputLabel>Team size</InputLabel>
             <Select
+              disabled={!canEditInProgressTournament}
               value={formik?.values?.settings.numberOfTeamSize}
               label="Team size"
               onChange={(e) =>
@@ -290,6 +300,7 @@ const AddOrEditTournament = ({
           <FormControl fullWidth>
             <InputLabel>Type</InputLabel>
             <Select
+              disabled={!canEditInProgressTournament}
               value={formik?.values?.settings.type}
               label="Type"
               onChange={(e) =>
@@ -310,6 +321,7 @@ const AddOrEditTournament = ({
             <FormControl fullWidth>
               <InputLabel>Second stage type</InputLabel>
               <Select
+                disabled={!canEditInProgressTournament}
                 value={formik?.values?.settings.secondStageType}
                 label="Second stage type"
                 onChange={(e) =>
@@ -340,6 +352,7 @@ const AddOrEditTournament = ({
           />
           {formik?.values?.settings.type === TournamentType.roundRobin && (
             <CustomCheckbox
+              disabled={!canEditInProgressTournament}
               onChange={(checked) =>
                 formik.setFieldValue('settings', {
                   ...formik.values.settings,
@@ -356,6 +369,7 @@ const AddOrEditTournament = ({
             type="number"
             label="Number of groups *"
             id="name"
+            disabled={!canEditInProgressTournament}
             value={formik.values.settings?.numberOfGroups}
             onChange={(value) =>
               formik.setFieldValue('settings', {
@@ -372,6 +386,7 @@ const AddOrEditTournament = ({
           />
           {formik?.values?.settings?.numberOfGroups > 1 && (
             <CustomCheckbox
+              disabled={!canEditInProgressTournament}
               onChange={(checked) =>
                 formik.setFieldValue('settings', {
                   ...formik.values.settings,
@@ -408,6 +423,7 @@ const AddOrEditTournament = ({
           <Typography variant="h3">Game settings</Typography>
 
           <TimePicker
+            disabled={!canEditInProgressTournament}
             sx={{ width: '100%' }}
             label="Game time"
             views={['minutes', 'seconds']}

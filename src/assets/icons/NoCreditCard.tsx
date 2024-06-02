@@ -9,15 +9,14 @@ const NoCreditCardIcon = (props: SVGProps<SVGSVGElement>) => (
     className="fill-current"
     {...props}
   >
-    <path fill="currentColor" d="M0 0h250v200H0z" />
     <path
       fill="#E4D0F1"
       fillRule="evenodd"
-      d="M63 134h91c.515 0 1.017-.056 1.5-.161.483.105.985.161 1.5.161h52a7 7 0 1 0 0-14h-6a7 7 0 1 1 0-14h19a7 7 0 1 0 0-14h-22a7 7 0 1 0 0-14h-64a7 7 0 1 0 0-14H79a7 7 0 1 0 0 14H39a7 7 0 1 0 0 14h25a7 7 0 1 1 0 14H24a7 7 0 1 0 0 14h39a7 7 0 1 0 0 14m163 0a7 7 0 1 0 0-14 7 7 0 0 0 0 14"
+      d="M63 134h91q.774-.002 1.5-.161.726.16 1.5.161h52a7 7 0 1 0 0-14h-6a7 7 0 1 1 0-14h19a7 7 0 1 0 0-14h-22a7 7 0 1 0 0-14h-64a7 7 0 1 0 0-14H79a7 7 0 1 0 0 14H39a7 7 0 1 0 0 14h25a7 7 0 1 1 0 14H24a7 7 0 1 0 0 14h39a7 7 0 1 0 0 14m163 0a7 7 0 1 0 0-14 7 7 0 0 0 0 14"
       clipRule="evenodd"
     />
     <path
-      fill="currentColor"
+      fill="#fff"
       fillRule="evenodd"
       d="m69.953 70.518 83.024-13.292a3 3 0 0 1 3.437 2.488l.001.01 8.122 51.832a3 3 0 0 1-2.489 3.427l-83.025 13.291a3 3 0 0 1-3.437-2.488l-.001-.01-8.122-51.832a3 3 0 0 1 2.49-3.426"
       clipRule="evenodd"
@@ -35,7 +34,7 @@ const NoCreditCardIcon = (props: SVGProps<SVGSVGElement>) => (
       clipRule="evenodd"
     />
     <path
-      fill="currentColor"
+      fill="#fff"
       stroke="#8448A9"
       strokeWidth={2.5}
       d="M170.75 77.25h-78.5a4 4 0 0 0-4 4v48.5a4 4 0 0 0 4 4h78.5a4 4 0 0 0 4-4v-48.5a4 4 0 0 0-4-4Z"

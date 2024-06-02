@@ -14,11 +14,7 @@ module.exports = {
   index: false,
   template: require('./svg-template'),
   replaceAttrValues: {
-    '#000': 'currentColor',
-    '#000000': 'currentColor',
     '#00000000': 'transparent',
-    '#fff': 'currentColor',
-    '#ffffff': 'currentColor',
     '#ffffff00': 'transparent',
   },
 };

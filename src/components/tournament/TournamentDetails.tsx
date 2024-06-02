@@ -22,7 +22,7 @@ const TournamentDetails = ({ activeLeague }: IProps) => {
   }
 
   return (
-    <FlexContainer flexDirection="column">
+    <FlexContainer flexDirection="column" style={{ flexGrow: 1 }}>
       <TournamentDetailsList tournament={selectedTournament} />
 
       <Typography variant="h5">Tournament leaderboard</Typography>

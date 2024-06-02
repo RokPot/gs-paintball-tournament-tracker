@@ -27,9 +27,11 @@ interface IProps {
 }
 
 const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
+
   const { data: teamsList } = TeamQueries.useTeamsList();
   const { mutateAsync: addNewTeam } = TeamQueries.useAddTeam();
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const formik = useFormik<AddLeague>({
     initialValues: {
@@ -70,7 +72,7 @@ const AddOrEditLeague = ({ league, onClose, onConfirm }: IProps) => {
       }
     },
   });
-  const [isTeamAddModalOpen, setIsTeamAddModalOpen] = useState(false);
+
   return (
     <FlexContainer
       padding="16px"

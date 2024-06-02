@@ -37,7 +37,7 @@ const TournamentResults = ({ activeLeague }: IProps) => {
         alignItems="center"
         flexDirection="column"
       >
-        <EmptyInboxIcon />
+        <EmptyInboxIcon width="250px" />
 
         <Typography variant="h3">
           Tournament has not yet been initialized.
