@@ -29,7 +29,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
     stopTimer,
     resetTimer,
   } = useTimerStore();
-  const { playCountdown } = useCountdownSound();
+  const { playCountdown, stopCountdown } = useCountdownSound();
   const { mutateAsync: updateTournament } =
     TournamentQueries.useUpdateTournament();
   const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
@@ -38,7 +38,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
   const [isMatchInProgress, setIsMatchInProgress] = useState(false);
   const [firstLoad, setFirstLoad] = useState(false);
   const [hasGameTimeRanOut, setHasGameTimeRanOut] = useState(false);
-  const [showFinishMatchPopup, setShowFinishMatchPopup] = useState(false);
+  const [showFinishMatchModal, setShowFinishMatchModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const { addStageToTournament } = useTournamentFlows();
 
@@ -270,7 +270,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
       } catch (e) {
         console.error(e);
       } finally {
-        setShowFinishMatchPopup(false);
+        setShowFinishMatchModal(false);
         setIsMatchInProgress(false);
         setIsProcessing(false);
       }
@@ -307,7 +307,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
         DefaultGameSettings.manualGameStartTimeInSeconds) * 1000,
       () => {
         setHasGameTimeRanOut(true);
-        setShowFinishMatchPopup(true);
+        setShowFinishMatchModal(true);
       },
       undefined,
       () => {
@@ -324,10 +324,32 @@ const useTournamentLogic = (tournament?: Tournament) => {
     tournament,
   ]);
 
+  const onTeamPause = useCallback(() => {
+    console.log('on Team pause');
+    if (!isMatchInProgress) {
+      return;
+    }
+    const isCurrentMatchInProgress = timingGame;
+    const isCurrentMatchInCountdown = timingBreak;
+
+    if (isCurrentMatchInCountdown) {
+      console.log('In countdown', timingGame, isMatchInProgress);
+      stopCountdown();
+      stopTimer();
+      return;
+    }
+
+    if (isCurrentMatchInProgress) {
+      alert('in game');
+      stopCountdown();
+      stopTimer();
+    }
+  }, [isMatchInProgress, stopCountdown, stopTimer, timingBreak, timingGame]);
+
   const setFinishMatchModal = useCallback(
     (shouldShowFinishMatchModal: boolean) => {
       stopTimer();
-      setShowFinishMatchPopup(shouldShowFinishMatchModal);
+      setShowFinishMatchModal(shouldShowFinishMatchModal);
     },
     [stopTimer],
   );
@@ -403,32 +425,35 @@ const useTournamentLogic = (tournament?: Tournament) => {
     return {
       currentStage,
       activeGame: activeScheduledGame,
+      timingBreak,
+      isMatchInProgress,
+      hasGameTimeRanOut,
+      isProcessing,
+      showFinishMatchModal,
+      startStopMatch,
       beginTournament,
       finishMatch,
       finishGame,
-      timingBreak,
-      isMatchInProgress,
-      startStopMatch,
-      hasGameTimeRanOut,
-      showFinishMatchPopup,
       setFinishMatchModal,
-      isProcessing,
       confirmNextTournamentStage,
+      onTeamPause,
     };
   }, [
     currentStage,
     activeScheduledGame,
+
+    timingBreak,
+    isMatchInProgress,
+    hasGameTimeRanOut,
+    isProcessing,
+    showFinishMatchModal,
+    startStopMatch,
     beginTournament,
     finishMatch,
     finishGame,
-    timingBreak,
-    isMatchInProgress,
-    startStopMatch,
-    hasGameTimeRanOut,
-    showFinishMatchPopup,
     setFinishMatchModal,
-    isProcessing,
     confirmNextTournamentStage,
+    onTeamPause,
   ]);
 };
 

@@ -1,5 +1,6 @@
 import { Button, Card, Typography, alpha, styled } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
+import { useCallback } from 'react';
 import Team from 'types/Team';
 
 const StyledTeamHeader = styled('div')(
@@ -38,9 +39,22 @@ interface IProps {
   team?: Team;
   teamScore?: number;
   disabled?: boolean;
+  onTeamPause?: (team: Team) => void;
 }
 
-const TeamScoreCard: React.FC<IProps> = ({ team, teamScore, disabled }) => {
+const TeamScoreCard: React.FC<IProps> = ({
+  team,
+  teamScore,
+  disabled,
+  onTeamPause,
+}) => {
+  const takeTeamPause = useCallback(() => {
+    if (!team) {
+      return;
+    }
+    onTeamPause?.(team);
+  }, [onTeamPause, team]);
+
   return (
     <StyledCard className="custom-card teams-card">
       <FlexContainer flexDirection="column" gap={8}>
@@ -55,7 +69,12 @@ const TeamScoreCard: React.FC<IProps> = ({ team, teamScore, disabled }) => {
         <StyledTeamScoreTypography variant="h3Medium">
           {teamScore || 0}
         </StyledTeamScoreTypography>
-        <Button variant="contained" color="info" disabled={disabled}>
+        <Button
+          variant="contained"
+          color="info"
+          disabled={disabled}
+          onClick={takeTeamPause}
+        >
           <Typography variant="p1Medium">Take pause</Typography>
         </Button>
       </FlexContainer>

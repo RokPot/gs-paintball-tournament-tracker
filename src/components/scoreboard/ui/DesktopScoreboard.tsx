@@ -1,9 +1,10 @@
 import { Button, Card, Typography, alpha, styled } from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
-import { memo, useMemo } from 'react';
-import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import { memo } from 'react';
 import { Match } from 'types/Match';
+import Team from 'types/Team';
+import Tournament from 'types/Tournament';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
@@ -20,37 +21,35 @@ interface IProps {
   isMatchInProgress: boolean;
   activeScheduledGame?: TournamentScheduleGame;
   hasGameTimeRanOut: boolean;
-  showFinishMatchPopup: boolean;
+  showFinishMatchModal: boolean;
   isCurrentlyInCountdown: boolean;
   isTournamentFinished: boolean;
-  beginTournament: () => Promise<void>;
+  tournament?: Tournament;
+  isFetchingActiveLeague?: boolean;
+  onStartTournament: () => Promise<void>;
   startStopMatch: () => void;
   finishMatch: (match: Match) => Promise<void>;
-  setShowFinishMatchPopup: (showFinishPopup: boolean) => void;
+  setShowFinishMatchModal: (showFinishPopup: boolean) => void;
   confirmNextTournamentStage: (nextStage: TournamentStage) => Promise<void>;
+  onTeamPause: (team: Team) => void;
 }
 
 const DesktopScoreboard: React.FC<IProps> = ({
   className,
   isMatchInProgress,
   activeScheduledGame,
+  isFetchingActiveLeague,
   hasGameTimeRanOut,
-  showFinishMatchPopup,
-  beginTournament,
+  isCurrentlyInCountdown,
+  tournament,
+  showFinishMatchModal,
   startStopMatch,
   finishMatch,
-  setShowFinishMatchPopup,
-  isCurrentlyInCountdown,
+  setShowFinishMatchModal,
   confirmNextTournamentStage,
+  onStartTournament,
+  onTeamPause,
 }) => {
-  const { data: activeLeague, isLoading: isFetchingActiveLeague } =
-    LeagueQueries.useActiveLeague();
-
-  const tournament = useMemo(
-    () => activeLeague?.activeTournament,
-    [activeLeague?.activeTournament],
-  );
-
   const currentGame = activeScheduledGame?.game;
 
   const isTournamentNotStartedYet = ![
@@ -60,6 +59,9 @@ const DesktopScoreboard: React.FC<IProps> = ({
   ].includes(tournament?.state?.status || TournamentStatus.created);
   const isTournamentFinished =
     tournament?.state?.status === TournamentStatus.finished;
+
+  const showStartTournamentModal =
+    isTournamentNotStartedYet && !isFetchingActiveLeague;
 
   return (
     <FlexContainer
@@ -84,6 +86,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
           team={currentGame?.team1}
           teamScore={currentGame?.team1Wins}
           disabled={isTournamentFinished}
+          onTeamPause={onTeamPause}
         />
         <Card className="custom-card counter-card">
           <FlexContainer
@@ -160,7 +163,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
                 color="secondary"
                 fullWidth
                 size="large"
-                onClick={() => setShowFinishMatchPopup(true)}
+                onClick={() => setShowFinishMatchModal(true)}
                 disabled={
                   !isMatchInProgress ||
                   isCurrentlyInCountdown ||
@@ -195,12 +198,12 @@ const DesktopScoreboard: React.FC<IProps> = ({
         </Card>
       </FlexContainer>
       <CustomModal
-        isModalOpen={showFinishMatchPopup}
+        isModalOpen={showFinishMatchModal}
         onClose={() => {
           if (hasGameTimeRanOut) {
             return;
           }
-          setShowFinishMatchPopup(false);
+          setShowFinishMatchModal(false);
         }}
         width={600}
         title="Finish Match"
@@ -219,16 +222,12 @@ const DesktopScoreboard: React.FC<IProps> = ({
           forceInsert={hasGameTimeRanOut}
         />
       </CustomModal>
-      <CustomModal
-        isModalOpen={isTournamentNotStartedYet && !isFetchingActiveLeague}
-        width={600}
-        canClose
-      >
+      <CustomModal isModalOpen={showStartTournamentModal} width={600} canClose>
         <StartTournament
           status={tournament?.state.status}
           tournamentSelected={!!tournament}
           onTournamentStart={async () => {
-            await beginTournament();
+            await onStartTournament();
           }}
         />
       </CustomModal>

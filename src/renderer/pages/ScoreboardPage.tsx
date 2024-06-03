@@ -46,9 +46,10 @@ const ScoreboardPage: React.FC<IProps> = () => {
     timingBreak,
     isMatchInProgress,
     hasGameTimeRanOut,
-    showFinishMatchPopup,
+    showFinishMatchModal,
     isProcessing,
     confirmNextTournamentStage,
+    onTeamPause,
   } = useTournamentLogic(tournament);
 
   const finishMatchInternal = useCallback(
@@ -79,14 +80,17 @@ const ScoreboardPage: React.FC<IProps> = () => {
         }}
         isMatchInProgress={isMatchInProgress}
         activeScheduledGame={activeGame}
-        beginTournament={beginTournament}
-        finishMatch={finishMatchInternal}
         hasGameTimeRanOut={hasGameTimeRanOut}
-        setShowFinishMatchPopup={setFinishMatchModal}
-        showFinishMatchPopup={showFinishMatchPopup}
+        showFinishMatchModal={showFinishMatchModal}
         isCurrentlyInCountdown={timingBreak}
         isTournamentFinished={!!tournament?.state?.isTournamentFinished}
+        setShowFinishMatchModal={setFinishMatchModal}
+        finishMatch={finishMatchInternal}
+        onStartTournament={beginTournament}
         confirmNextTournamentStage={confirmNextTournamentStage}
+        onTeamPause={onTeamPause}
+        isFetchingActiveLeague={isFetchingActiveLeague}
+        tournament={tournament}
       />
     </PageContainer>
   );
