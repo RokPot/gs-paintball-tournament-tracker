@@ -1,18 +1,26 @@
 import LeaderboardView from 'components/results-window/LeaderboardView';
 import ScheduleView from 'components/results-window/ScheduleView';
+import CurrentGameView from 'components/results-window/current-game-view/CurrentGameView';
 import FlexContainer from 'components/shared/FlexContainer';
 import ScheduleUpcomingGames from 'components/tournament/visualizations/schedule/ScheduleUpcomingGames';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import useScrollTo from 'hooks/ui/useScrollTo';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
-import { setInterval } from 'worker-timers';
+import { setTimeout } from 'worker-timers';
 
 interface IProps {}
 
 const ResultsPage: React.FC<IProps> = () => {
   const { data: activeLeague, refetch } = LeagueQueries.useActiveLeague();
   const highest = 1;
-  const [currentActiveView, setCurentActiveView] = useState(1);
-  const timerRef = useRef<number>();
+  const [currentActiveView, setCurentActiveView] = useState(0);
+  const [
+    currentActiveViewAnimationProgress,
+    setCurrentActiveViewAnimationProgress,
+  ] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { scrollDivToBottom } = useScrollTo();
 
   const currentActiveElement = useMemo(() => {
     switch (currentActiveView) {
@@ -25,32 +33,59 @@ const ResultsPage: React.FC<IProps> = () => {
     }
   }, [activeLeague, currentActiveView]);
 
-  useEffect(() => {
-    const secondsBeforeSwitch = 15;
-    if (timerRef?.current) {
-      clearInterval(timerRef?.current);
-    }
-
-    const getLeague = async () => {
-      await refetch();
-    };
-
-    timerRef.current = setInterval(async () => {
-      await refetch();
-      setCurentActiveView((curr) => {
-        if (curr + 1 > highest) {
-          return 0;
-        }
-        return curr + 1;
+  const setNewActiveViewAndAnimate = useCallback(() => {
+    setCurentActiveView((curr) => {
+      if (curr + 1 > highest) {
+        return 0;
+      }
+      return curr + 1;
+    });
+    const startScrollingAfterSeconds = 1000 * 2;
+    setTimeout(() => {
+      const scrollToBottomInSeconds = 1000 * 15;
+      scrollDivToBottom(scrollToBottomInSeconds, scrollRef, () => {
+        setTimeout(() => {
+          setCurrentActiveViewAnimationProgress(false);
+        }, startScrollingAfterSeconds);
       });
-    }, secondsBeforeSwitch * 1000);
-    getLeague();
-    return () => clearInterval(timerRef?.current);
+    }, startScrollingAfterSeconds);
   }, []);
 
+  useEffect(() => {
+    const getLeague = async () => {
+      await refetch();
+      setNewActiveViewAndAnimate();
+    };
+
+    getLeague();
+  }, [refetch, setNewActiveViewAndAnimate]);
+
+  useEffect(() => {
+    const getLeague = async () => {
+      await refetch();
+      setCurrentActiveViewAnimationProgress(true);
+      setNewActiveViewAndAnimate();
+    };
+    if (!currentActiveViewAnimationProgress) {
+      getLeague();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentActiveViewAnimationProgress]);
   return (
     <FlexContainer flexDirection="column" height="100%" alignItems="flex-start">
-      {currentActiveElement}
+      <CurrentGameView activeLeague={activeLeague} />
+      <div
+        style={{
+          height: '100%',
+          maxHeight: '100%',
+          width: '100%',
+          overflowY: 'hidden',
+        }}
+        ref={scrollRef}
+      >
+        {currentActiveElement}
+      </div>
+
       <ScheduleUpcomingGames
         activeLeague={activeLeague}
         disableNewWindowOpen
@@ -59,7 +94,10 @@ const ResultsPage: React.FC<IProps> = () => {
           marginBottom: '0px',
           marginRight: '0px',
           width: '100%',
+          fontSize: '23px',
+          height: '80px',
         }}
+        fontSize={23}
       />
     </FlexContainer>
   );

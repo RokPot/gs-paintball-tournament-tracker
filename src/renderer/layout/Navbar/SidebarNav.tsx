@@ -7,8 +7,16 @@ import {
   faTicket,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IconButton, Typography, alpha, styled, useTheme } from '@mui/material';
+import {
+  IconButton,
+  Typography,
+  alpha,
+  lighten,
+  styled,
+  useTheme,
+} from '@mui/material';
 import clsx from 'clsx';
+import FlexContainer from 'components/shared/FlexContainer';
 import { useState } from 'react';
 import { Menu, Sidebar } from 'react-pro-sidebar';
 import routes from 'renderer/main/Routes';
@@ -149,10 +157,56 @@ const SidebarNav: React.FC = () => {
           </Menu>
         </div>
 
-        <Typography marginTop="auto">League</Typography>
-        <Typography marginTop="auto">Gluhi Svizci pokal 2022</Typography>
-        <Typography marginTop="auto">Tournament</Typography>
-        <Typography marginTop="auto">2. Turnir 15/9/2022</Typography>
+        <FlexContainer
+          style={{
+            marginTop: 'auto',
+            borderTop: `1px solid ${theme.palette.divider}`,
+          }}
+          flexDirection="column"
+          padding="4px"
+          alignItems="flex-start"
+        >
+          <Typography variant="p2Medium" color={theme.palette.text.secondary}>
+            League
+          </Typography>
+          <div
+            style={{
+              background: lighten(theme.palette?.primary.light, 0.8),
+              borderRadius: '5px',
+              boxShadow: `0 4px 4px ${lighten(
+                theme.palette?.primary.light,
+                0.5,
+              )}`,
+              width: '100%',
+              padding: '0px 4px',
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="p1Medium" color={theme.palette.text.primary}>
+              Gluhi Svizci pokal 2022
+            </Typography>
+          </div>
+          <Typography variant="p2Medium" color={theme.palette.text.secondary}>
+            Tournament
+          </Typography>
+          <div
+            style={{
+              background: lighten(theme.palette?.primary.light, 0.9),
+              borderRadius: '5px',
+              boxShadow: `0 4px 4px ${lighten(
+                theme.palette?.primary.light,
+                0.5,
+              )}`,
+              width: '100%',
+              padding: '0px 4px',
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="p1Medium" color={theme.palette.text.primary}>
+              2. Turnir 15/9/2022
+            </Typography>
+          </div>
+        </FlexContainer>
       </div>
     </Sidebar>
   );

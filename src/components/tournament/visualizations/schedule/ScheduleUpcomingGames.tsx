@@ -23,6 +23,7 @@ interface IProps {
   activeLeague: League | undefined | null;
   style?: CSSProperties;
   disableNewWindowOpen?: boolean;
+  fontSize?: number;
 }
 
 const StyledFlexContainer = styled(FlexContainer)`
@@ -31,6 +32,8 @@ const StyledFlexContainer = styled(FlexContainer)`
   width: calc(100% + 32px);
   margin: auto -16px -16px -16px;
   background: ${(theme) => lighten(theme.theme?.palette?.primary.light, 0.7)};
+  box-shadow: 0 -4px 4px ${(theme) => lighten(theme.theme?.palette?.primary.light, 0.5)};
+
   height: 50px;
   padding: 8px;
 `;
@@ -39,6 +42,7 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
   activeLeague,
   style,
   disableNewWindowOpen,
+  fontSize = 14,
 }) => {
   const theme = useTheme();
 
@@ -75,6 +79,7 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
         variant="p1Bold"
         marginRight="8px"
         color={theme.palette.text.secondary}
+        fontSize={fontSize}
       >
         Upcoming games:
       </Typography>
@@ -84,6 +89,7 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
           <Typography
             variant="p1Medium"
             style={{ textDecoration: 'underline' }}
+            fontSize={fontSize}
           >
             {upcomingGame.game.team1.teamName}
             <FontAwesomeIcon

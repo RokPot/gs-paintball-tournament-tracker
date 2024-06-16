@@ -12,6 +12,8 @@ interface IProps {
   showHeader?: boolean;
   className?: string;
   hideFooter?: boolean;
+  showAllTeamsAtOnce?: boolean;
+  automaticScrolling?: boolean;
 }
 
 const LeaderboardList: React.FC<IProps> = ({
@@ -19,6 +21,7 @@ const LeaderboardList: React.FC<IProps> = ({
   className,
   showHeader,
   hideFooter,
+  showAllTeamsAtOnce,
 }) => {
   const getColor = (index: number) => {
     switch (index) {
@@ -113,11 +116,15 @@ const LeaderboardList: React.FC<IProps> = ({
     if (!containerRef?.current) {
       return;
     }
+    if (showAllTeamsAtOnce) {
+      setRowsPerPage(teams?.length || 0);
+      return;
+    }
     const containerRefHeight = containerRef.current.offsetHeight;
     const rowHeight = 60;
     const availableRowsPerPage = Math.floor(containerRefHeight / rowHeight);
     setRowsPerPage(availableRowsPerPage || 5);
-  }, []);
+  }, [showAllTeamsAtOnce, teams?.length]);
 
   const areRowsPerPageAvailable = rowsPerPage !== null && rowsPerPage > 0;
 
@@ -128,6 +135,7 @@ const LeaderboardList: React.FC<IProps> = ({
       className={className}
       height="100%"
       ref={containerRef}
+      style={{ overflow: 'hidden' }}
     >
       {!teams?.length && areRowsPerPageAvailable && (
         <Typography

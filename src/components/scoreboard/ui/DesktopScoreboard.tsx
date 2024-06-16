@@ -31,7 +31,7 @@ interface IProps {
   finishMatch: (match: Match) => Promise<void>;
   setShowFinishMatchModal: (showFinishPopup: boolean) => void;
   confirmNextTournamentStage: (nextStage: TournamentStage) => Promise<void>;
-  onTeamPause: (team: Team) => void;
+  onTeamPause: (team: Team, isRefereePause?: boolean) => void;
 }
 
 const DesktopScoreboard: React.FC<IProps> = ({

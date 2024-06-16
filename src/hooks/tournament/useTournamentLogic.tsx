@@ -13,6 +13,8 @@ import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import TournamentStage from 'types/TournamentStage';
 
 import { useSnackbar } from 'notistack';
+import useConfirmationModalStore from 'store/ConfirmationModalStore';
+import Team from 'types/Team';
 import { TournamentStatus } from 'types/TournamentStatus';
 import { snackbarSuccessOptions } from 'utils/snackbarUtils';
 import { TournamentFlow } from 'utils/tournamentFlowUtils';
@@ -34,7 +36,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
     TournamentQueries.useUpdateTournament();
   const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
   const { updateGameData } = useGameFlows();
-
+  const { openModal } = useConfirmationModalStore();
   const [isMatchInProgress, setIsMatchInProgress] = useState(false);
   const [firstLoad, setFirstLoad] = useState(false);
   const [hasGameTimeRanOut, setHasGameTimeRanOut] = useState(false);
@@ -324,27 +326,42 @@ const useTournamentLogic = (tournament?: Tournament) => {
     tournament,
   ]);
 
-  const onTeamPause = useCallback(() => {
-    console.log('on Team pause');
-    if (!isMatchInProgress) {
-      return;
-    }
-    const isCurrentMatchInProgress = timingGame;
-    const isCurrentMatchInCountdown = timingBreak;
+  const onTeamPause = useCallback(
+    (team: Team, isRefereeAction?: boolean | undefined) => {
+      if (!isMatchInProgress) {
+        return;
+      }
 
-    if (isCurrentMatchInCountdown) {
-      console.log('In countdown', timingGame, isMatchInProgress);
-      stopCountdown();
-      stopTimer();
-      return;
-    }
+      const isCurrentMatchInProgress = timingGame;
+      const isCurrentMatchInCountdown = timingBreak;
 
-    if (isCurrentMatchInProgress) {
-      alert('in game');
-      stopCountdown();
-      stopTimer();
-    }
-  }, [isMatchInProgress, stopCountdown, stopTimer, timingBreak, timingGame]);
+      if (isCurrentMatchInCountdown || isRefereeAction) {
+        stopCountdown();
+        stopTimer();
+        return;
+      }
+
+      if (isCurrentMatchInProgress) {
+        openModal({
+          title: 'Team Pause Confirmation',
+          Confirmation:
+            'Pause will force the game to pase and game time will be reset',
+          onConfirm: () => {
+            stopCountdown();
+            stopTimer();
+          },
+        });
+      }
+    },
+    [
+      isMatchInProgress,
+      openModal,
+      stopCountdown,
+      stopTimer,
+      timingBreak,
+      timingGame,
+    ],
+  );
 
   const setFinishMatchModal = useCallback(
     (shouldShowFinishMatchModal: boolean) => {

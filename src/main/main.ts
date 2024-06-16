@@ -70,7 +70,7 @@ const createWindow = async (windowPath: string) => {
   };
 
   mainWindow = new BrowserWindow({
-    parent: windowPath && mainWindow ? mainWindow : undefined,
+    parent: undefined,
     show: false,
     icon: getAssetPath('icon.ico'),
     webPreferences: {
@@ -143,20 +143,5 @@ app
 ipcMain.on('open-new-window', async (event, content) => {
   const newWindow = await createWindow('results/index.html');
 
-  childWindows.push(newWindow);
-  // const newWindow = new BrowserWindow({ width: 800, height: 600 });
-  // console.log(
-  //   urlUtil.format({
-  //     pathname: path.join(__dirname, content),
-  //     protocol: 'file:',
-  //     slashes: true,
-  //   }),
-  // );
-  // newWindow.loadURL(
-  //   urlUtil.format({
-  //     pathname: path.join(__dirname, content),
-  //     protocol: 'file:',
-  //     slashes: true,
-  //   }),
-  // );
+  // childWindows.push(newWindow);
 });

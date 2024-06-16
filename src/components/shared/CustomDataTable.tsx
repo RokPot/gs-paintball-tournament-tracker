@@ -1,5 +1,7 @@
 import { Theme, css, styled } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, useGridApiRef } from '@mui/x-data-grid';
+import useScrollTo from 'hooks/ui/useScrollTo';
+import { useEffect } from 'react';
 
 interface IProps {
   hideFooter?: boolean;
@@ -10,6 +12,7 @@ interface IProps {
   height?: string;
   loading?: boolean;
   pageSize?: number;
+  automaticScrolling?: boolean;
 }
 
 const CustomDataTable: React.FC<IProps> = ({
@@ -20,7 +23,20 @@ const CustomDataTable: React.FC<IProps> = ({
   height,
   loading,
   pageSize = 5,
+  automaticScrolling,
 }) => {
+  const apiRef = useGridApiRef();
+  const { scrollDataGridToBottom } = useScrollTo();
+
+  useEffect(() => {
+    if (!automaticScrolling) {
+      return;
+    }
+    setTimeout(() => {
+      scrollDataGridToBottom(10000, 500, apiRef, () => {});
+    }, 2000);
+  }, []);
+
   return (
     <div
       className={className}
@@ -34,6 +50,7 @@ const CustomDataTable: React.FC<IProps> = ({
       <DataGrid
         className="custom-table"
         rows={rows}
+        apiRef={apiRef}
         columns={columns}
         initialState={{
           pagination: {

@@ -1,6 +1,12 @@
 import dayjs, { Dayjs } from 'dayjs';
 
-export const millisecondsToTime = (durationTime: number) => {
+export const millisecondsToTime = (durationTime?: number) => {
+  if (!durationTime) {
+    return {
+      formatted: `00:000`,
+      milisecondsString: '0',
+    };
+  }
   const miliseconds = (durationTime % 1000) / 100;
   const seconds = Math.floor((durationTime / 1000) % 60);
   const minutes = Math.floor((durationTime / (1000 * 60)) % 60);

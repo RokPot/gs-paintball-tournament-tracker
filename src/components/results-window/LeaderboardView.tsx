@@ -3,7 +3,7 @@ import LeaderboardList from 'components/teams/LeaderboardList';
 import { useEffect, useState } from 'react';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import League from 'types/League';
-import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
+import { calculateTournamentLeaderboard } from 'utils/tournamentResultUtils';
 
 interface IProps {
   activeLeague: League | undefined | null;
@@ -20,16 +20,16 @@ const LeaderboardView: React.FC<IProps> = ({ activeLeague }) => {
     if (!activeTournament.currentStageGroups) {
       return;
     }
-    setLeaderboardTeam(
-      calculateTournamentGroupLeaderboard(
-        activeTournament.currentStageGroups?.[0],
-        activeTournament.settings,
-      ),
-    );
+    setLeaderboardTeam(calculateTournamentLeaderboard(activeTournament));
   }, [activeTournament]);
   return (
     <FlexContainer width="100%" height="100%">
-      <LeaderboardList showHeader hideFooter teams={leaderboardTeam} />
+      <LeaderboardList
+        showHeader
+        hideFooter
+        teams={leaderboardTeam}
+        showAllTeamsAtOnce
+      />
     </FlexContainer>
   );
 };
