@@ -4,11 +4,13 @@ import LeaderboardTeam from 'types/LeadeboardTeam';
 import League from 'types/League';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
+import TournamentActivity from 'types/TournamentActivity';
 import TournamentGroup from 'types/TournamentGroup';
 import { GameDto } from 'types/dto/GameDto';
 import { LeaderboardTeamDto } from 'types/dto/LeaderboardTeamDto';
 import { LeagueDto } from 'types/dto/LeagueDto';
 import { TeamDto } from 'types/dto/TeamDto';
+import { TournamentActivityDto } from 'types/dto/TournamentActivityDto';
 import { TournamentDto } from 'types/dto/TournamentDto';
 import { TournamentGroupDto } from 'types/dto/TournamentGroupDto';
 import { TournamentStageDto } from 'types/dto/TournamentStageDto';
@@ -316,4 +318,30 @@ export const getLeaguesList = (result: PouchDB.Query.Response<any>) => {
     leagues.push(newLeague);
   });
   return leagues;
+};
+
+export const getTournamentActivityList = (
+  result: PouchDB.Query.Response<any>,
+) => {
+  const tournamentActivity: TournamentActivity[] = [];
+  const groupedResults = groupBy(result.rows, (row: any) => row.id);
+  Object.keys(groupedResults)?.forEach((key) => {
+    const { rootDoc, otherDocs } =
+      getRootElementAndLinkedDocs<TournamentActivityDto>(
+        groupedResults[key],
+        DocType.TournamentActivity,
+      );
+
+    if (!rootDoc) {
+      return;
+    }
+    // todo rokpot
+    const newTournamentActivity: TournamentActivity = new TournamentActivity({
+      ...rootDoc,
+      game: {} as any,
+    });
+
+    tournamentActivity.push(newTournamentActivity);
+  });
+  return tournamentActivity;
 };

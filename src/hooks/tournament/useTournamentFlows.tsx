@@ -8,6 +8,7 @@ import { TournamentQueries } from 'services/queries/tournament/TournamentQueries
 import Game from 'types/Game';
 import League from 'types/League';
 import Tournament from 'types/Tournament';
+import TournamentActivity from 'types/TournamentActivity';
 import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
@@ -21,6 +22,8 @@ const useTournamentFlows = () => {
     LeagueQueries.useLeagueInvalidations();
   const { mutateAsync: updateTournament } =
     TournamentQueries.useUpdateTournament();
+  const { mutateAsync: addActivityToTournament } =
+    TournamentQueries.useAddActivityToTournament();
   const { enqueueSnackbar } = useSnackbar();
   const { mutateAsync: addGames } = GameQueries.useAddGames();
   const { mutateAsync: addGroups } = GroupQueries.useAddGroups();
@@ -102,10 +105,18 @@ const useTournamentFlows = () => {
     [addStageToTournament, enqueueSnackbar],
   );
 
+  const addNewTournamentActivity = useCallback(
+    async (activity: TournamentActivity) => {
+      await addActivityToTournament(activity);
+    },
+    [addActivityToTournament],
+  );
+
   return {
     addNewTournamentToLeague,
     initializeTournament,
     addStageToTournament,
+    addNewTournamentActivity,
   };
 };
 

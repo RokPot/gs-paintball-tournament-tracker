@@ -5,8 +5,8 @@ interface IProps {
   activeLeague: League;
 }
 
-const TournamentScheduleContainer = ({ activeLeague }: IProps) => {
+const TournamentScheduleTab = ({ activeLeague }: IProps) => {
   return <ScheduleContainer activeLeague={activeLeague} />;
 };
 
-export default TournamentScheduleContainer;
+export default TournamentScheduleTab;

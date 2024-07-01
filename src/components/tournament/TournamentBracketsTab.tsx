@@ -15,7 +15,7 @@ function randomColor() {
 
   return color;
 }
-const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
+const TournamentBracketsTab: React.FC<IProps> = ({ activeLeague }) => {
   const selectedTournament = activeLeague?.activeTournament;
 
   if (!selectedTournament || !activeLeague) {
@@ -82,4 +82,4 @@ const TournamentBrackets: React.FC<IProps> = ({ activeLeague }) => {
   );
 };
 
-export default TournamentBrackets;
+export default TournamentBracketsTab;

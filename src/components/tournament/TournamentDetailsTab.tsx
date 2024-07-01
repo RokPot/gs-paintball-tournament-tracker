@@ -10,7 +10,7 @@ interface IProps {
   activeLeague: League;
 }
 
-const TournamentDetails = ({ activeLeague }: IProps) => {
+const TournamentDetailsTab = ({ activeLeague }: IProps) => {
   const selectedTournament = activeLeague?.activeTournament;
 
   const tournamentLeaderboard = useMemo(() => {
@@ -32,4 +32,4 @@ const TournamentDetails = ({ activeLeague }: IProps) => {
   );
 };
 
-export default TournamentDetails;
+export default TournamentDetailsTab;

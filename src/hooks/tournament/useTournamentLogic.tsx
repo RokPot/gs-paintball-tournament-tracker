@@ -14,7 +14,9 @@ import TournamentStage from 'types/TournamentStage';
 
 import { useSnackbar } from 'notistack';
 import useConfirmationModalStore from 'store/ConfirmationModalStore';
+import ActivityChangeType from 'types/ActivityChangeType';
 import Team from 'types/Team';
+import TournamentActivity from 'types/TournamentActivity';
 import { TournamentStatus } from 'types/TournamentStatus';
 import { snackbarSuccessOptions } from 'utils/snackbarUtils';
 import { TournamentFlow } from 'utils/tournamentFlowUtils';
@@ -42,7 +44,8 @@ const useTournamentLogic = (tournament?: Tournament) => {
   const [hasGameTimeRanOut, setHasGameTimeRanOut] = useState(false);
   const [showFinishMatchModal, setShowFinishMatchModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const { addStageToTournament } = useTournamentFlows();
+  const { addStageToTournament, addNewTournamentActivity } =
+    useTournamentFlows();
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -216,6 +219,22 @@ const useTournamentLogic = (tournament?: Tournament) => {
       }
       try {
         setIsProcessing(true);
+
+        const newTournamentActivity: TournamentActivity =
+          new TournamentActivity({
+            id: '',
+            _id: '',
+            game: activeScheduledGame.game,
+            changeType: ActivityChangeType.MatchFinished,
+            previousTeam1Wins: activeScheduledGame.game.team1Wins,
+            previousTeam2Wins: activeScheduledGame.game.team2Wins,
+            nextTeam1Wins: 0,
+            nextTeam2Wins: 0,
+            stage: currentStage || 1,
+            tournamentId: tournament._id,
+            updatedAt: new Date(),
+            gameTime: activeScheduledGame.game.gameTime,
+          });
         const { currentDuration, duration: timeLeft } = getDuration();
 
         TournamentFlow.addMatchDataToGame(
@@ -250,6 +269,11 @@ const useTournamentLogic = (tournament?: Tournament) => {
           );
           setGameAndBreakDuration(nextGameState.newActiveGame);
         }
+        newTournamentActivity.nextTeam1Wins =
+          activeScheduledGame.game.team1Wins;
+        newTournamentActivity.nextTeam2Wins =
+          activeScheduledGame.game.team2Wins;
+        await addNewTournamentActivity(newTournamentActivity);
 
         const tournamentEndState =
           TournamentFlow.onAfterFinishedMatchEndTournamentCheck(

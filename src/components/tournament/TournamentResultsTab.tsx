@@ -12,7 +12,7 @@ interface IProps {
   activeLeague: League;
 }
 
-const TournamentResults = ({ activeLeague }: IProps) => {
+const TournamentResultsTab = ({ activeLeague }: IProps) => {
   const selectedTournament = activeLeague?.activeTournament;
 
   const [selectedGroup, setSelectedGroup] = useState<
@@ -68,4 +68,4 @@ const TournamentResults = ({ activeLeague }: IProps) => {
   );
 };
 
-export default TournamentResults;
+export default TournamentResultsTab;

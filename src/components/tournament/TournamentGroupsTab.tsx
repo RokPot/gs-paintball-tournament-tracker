@@ -2,13 +2,15 @@ import { Typography } from '@mui/material';
 import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import FlexContainer from 'components/shared/FlexContainer';
 import League from 'types/League';
+import TournamentGroupCard from './TournamentGroupCard';
 
 interface IProps {
   activeLeague: League;
 }
 
-const TournamentActivity = ({ activeLeague }: IProps) => {
+const TournamentGroupsTab: React.FC<IProps> = ({ activeLeague }) => {
   const selectedTournament = activeLeague?.activeTournament;
+
   if (!selectedTournament?.stages?.length) {
     return (
       <FlexContainer
@@ -16,7 +18,8 @@ const TournamentActivity = ({ activeLeague }: IProps) => {
         alignItems="center"
         flexDirection="column"
       >
-        <EmptyInboxIcon fill="transparent" width="250px" />
+        <EmptyInboxIcon width="250px" />
+
         <Typography variant="h3">
           Tournament has not yet been initialized.
         </Typography>
@@ -25,13 +28,19 @@ const TournamentActivity = ({ activeLeague }: IProps) => {
   }
 
   return (
-    <FlexContainer flexDirection="column" gap={8}>
-      <FlexContainer flexDirection="row" gap={8}>
-        21/01/2024 10:26 --- Game 1 (team 1 vs Team 2) - Team 1 won / lost ---
-        DRAFT - time: 05:11
-      </FlexContainer>
+    <FlexContainer
+      flexDirection="row"
+      gap={16}
+      flexWrap="wrap"
+      alignItems="stretch"
+    >
+      {selectedTournament?.currentStage?.groups
+        .sort((a, b) => a.groupIndex - b.groupIndex)
+        .map((group, index) => (
+          <TournamentGroupCard key={index} group={group} />
+        ))}
     </FlexContainer>
   );
 };
 
-export default TournamentActivity;
+export default TournamentGroupsTab;

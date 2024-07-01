@@ -1,9 +1,13 @@
-import { getTournamentsList } from 'utils/PouchDBUtils';
+import {
+  getTournamentActivityList,
+  getTournamentsList,
+} from 'utils/PouchDBUtils';
 import { omit } from 'lodash';
 import { useCallback } from 'react';
 import Tournament from 'types/Tournament';
 import { TournamentDto } from 'types/dto/TournamentDto';
 import { DocType } from 'types/interfaces/IPouchDB';
+import { TournamentActivityDto } from 'types/dto/TournamentActivityDto';
 import usePouchDB, { pouchDbName } from './pouchDB';
 import useStageService from './StageService';
 
@@ -116,12 +120,42 @@ const useTournamentService = () => {
     );
   }, [db]);
 
+  const addNewTournamentActivity = useCallback(
+    async (tournamentActivity: TournamentActivityDto) => {
+      await db.post(tournamentActivity);
+    },
+    [db],
+  );
+
+  const getTournamentActivity = useCallback(
+    async (tournamentId: string) => {
+      const myMapFunction = (doc: any, emit: any) => {
+        if (doc.docType === DocType.TournamentActivity) {
+          if (doc.tournamentId === tournamentId) {
+            emit(doc, DocType.TournamentActivity);
+            if (doc.gameId) {
+              emit(doc._id, { _id: doc.gameId, type: DocType.Game });
+            }
+          }
+        }
+      };
+      const result = await db.query<TournamentActivityDto[]>(myMapFunction, {
+        include_docs: true,
+      });
+
+      return getTournamentActivityList(result);
+    },
+    [db],
+  );
+
   return {
     addNewTournament,
     updateTournament,
     deleteTournament,
     getTournament,
     getTournaments,
+    getTournamentActivity,
+    addNewTournamentActivity,
   };
 };
 
