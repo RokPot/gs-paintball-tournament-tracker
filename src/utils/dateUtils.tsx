@@ -3,7 +3,7 @@ import dayjs, { Dayjs } from 'dayjs';
 export const millisecondsToTime = (durationTime?: number) => {
   if (!durationTime) {
     return {
-      formatted: `00:000`,
+      formatted: `00:00`,
       milisecondsString: '0',
     };
   }

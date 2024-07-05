@@ -6,6 +6,7 @@ import AddOrEditGame from 'components/game/AddOrEditGame';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import useGameFlows from 'hooks/game/useGameFlows';
+import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import { useEffect, useMemo, useState } from 'react';
 import Game from 'types/Game';
 import League from 'types/League';
@@ -39,7 +40,7 @@ const ScheduleContainer = ({
   const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
   const theme = useTheme();
   const { numberOfTeamSize, switchGames } = selectedTournament.settings;
-
+  const { openNewResultsWindow } = useIPCRendererMessages();
   const currentSchedule = useMemo(() => {
     if (!selectedTournament?.currentStageSchedule) {
       return undefined;
@@ -168,12 +169,7 @@ const ScheduleContainer = ({
       {!disableNewWindowOpen && (
         <Tooltip title="Open Schedule In New Window" arrow placement="left">
           <IconButton
-            onClick={() => {
-              window.electron.ipcRenderer.sendMessage(
-                'open-new-window',
-                'new_window.html',
-              );
-            }}
+            onClick={openNewResultsWindow}
             style={{
               width: '40px',
               position: 'absolute',

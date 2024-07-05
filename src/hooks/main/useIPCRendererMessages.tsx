@@ -1,0 +1,113 @@
+import { useCallback, useMemo } from 'react';
+
+enum IPCChannels {
+  openNewWindow = 'openNewWindow',
+  getPortsList = 'getPortsList',
+  setSelectedPort = 'setSelectedPort',
+  getPortsListResponse = 'getPortsListResponse',
+  selectSerialPort = 'selectSerialPort',
+  buttonsResponse = 'buttonsResponse',
+  serialPortError = 'serialPortError',
+}
+
+export type Channels =
+  | 'ipc-example'
+  | 'ipc-example-response'
+  | 'openNewWindow'
+  | 'getPortsList'
+  | 'setSelectedPort'
+  | 'getPortsListResponse'
+  | 'selectSerialPort'
+  | 'buttonsResponse'
+  | 'serialPortError';
+
+enum ChannelsEnum {
+  openNewWindow = 'openNewWindow',
+  getPortsList = 'getPortsList',
+  setSelectedPort = 'setSelectedPort',
+  getPortsListResponse = 'getPortsListResponse',
+  selectSerialPort = 'selectSerialPort',
+  buttonsResponse = 'buttonsResponse',
+  serialPortError = 'serialPortError',
+}
+
+export declare interface PortInfo {
+  path: string;
+  manufacturer: string | undefined;
+  serialNumber: string | undefined;
+  pnpId: string | undefined;
+  locationId: string | undefined;
+  productId: string | undefined;
+  vendorId: string | undefined;
+}
+
+const useIPCRendererMessages = () => {
+  const openNewResultsWindow = useCallback(() => {
+    window.electron.ipcRenderer.sendMessage(
+      ChannelsEnum.openNewWindow,
+      'new_window.html',
+    );
+  }, []);
+
+  const listenToButtonsResponse = useCallback(
+    (callback: (result: any) => void) => {
+      window.electron.ipcRenderer.on(IPCChannels.buttonsResponse, (result) => {
+        callback(result);
+      });
+    },
+    [],
+  );
+
+  const sendGetReceiverPortsList = useCallback(() => {
+    window.electron.ipcRenderer.sendMessage(IPCChannels.getPortsList);
+  }, []);
+
+  const listenToGetReceiverPortsListResponse = useCallback(
+    (callback: (result: any) => void) => {
+      window.electron.ipcRenderer.once(
+        IPCChannels.getPortsListResponse,
+        (result) => {
+          callback(result);
+        },
+      );
+    },
+    [],
+  );
+
+  const sendReceiversSelectedSerialPort = useCallback((portInfo: PortInfo) => {
+    window.electron.ipcRenderer.sendMessage(
+      IPCChannels.selectSerialPort,
+      portInfo,
+    );
+  }, []);
+
+  const listenToSerialPortErrors = useCallback(
+    (callback: (result: any) => void) => {
+      window.electron.ipcRenderer.on(IPCChannels.serialPortError, (result) => {
+        callback(result);
+      });
+    },
+    [],
+  );
+
+  return useMemo(
+    () => ({
+      openNewResultsWindow,
+      listenToButtonsResponse,
+      sendGetReceiverPortsList,
+      listenToGetReceiverPortsListResponse,
+      sendReceiversSelectedSerialPort,
+      listenToSerialPortErrors,
+    }),
+    [
+      listenToButtonsResponse,
+      listenToGetReceiverPortsListResponse,
+      listenToSerialPortErrors,
+      openNewResultsWindow,
+      sendGetReceiverPortsList,
+      sendReceiversSelectedSerialPort,
+    ],
+  );
+};
+
+export default useIPCRendererMessages;

@@ -13,6 +13,7 @@ import {
   useTheme,
 } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
+import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import { CSSProperties, useEffect, useState } from 'react';
 import { GameState } from 'types/GameState';
 import League from 'types/League';
@@ -45,6 +46,8 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
   fontSize = 14,
 }) => {
   const theme = useTheme();
+
+  const { openNewResultsWindow } = useIPCRendererMessages();
 
   const [upcomingGames, setUpcomingGames] = useState<TournamentScheduleGame[]>(
     [],
@@ -111,12 +114,7 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
       {!disableNewWindowOpen && (
         <Tooltip title="Open Schedule In New Window" arrow placement="left">
           <IconButton
-            onClick={() => {
-              window.electron.ipcRenderer.sendMessage(
-                'open-new-window',
-                'new_window.html',
-              );
-            }}
+            onClick={openNewResultsWindow}
             style={{
               width: '40px',
               marginLeft: 'auto',

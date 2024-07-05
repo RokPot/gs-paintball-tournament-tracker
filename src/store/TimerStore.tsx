@@ -67,6 +67,10 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
         if (state.breakDuration - delayInMs === 5000) {
           onStartCountdown?.();
         }
+        localStorage.setItem(
+          'gameDuration',
+          `${!state.timingBreak ? state.duration - delayInMs : state.duration}`,
+        );
         return {
           duration: !state.timingBreak
             ? state.duration - delayInMs

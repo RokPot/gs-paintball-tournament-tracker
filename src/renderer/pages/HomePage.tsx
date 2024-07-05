@@ -17,6 +17,10 @@ import {
 } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
+import useIPCRendererMessages, {
+  PortInfo,
+} from 'hooks/main/useIPCRendererMessages';
+import { useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import routes from 'renderer/main/Routes';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
@@ -32,10 +36,29 @@ const StyledStackingContainer = styled('div')(
 const HomePage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  // ToDo RokPot
-  window.electron.ipcRenderer.on('buttons-response', (result) => {
+  const {
+    listenToButtonsResponse,
+    sendGetReceiverPortsList,
+    listenToGetReceiverPortsListResponse,
+    sendReceiversSelectedSerialPort,
+  } = useIPCRendererMessages();
+
+  const tryyy = () => {
+    sendGetReceiverPortsList();
+    listenToGetReceiverPortsListResponse((result) => {
+      console.log(result);
+      const ports = result as unknown as PortInfo[];
+      sendReceiversSelectedSerialPort(ports[1]);
+    });
+  };
+
+  const onButtonsResponse = useCallback((result: any) => {
     console.log(result);
-  });
+  }, []);
+
+  useEffect(() => {
+    listenToButtonsResponse(onButtonsResponse);
+  }, []);
 
   const { data: leaguesList, isLoading: isFetchingLeaguesList } =
     LeagueQueries.useLeaguesList();

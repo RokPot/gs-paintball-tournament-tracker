@@ -5,13 +5,13 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 export type Channels =
   | 'ipc-example'
   | 'ipc-example-response'
-  | 'get-ports-list'
-  | 'set-selected-port'
-  | 'get-ports-list-response'
-  | 'select-serial-port'
-  | 'buttons-response'
-  | 'open-new-window'
-  | 'tournament-updated';
+  | 'openNewWindow'
+  | 'getPortsList'
+  | 'setSelectedPort'
+  | 'getPortsListResponse'
+  | 'selectSerialPort'
+  | 'buttonsResponse'
+  | 'serialPortError';
 
 const electronHandler = {
   ipcRenderer: {

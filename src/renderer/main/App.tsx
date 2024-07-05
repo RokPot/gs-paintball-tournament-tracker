@@ -15,8 +15,6 @@ import TournamentPage from '../pages/TournamentPage';
 import routes from './Routes';
 
 function fallbackRender({ error, resetErrorBoundary }: any) {
-  // Call resetErrorBoundary() to reset the error boundary and retry the render.
-  alert(error);
   return (
     <div role="alert">
       <p>Something went wrong:</p>

@@ -1,8 +1,9 @@
 import { Typography, lighten, useTheme } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import League from 'types/League';
 import { millisecondsToTime } from 'utils/dateUtils';
+import { clearInterval, setInterval } from 'worker-timers';
 import ScoreDisplay from './ScoreDisplay';
 import TeamDisplay from './TeamDisplay';
 
@@ -12,6 +13,7 @@ interface IProps {
 
 const CurrentGameView: React.FC<IProps> = ({ activeLeague }) => {
   const theme = useTheme();
+  const [gameDuration, setGameDuration] = useState<number>();
 
   const activeScheduledGame = useMemo(() => {
     if (!activeLeague) {
@@ -24,13 +26,22 @@ const CurrentGameView: React.FC<IProps> = ({ activeLeague }) => {
         scheduledGame.id,
     );
   }, [activeLeague]);
-  const formattedDuration = millisecondsToTime(
-    activeScheduledGame?.game?.gameTime
-      ? activeScheduledGame.game.gameTime * 1000
-      : 0,
-  );
 
-  if (!activeScheduledGame) {
+  useEffect(() => {
+    const getFreshGameDuration = async () => {
+      const freshGameDuration = Number(localStorage.getItem('gameDuration'));
+      setGameDuration(freshGameDuration);
+    };
+    const gameInterval = setInterval(() => {
+      getFreshGameDuration();
+    }, 1000);
+
+    return () => clearInterval(gameInterval);
+  }, []);
+
+  const formattedDuration = millisecondsToTime(gameDuration || 0);
+
+  if (!activeScheduledGame?.game) {
     return null;
   }
   return (
@@ -75,15 +86,6 @@ const CurrentGameView: React.FC<IProps> = ({ activeLeague }) => {
           variantMapping={{ h3Medium: 'span' }}
         >
           {formattedDuration.formatted}
-          <Typography
-            variant="h6Medium"
-            fontSize={60}
-            display="inline-block"
-            color={theme.palette.text.disabled}
-            variantMapping={{ h6Medium: 'span' }}
-          >
-            .{formattedDuration.milisecondsString}
-          </Typography>
         </Typography>
       </FlexContainer>
     </FlexContainer>

@@ -40,6 +40,7 @@ const serialPortListener = (mainWindow: BrowserWindow) => {
         },
         (e) => {
           console.log(e);
+          event.reply('serialPortError', e);
         },
       );
 
