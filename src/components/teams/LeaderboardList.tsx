@@ -36,6 +36,29 @@ const LeaderboardList: React.FC<IProps> = ({
     }
   };
 
+  const getInitialsFromText = (text: string) => {
+    if (!text) {
+      return '';
+    }
+
+    const splitText = text.split(' ');
+
+    if (splitText.length === 1 && text.length < 6) {
+      return text;
+    }
+
+    let output = '';
+    let i = 0;
+    const len = splitText.length;
+
+    for (i; i < len; i += 1) {
+      if (splitText[i] !== '') {
+        output += splitText[i][0];
+      }
+    }
+    return output;
+  };
+
   const columns: GridColDef<LeaderboardTeam>[] = [
     {
       field: 'rank',
@@ -60,8 +83,8 @@ const LeaderboardList: React.FC<IProps> = ({
     {
       field: 'team',
       headerName: 'Team',
-      minWidth: 150,
-      maxWidth: 350,
+      minWidth: 250,
+      maxWidth: 550,
       renderCell: (params) => {
         return (
           <>
@@ -73,10 +96,10 @@ const LeaderboardList: React.FC<IProps> = ({
               }}
             >
               <Typography
-                variant="p1Medium"
+                variant="p3Medium"
                 style={{ textTransform: 'uppercase' }}
               >
-                {params?.row?.team.teamTag}
+                {getInitialsFromText(params?.row?.team.teamTag)}
               </Typography>
             </Avatar>
             <Typography width={100}>{params?.row?.team.teamName}</Typography>
@@ -87,26 +110,26 @@ const LeaderboardList: React.FC<IProps> = ({
     {
       field: 'totalPoints',
       headerName: 'Total points',
-      minWidth: 150,
-      maxWidth: 350,
+      minWidth: 130,
+      maxWidth: 130,
     },
     {
       field: 'totalWins',
       headerName: 'Total wins',
-      minWidth: 150,
-      maxWidth: 350,
+      minWidth: 130,
+      maxWidth: 130,
     },
     {
       field: 'totalLosses',
       headerName: 'Total losses',
-      minWidth: 150,
-      maxWidth: 350,
+      minWidth: 130,
+      maxWidth: 130,
     },
     {
       field: 'totalDraws',
       headerName: 'Total draws',
-      minWidth: 150,
-      maxWidth: 350,
+      minWidth: 130,
+      maxWidth: 130,
     },
   ];
 

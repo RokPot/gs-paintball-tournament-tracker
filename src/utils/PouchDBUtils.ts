@@ -338,7 +338,12 @@ export const getTournamentActivityList = (
     // todo rokpot
     const newTournamentActivity: TournamentActivity = new TournamentActivity({
       ...rootDoc,
-      game: {} as any,
+      game: new Game({
+        ...(otherDocs.find((val) => val.value.type === DocType.Game)
+          ?.doc as GameDto),
+        team1: new Team({} as any), // We don't need teams
+        team2: new Team({} as any),
+      }),
     });
 
     tournamentActivity.push(newTournamentActivity);

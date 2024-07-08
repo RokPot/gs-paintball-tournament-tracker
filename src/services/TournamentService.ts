@@ -142,8 +142,12 @@ const useTournamentService = () => {
       const result = await db.query<TournamentActivityDto[]>(myMapFunction, {
         include_docs: true,
       });
-
-      return getTournamentActivityList(result);
+      const tournamentActivity = getTournamentActivityList(result);
+      tournamentActivity.sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
+      return tournamentActivity;
     },
     [db],
   );

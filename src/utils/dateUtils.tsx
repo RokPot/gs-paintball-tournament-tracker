@@ -21,6 +21,10 @@ export const millisecondsToTime = (durationTime?: number) => {
   };
 };
 
+export const secondsToTime = (durationTime?: number) => {
+  return millisecondsToTime(durationTime ? durationTime * 1000 : 0);
+};
+
 export const convertFromSecondsDayjs = (seconds: number) => {
   return dayjs()
     .minute(Math.floor(seconds / 60))

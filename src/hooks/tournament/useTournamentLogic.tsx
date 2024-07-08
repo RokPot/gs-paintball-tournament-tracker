@@ -219,7 +219,6 @@ const useTournamentLogic = (tournament?: Tournament) => {
       }
       try {
         setIsProcessing(true);
-
         const newTournamentActivity: TournamentActivity =
           new TournamentActivity({
             id: '',
@@ -234,6 +233,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
             tournamentId: tournament._id,
             updatedAt: new Date(),
             gameTime: activeScheduledGame.game.gameTime,
+            match,
           });
         const { currentDuration, duration: timeLeft } = getDuration();
 
@@ -303,7 +303,9 @@ const useTournamentLogic = (tournament?: Tournament) => {
     },
     [
       activeScheduledGame,
+      addNewTournamentActivity,
       currentGroups,
+      currentStage,
       finishTournament,
       getDuration,
       goToNextTournamentStage,

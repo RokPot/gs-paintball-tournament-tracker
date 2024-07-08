@@ -1,4 +1,5 @@
 import ActivityChangeType from 'types/ActivityChangeType';
+import { Match } from 'types/Match';
 import { PouchDBDto } from './PouchDBDto';
 
 export interface TournamentActivityDto extends PouchDBDto {
@@ -7,6 +8,8 @@ export interface TournamentActivityDto extends PouchDBDto {
   updatedAt: Date;
 
   gameTime?: number;
+
+  match: Match;
 
   gameId: string;
 

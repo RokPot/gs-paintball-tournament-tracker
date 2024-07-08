@@ -3,6 +3,7 @@ import { DocType, IPouchDB } from './interfaces/IPouchDB';
 import ActivityChangeType from './ActivityChangeType';
 import { ITournamentActivity } from './interfaces/ITournamentActivity';
 import { TournamentActivityDto } from './dto/TournamentActivityDto';
+import { Match } from './Match';
 
 export default class TournamentActivity extends IPouchDB {
   id: string;
@@ -14,6 +15,8 @@ export default class TournamentActivity extends IPouchDB {
   changeType: ActivityChangeType;
 
   gameTime?: number;
+
+  match: Match;
 
   previousTeam1Wins: number;
 
@@ -40,6 +43,7 @@ export default class TournamentActivity extends IPouchDB {
     this.tournamentId = props.tournamentId;
     this.gameTime = props.gameTime;
     this.stage = props.stage;
+    this.match = props.match;
   }
 
   public toDto = (): TournamentActivityDto => {
@@ -58,6 +62,7 @@ export default class TournamentActivity extends IPouchDB {
       tournamentId: this.tournamentId,
       gameTime: this.game.gameTime,
       stage: this.stage,
+      match: this.match,
     };
   };
 }

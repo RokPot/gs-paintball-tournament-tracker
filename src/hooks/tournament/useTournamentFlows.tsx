@@ -13,6 +13,7 @@ import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
 import { snackbarSuccessOptions } from 'utils/snackbarUtils';
+import { v4 } from 'uuid';
 
 const useTournamentFlows = () => {
   const { mutateAsync: addTournament } = TournamentQueries.useAddTournament();
@@ -107,6 +108,9 @@ const useTournamentFlows = () => {
 
   const addNewTournamentActivity = useCallback(
     async (activity: TournamentActivity) => {
+      const newId = v4();
+      activity.id = newId;
+      activity._id = newId;
       await addActivityToTournament(activity);
     },
     [addActivityToTournament],
