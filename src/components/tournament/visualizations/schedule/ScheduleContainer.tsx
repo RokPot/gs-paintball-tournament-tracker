@@ -25,15 +25,10 @@ interface ScheduleRow {
 
 interface IProps {
   activeLeague: League;
-  disableEditting?: boolean;
-  disableNewWindowOpen?: boolean;
+  isInResultsPage?: boolean;
 }
 
-const ScheduleContainer = ({
-  activeLeague,
-  disableEditting,
-  disableNewWindowOpen,
-}: IProps) => {
+const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
   const selectedTournament = activeLeague.activeTournament!;
   const { updateGameWithMatchesAndRecalculate } = useGameFlows();
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
@@ -163,10 +158,13 @@ const ScheduleContainer = ({
       justifyContent="flex-start"
       alignItems="flex-start"
       gap={0}
-      style={{ paddingTop: '8px' }}
+      style={{
+        paddingTop: '8px',
+      }}
       position="relative"
+      overflowY={!isInResultsPage ? 'auto' : undefined}
     >
-      {!disableNewWindowOpen && (
+      {!isInResultsPage && (
         <Tooltip title="Open Schedule In New Window" arrow placement="left">
           <IconButton
             onClick={openNewResultsWindow}
@@ -206,7 +204,7 @@ const ScheduleContainer = ({
             game={scheduleRow.scheduledGame?.game!}
             gameNumber={scheduleRow?.scheduledGame?.gameNumber || index}
             onEditGame={onEditGame}
-            disableEditting={disableEditting}
+            disableEditting={isInResultsPage}
           />
         );
       })}

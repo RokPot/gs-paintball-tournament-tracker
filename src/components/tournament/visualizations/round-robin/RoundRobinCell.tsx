@@ -73,8 +73,8 @@ export const RoundRobinGameCell: React.FC<IRoundRobinGameCellProps> = ({
     const hasNotPlayedYet = firstTeamScore === 0 && secondTeamScore === 0;
 
     let backgroundColor = isFirstTeamWinner
-      ? alpha(theme.palette.success.main, 0.1)
-      : alpha(theme?.palette.error.main, 0.1);
+      ? alpha(theme.palette.success.main, 0.3)
+      : alpha(theme?.palette.error.main, 0.3);
 
     const isHoveringOver =
       hoveredColumnIndex === columnIndex || hoveredRowIndex === rowIndex;

@@ -8,6 +8,7 @@ enum IPCChannels {
   selectSerialPort = 'selectSerialPort',
   buttonsResponse = 'buttonsResponse',
   serialPortError = 'serialPortError',
+  gameSwitched = 'gameSwitched',
 }
 
 export type Channels =
@@ -90,6 +91,19 @@ const useIPCRendererMessages = () => {
     [],
   );
 
+  const sendGameSwitched = useCallback(() => {
+    window.electron.ipcRenderer.sendMessage(IPCChannels.gameSwitched);
+  }, []);
+
+  const listenToGameSwitched = useCallback(
+    (callback: (result: any) => void) => {
+      window.electron.ipcRenderer.on('gamesSwitched', (result) => {
+        callback(result);
+      });
+    },
+    [],
+  );
+
   return useMemo(
     () => ({
       openNewResultsWindow,
@@ -98,12 +112,16 @@ const useIPCRendererMessages = () => {
       listenToGetReceiverPortsListResponse,
       sendReceiversSelectedSerialPort,
       listenToSerialPortErrors,
+      sendGameSwitched,
+      listenToGameSwitched,
     }),
     [
       listenToButtonsResponse,
+      listenToGameSwitched,
       listenToGetReceiverPortsListResponse,
       listenToSerialPortErrors,
       openNewResultsWindow,
+      sendGameSwitched,
       sendGetReceiverPortsList,
       sendReceiversSelectedSerialPort,
     ],

@@ -33,6 +33,7 @@ const TournamentGroupsTab: React.FC<IProps> = ({ activeLeague }) => {
       gap={16}
       flexWrap="wrap"
       alignItems="stretch"
+      overflowY="auto"
     >
       {selectedTournament?.currentStage?.groups
         .sort((a, b) => a.groupIndex - b.groupIndex)

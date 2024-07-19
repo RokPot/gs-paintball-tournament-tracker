@@ -47,7 +47,12 @@ const TournamentResultsTab = ({ activeLeague }: IProps) => {
   }
 
   return (
-    <FlexContainer flexDirection="column" gap={8} height="100%">
+    <FlexContainer
+      flexDirection="column"
+      gap={8}
+      height="100%"
+      overflowY="auto"
+    >
       <CustomTabs
         items={
           selectedTournament?.currentStage?.groups?.map((group) => ({

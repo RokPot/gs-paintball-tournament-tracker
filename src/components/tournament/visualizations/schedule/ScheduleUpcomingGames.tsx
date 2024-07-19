@@ -1,8 +1,4 @@
-import {
-  faArrowUpRightFromSquare,
-  faCaretRight,
-  faLeftRight,
-} from '@fortawesome/free-solid-svg-icons';
+import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   IconButton,
@@ -49,9 +45,9 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
 
   const { openNewResultsWindow } = useIPCRendererMessages();
 
-  const [upcomingGames, setUpcomingGames] = useState<TournamentScheduleGame[]>(
-    [],
-  );
+  const [upcomingGames, setUpcomingGames] = useState<
+    TournamentScheduleGame[][]
+  >([]);
 
   useEffect(() => {
     if (!activeLeague?.activeTournament) {
@@ -60,8 +56,23 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
     const notFinishedScheduledGames =
       activeLeague?.activeTournament.currentStage?.schedule?.filter(
         (scheduledGame) => scheduledGame.game.gameState === GameState.created,
-      );
-    setUpcomingGames(notFinishedScheduledGames?.slice(0, 2) || []);
+      ) || [];
+    const groupedUpcomingGames: TournamentScheduleGame[][] = [];
+    for (let i = 0; i < notFinishedScheduledGames.length; ) {
+      if (groupedUpcomingGames.length > 1) {
+        break;
+      }
+      const firstGamePair = notFinishedScheduledGames[i];
+      const secondGamePair = notFinishedScheduledGames[i + 1];
+      if (firstGamePair?.pairedGameId === secondGamePair?.id) {
+        groupedUpcomingGames.push([firstGamePair, secondGamePair]);
+        i += 2;
+      } else {
+        groupedUpcomingGames.push([firstGamePair]);
+        i += 1;
+      }
+    }
+    setUpcomingGames(groupedUpcomingGames);
   }, [activeLeague?.activeTournament]);
 
   if (
@@ -78,39 +89,52 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
         ...style,
       }}
     >
-      <Typography
-        variant="p1Bold"
-        marginRight="8px"
-        color={theme.palette.text.secondary}
-        fontSize={fontSize}
-      >
-        Upcoming games:
-      </Typography>
-
-      {upcomingGames.map((upcomingGame, index) => (
-        <div key={index}>
-          <Typography
-            variant="p1Medium"
-            style={{ textDecoration: 'underline' }}
-            fontSize={fontSize}
-          >
-            {upcomingGame.game.team1.teamName}
-            <FontAwesomeIcon
-              icon={faLeftRight}
-              style={{ margin: '0px 8px' }}
+      {upcomingGames.map((upcomingGamePairs, index) => {
+        const pairedGame1 = upcomingGamePairs[0];
+        const pairedGame2 = upcomingGamePairs[1];
+        return (
+          <div key={index}>
+            <Typography
+              variant="p1Bold"
+              marginRight="8px"
+              marginLeft="8px"
               color={theme.palette.text.secondary}
-            />
-            {upcomingGame.game.team2.teamName}
-          </Typography>
-          {index + 1 < upcomingGames.length && (
-            <FontAwesomeIcon
-              icon={faCaretRight}
-              style={{ margin: '0px 8px' }}
-              color={theme.palette.primary.main}
-            />
-          )}
-        </div>
-      ))}
+              fontSize={fontSize}
+            >
+              {index === 0
+                ? `Next ${pairedGame2 ? 'pairs' : ''}: `
+                : `Upcoming ${pairedGame2 ? 'pair' : ''}: `}
+            </Typography>
+            <Typography
+              variant="p1Medium"
+              style={{ textDecoration: 'underline' }}
+              fontSize={fontSize}
+            >
+              {pairedGame1.game.team1.teamName}
+              <Typography variant="p1" style={{ textDecoration: 'none' }}>
+                {' vs '}
+              </Typography>
+              {pairedGame1.game.team2.teamName}
+            </Typography>
+            {pairedGame2 && (
+              <>
+                <Typography padding="0px 4px">{', '}</Typography>
+                <Typography
+                  variant="p1Medium"
+                  style={{ textDecoration: 'underline' }}
+                  fontSize={fontSize}
+                >
+                  {pairedGame2.game.team1.teamName}
+                  <Typography variant="p1" style={{ textDecoration: 'none' }}>
+                    {' vs '}
+                  </Typography>
+                  {pairedGame2.game.team2.teamName}{' '}
+                </Typography>
+              </>
+            )}{' '}
+          </div>
+        );
+      })}
       {!disableNewWindowOpen && (
         <Tooltip title="Open Schedule In New Window" arrow placement="left">
           <IconButton

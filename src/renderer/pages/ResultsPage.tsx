@@ -3,6 +3,7 @@ import ScheduleView from 'components/results-window/ScheduleView';
 import CurrentGameView from 'components/results-window/current-game-view/CurrentGameView';
 import FlexContainer from 'components/shared/FlexContainer';
 import ScheduleUpcomingGames from 'components/tournament/visualizations/schedule/ScheduleUpcomingGames';
+import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import useScrollTo from 'hooks/ui/useScrollTo';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
@@ -21,6 +22,13 @@ const ResultsPage: React.FC<IProps> = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { scrollDivToBottom } = useScrollTo();
+
+  const { listenToGameSwitched } = useIPCRendererMessages();
+  useEffect(() => {
+    listenToGameSwitched(() => {
+      refetch();
+    });
+  }, []);
 
   const currentActiveElement = useMemo(() => {
     switch (currentActiveView) {

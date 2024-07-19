@@ -58,6 +58,7 @@ const TournamentBracketsTab: React.FC<IProps> = ({ activeLeague }) => {
       alignItems="flex-start"
       padding="20px 0px 0px 0px"
       gap={16}
+      overflowY="auto"
     >
       <FlexContainer
         flexDirection="row"

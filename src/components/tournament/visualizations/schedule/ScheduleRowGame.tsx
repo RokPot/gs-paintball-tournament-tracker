@@ -67,7 +67,12 @@ const ScheduleRowGame: React.FC<IProps> = ({
           Game: {gameNumber}
         </Typography>
 
-        <Typography variant="p1" minWidth="100px" textAlign="end">
+        <Typography
+          variant="p1"
+          minWidth="100px"
+          textAlign="end"
+          maxWidth="100px"
+        >
           {game.team1.id === undefined ? 'TBD' : game.team1.teamName}
         </Typography>
         <StyledScoreCardContainer>
@@ -83,7 +88,7 @@ const ScheduleRowGame: React.FC<IProps> = ({
             {game.team2Wins}
           </Typography>
         </StyledScoreCardContainer>
-        <Typography variant="p1">
+        <Typography variant="p1" maxWidth="100px">
           {game.team2.id === undefined ? 'TBD' : game.team2.teamName}
         </Typography>
         <ScheduleGameStatus gameState={game.gameState} />

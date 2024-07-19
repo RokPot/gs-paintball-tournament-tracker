@@ -56,7 +56,13 @@ interface EditGame {
   gameTime: number;
 }
 
-const AddOrEditGame = ({ game, onClose, onConfirm, sizeOfTeams }: IProps) => {
+const AddOrEditGame = ({
+  game: entryGame,
+  onClose,
+  onConfirm,
+  sizeOfTeams,
+}: IProps) => {
+  const [game] = useState(new Game(entryGame));
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match>();
   const [matches, setMatches] = useState<Match[]>(game?.matches || []);

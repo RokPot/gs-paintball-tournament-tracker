@@ -595,7 +595,7 @@ export namespace TournamentFlow {
 
     newPairedGame1.game.gameState = GameState.playing;
     if (newPairedGame2) {
-      newPairedGame2.game.gameState = GameState.playing;
+      newPairedGame2.game.gameState = GameState.waiting;
     }
     return {
       newPairedGame1,

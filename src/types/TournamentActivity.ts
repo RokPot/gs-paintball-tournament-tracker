@@ -33,7 +33,7 @@ export default class TournamentActivity extends IPouchDB {
   constructor(props: ITournamentActivity) {
     super(props._id, props._rev, props.docType || DocType.TournamentActivity);
     this.id = props.id;
-    this.updatedAt = props.updatedAt;
+    this.updatedAt = new Date(props.updatedAt);
     this.game = props.game;
     this.changeType = props.changeType;
     this.previousTeam1Wins = props.previousTeam1Wins;

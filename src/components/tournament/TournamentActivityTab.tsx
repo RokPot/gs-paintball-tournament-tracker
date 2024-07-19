@@ -30,6 +30,20 @@ const TournamentActivityTab = ({ activeLeague }: IProps) => {
     );
   }
 
+  if (!activityList?.length) {
+    return (
+      <FlexContainer
+        justifyContent="center"
+        alignItems="center"
+        flexDirection="column"
+      >
+        <EmptyInboxIcon fill="transparent" width="250px" />
+        <Typography variant="h3">
+          There is currently no activity for this tournament.
+        </Typography>
+      </FlexContainer>
+    );
+  }
   return (
     <FlexContainer
       flexDirection="column"
@@ -37,6 +51,7 @@ const TournamentActivityTab = ({ activeLeague }: IProps) => {
       padding="0px 20px"
       width="100%"
       loading={isFetching}
+      overflowY="auto"
     >
       {activityList?.map((activity) => {
         const scheduledGame = selectedTournament.stages

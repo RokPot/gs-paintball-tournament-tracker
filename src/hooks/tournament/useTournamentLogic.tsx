@@ -12,6 +12,7 @@ import Tournament from 'types/Tournament';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import TournamentStage from 'types/TournamentStage';
 
+import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import { useSnackbar } from 'notistack';
 import useConfirmationModalStore from 'store/ConfirmationModalStore';
 import ActivityChangeType from 'types/ActivityChangeType';
@@ -47,6 +48,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
   const { addStageToTournament, addNewTournamentActivity } =
     useTournamentFlows();
 
+  const { sendGameSwitched } = useIPCRendererMessages();
   const { enqueueSnackbar } = useSnackbar();
 
   const currentSchedule = useMemo(() => {
@@ -291,6 +293,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
             break;
           case TournamentFlow.EndTournamentCheck.ContinueTournamentStage:
           default:
+            sendGameSwitched();
             break;
         }
       } catch (e) {
@@ -309,6 +312,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
       finishTournament,
       getDuration,
       goToNextTournamentStage,
+      sendGameSwitched,
       setGameAndBreakDuration,
       setNewActiveGroupAndGames,
       tournament,

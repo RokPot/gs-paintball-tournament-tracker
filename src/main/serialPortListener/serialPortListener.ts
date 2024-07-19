@@ -19,12 +19,10 @@ const serialPortListener = (mainWindow: BrowserWindow) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   ipcMain.on('get-ports-list', async (event) => {
     const ports = await SerialPort.list();
-    console.log('ports', ports);
 
     event.reply('get-ports-list-response', ports);
   });
-  ipcMain.on('select-serial-port', async (event, arg: PortInfo) => {
-    console.log(event, arg);
+  ipcMain.on('select-serial-port', async (event) => {
     try {
       if (serialPort) {
         serialPort.removeAllListeners();
@@ -39,7 +37,6 @@ const serialPortListener = (mainWindow: BrowserWindow) => {
           path: 'COM3',
         },
         (e) => {
-          console.log(e);
           event.reply('serialPortError', e);
         },
       );
@@ -49,17 +46,16 @@ const serialPortListener = (mainWindow: BrowserWindow) => {
       );
       SerialReadlineParser.addListener('data', (data) => {
         if (data === 'cp: 1') {
-          console.log('eee1', data);
-          mainWindow.webContents.send('buttons-response', 'Team1Button');
+          mainWindow.webContents.send('buttonsResponse', 'Team1Button');
         } else if (data === 'cp: 2') {
-          console.log('eee2', data);
-          mainWindow.webContents.send('buttons-response', 'Team2Button');
+          mainWindow.webContents.send('buttonsResponse', 'Team2Button');
         }
       });
     } catch (e) {
       console.error(e);
     }
   });
+
   return () => {
     if (serialPort) {
       serialPort.removeAllListeners();

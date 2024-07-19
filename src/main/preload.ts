@@ -11,7 +11,9 @@ export type Channels =
   | 'getPortsListResponse'
   | 'selectSerialPort'
   | 'buttonsResponse'
-  | 'serialPortError';
+  | 'serialPortError'
+  | 'gameSwitched'
+  | 'gamesSwitched';
 
 const electronHandler = {
   ipcRenderer: {

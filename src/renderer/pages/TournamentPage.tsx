@@ -260,6 +260,8 @@ const TournamentPage = () => {
           height="100%"
           flexDirection="column"
           alignItems="stretch"
+          maxHeight="100%"
+          overflow="hidden"
         >
           <CustomTabs
             items={Object.values(TournamentTabs).map((key) => ({
@@ -288,9 +290,9 @@ const TournamentPage = () => {
           {activeTab === TournamentTabs.schedule && (
             <TournamentScheduleTab activeLeague={activeLeague} />
           )}
-          <ScheduleUpcomingGames activeLeague={activeLeague} />
         </FlexContainer>
       )}
+      <ScheduleUpcomingGames activeLeague={activeLeague} />
 
       <CustomModal
         isModalOpen={addOrEditTournamentModalProps?.isOpen}

@@ -22,7 +22,11 @@ const TournamentDetailsTab = ({ activeLeague }: IProps) => {
   }
 
   return (
-    <FlexContainer flexDirection="column" style={{ flexGrow: 1 }}>
+    <FlexContainer
+      flexDirection="column"
+      style={{ flexGrow: 1 }}
+      overflowY="auto"
+    >
       <TournamentDetailsList tournament={selectedTournament} />
 
       <Typography variant="h5">Tournament leaderboard</Typography>

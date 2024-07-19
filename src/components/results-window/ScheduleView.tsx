@@ -17,11 +17,7 @@ const ScheduleView: React.FC<IProps> = ({ activeLeague }) => {
       alignItems="flex-start"
       flexDirection="column"
     >
-      <ScheduleContainer
-        activeLeague={activeLeague}
-        disableEditting
-        disableNewWindowOpen
-      />
+      <ScheduleContainer activeLeague={activeLeague} isInResultsPage />
     </FlexContainer>
   );
 };

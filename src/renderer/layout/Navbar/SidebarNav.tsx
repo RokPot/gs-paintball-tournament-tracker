@@ -20,6 +20,7 @@ import FlexContainer from 'components/shared/FlexContainer';
 import { useState } from 'react';
 import { Menu, Sidebar } from 'react-pro-sidebar';
 import routes from 'renderer/main/Routes';
+import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import LogoImage from '../../../../assets/logo3.svg';
 import LogoTextImage from '../../../../assets/logo_text.svg';
 import CustomMenuItem from './CustomMenuItem';
@@ -79,7 +80,7 @@ const navBarItems = [
 const SidebarNav: React.FC = () => {
   const theme = useTheme();
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
-
+  const { data: activeLeague } = LeagueQueries.useActiveLeague();
   return (
     <Sidebar
       width="180px"
@@ -183,7 +184,7 @@ const SidebarNav: React.FC = () => {
             }}
           >
             <Typography variant="p1Medium" color={theme.palette.text.primary}>
-              Gluhi Svizci pokal 2022
+              {activeLeague?.name}
             </Typography>
           </div>
           <Typography variant="p2Medium" color={theme.palette.text.secondary}>
@@ -204,6 +205,7 @@ const SidebarNav: React.FC = () => {
           >
             <Typography variant="p1Medium" color={theme.palette.text.primary}>
               2. Turnir 15/9/2022
+              {activeLeague?.activeTournament?.name}
             </Typography>
           </div>
         </FlexContainer>

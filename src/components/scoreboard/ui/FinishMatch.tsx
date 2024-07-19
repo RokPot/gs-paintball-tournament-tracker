@@ -204,7 +204,7 @@ const FinishMatch: React.FC<IProps> = ({
       {forceInsert && (
         <Typography
           variant="subtitle1"
-          color={(theme) => theme.palette.text.disabled}
+          color={(theme) => theme.palette.error.main}
         >
           Game has ran out of time.
         </Typography>

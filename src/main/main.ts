@@ -10,20 +10,13 @@
  */
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
-import { autoUpdater } from 'electron-updater';
-import log from 'electron-log';
+
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import serialPortListener from './serialPortListener/serialPortListener';
 
-class AppUpdater {
-  constructor() {
-    log.transports.file.level = 'info';
-    autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
-  }
-}
 let mainWindow: BrowserWindow | null = null;
+const resultsWindows: BrowserWindow[] = [];
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -134,7 +127,18 @@ app
     });
   })
   .catch(console.log);
+
 ipcMain.on('openNewWindow', async () => {
-  await createWindow('results/index.html');
-  // childWindows.push(newWindow);
+  resultsWindows.push(await createWindow('results/index.html'));
+});
+
+ipcMain.on('gameSwitched', async (event) => {
+  try {
+    event.reply('gamesSwitched', {});
+    resultsWindows.forEach((resultsWindow) =>
+      resultsWindow.webContents.send('gamesSwitched'),
+    );
+  } catch (e) {
+    console.error(e);
+  }
 });
