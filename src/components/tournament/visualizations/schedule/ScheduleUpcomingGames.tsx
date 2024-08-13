@@ -110,11 +110,11 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
               style={{ textDecoration: 'underline' }}
               fontSize={fontSize}
             >
-              {pairedGame1.game.team1.teamName}
+              {pairedGame1.game.team1.teamName || 'TBD'}
               <Typography variant="p1" style={{ textDecoration: 'none' }}>
                 {' vs '}
               </Typography>
-              {pairedGame1.game.team2.teamName}
+              {pairedGame1.game.team2.teamName || 'TBD'}
             </Typography>
             {pairedGame2 && (
               <>
@@ -124,14 +124,14 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
                   style={{ textDecoration: 'underline' }}
                   fontSize={fontSize}
                 >
-                  {pairedGame2.game.team1.teamName}
+                  {pairedGame2.game.team1.teamName || 'TBD'}
                   <Typography variant="p1" style={{ textDecoration: 'none' }}>
                     {' vs '}
                   </Typography>
-                  {pairedGame2.game.team2.teamName}{' '}
+                  {pairedGame2.game.team2.teamName || 'TBD'}
                 </Typography>
               </>
-            )}{' '}
+            )}
           </div>
         );
       })}

@@ -204,7 +204,6 @@ const SidebarNav: React.FC = () => {
             }}
           >
             <Typography variant="p1Medium" color={theme.palette.text.primary}>
-              2. Turnir 15/9/2022
               {activeLeague?.activeTournament?.name}
             </Typography>
           </div>
