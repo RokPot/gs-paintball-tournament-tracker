@@ -17,6 +17,7 @@ import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
 import InitializeTournament from 'components/tournament/InitializeTournament';
 import TournamentActivityTab from 'components/tournament/TournamentActivityTab';
 import TournamentBracketsTab from 'components/tournament/TournamentBracketsTab';
+import TournamentButtonsTab from 'components/tournament/TournamentButtonsTab';
 import TournamentDetailsTab from 'components/tournament/TournamentDetailsTab';
 import TournamentGroupsTab from 'components/tournament/TournamentGroupsTab';
 import TournamentResultsTab from 'components/tournament/TournamentResultsTab';
@@ -64,6 +65,7 @@ enum TournamentTabs {
   schedule = 'schedule',
   results = 'results',
   activity = 'activity',
+  buttons = 'buttons',
 }
 enum TournamentTabsLabel {
   tournamentDetails = 'Tournament Details',
@@ -72,6 +74,7 @@ enum TournamentTabsLabel {
   schedule = 'Schedule',
   activity = 'Activity',
   results = 'Results',
+  buttons = 'Buttons',
 }
 
 const TournamentPage = () => {
@@ -290,6 +293,7 @@ const TournamentPage = () => {
           {activeTab === TournamentTabs.schedule && (
             <TournamentScheduleTab activeLeague={activeLeague} />
           )}
+          {activeTab === TournamentTabs.buttons && <TournamentButtonsTab />}
         </FlexContainer>
       )}
       <ScheduleUpcomingGames activeLeague={activeLeague} />

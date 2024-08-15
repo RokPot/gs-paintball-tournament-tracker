@@ -15,6 +15,19 @@ import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import serialPortListener from './serialPortListener/serialPortListener';
 
+export type Channels =
+  | 'ipc-example'
+  | 'ipc-example-response'
+  | 'openNewWindow'
+  | 'getPortsList'
+  | 'setSelectedPort'
+  | 'getPortsListResponse'
+  | 'selectSerialPort'
+  | 'buttonsResponse'
+  | 'serialPortError'
+  | 'gameSwitched'
+  | 'gamesSwitched';
+
 let mainWindow: BrowserWindow | null = null;
 const resultsWindows: BrowserWindow[] = [];
 

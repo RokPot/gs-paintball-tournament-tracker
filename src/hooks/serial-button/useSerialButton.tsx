@@ -3,7 +3,7 @@ import useIPCRendererMessages, {
 } from 'hooks/main/useIPCRendererMessages';
 import { useCallback, useEffect, useState } from 'react';
 
-const useSerialButton = () => {
+const useSerialButton = (onButtonClicked: (data: any) => void) => {
   const [availablePorts, setAvailablePorts] = useState<PortInfo[]>([]);
 
   const {
@@ -28,12 +28,17 @@ const useSerialButton = () => {
     [sendReceiversSelectedSerialPort],
   );
 
-  const onButtonsResponse = useCallback((result: any) => {
-    console.log(result);
-  }, []);
+  const onButtonsResponse = useCallback(
+    (result: any) => {
+      console.log(result);
+      onButtonClicked(result);
+    },
+    [onButtonClicked],
+  );
 
   useEffect(() => {
     listenToButtonsResponse(onButtonsResponse);
+    getAvailablePorts();
   }, []);
 
   return {

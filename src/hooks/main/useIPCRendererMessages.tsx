@@ -40,6 +40,7 @@ export declare interface PortInfo {
   locationId: string | undefined;
   productId: string | undefined;
   vendorId: string | undefined;
+  friendlyName: string;
 }
 
 const useIPCRendererMessages = () => {
@@ -60,7 +61,7 @@ const useIPCRendererMessages = () => {
   );
 
   const sendGetReceiverPortsList = useCallback(() => {
-    window.electron.ipcRenderer.sendMessage(IPCChannels.getPortsList);
+    window.electron.ipcRenderer.sendMessage('getPortsList');
   }, []);
 
   const listenToGetReceiverPortsListResponse = useCallback(

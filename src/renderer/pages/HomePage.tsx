@@ -159,9 +159,6 @@ const HomePage: React.FC = () => {
           </StyledStackingContainer>
         ))}
       </FlexContainer>
-
-      <Typography variant="h5">Latest Updates</Typography>
-      <Typography>--TBD--</Typography>
     </PageContainer>
   );
 };

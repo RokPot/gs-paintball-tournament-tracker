@@ -2,6 +2,19 @@ import { ReadlineParser } from '@serialport/parser-readline';
 import { BrowserWindow, ipcMain } from 'electron';
 import { SerialPort } from 'serialport';
 
+export type Channels =
+  | 'ipc-example'
+  | 'ipc-example-response'
+  | 'openNewWindow'
+  | 'getPortsList'
+  | 'setSelectedPort'
+  | 'getPortsListResponse'
+  | 'selectSerialPort'
+  | 'buttonsResponse'
+  | 'serialPortError'
+  | 'gameSwitched'
+  | 'gamesSwitched';
+
 export declare interface PortInfo {
   path: string;
   manufacturer: string | undefined;
@@ -17,12 +30,12 @@ const serialPortListener = (mainWindow: BrowserWindow) => {
   let serialPort: SerialPort | null = null;
   let SerialReadlineParser: ReadlineParser | null = null;
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  ipcMain.on('get-ports-list', async (event) => {
+  ipcMain.on('getPortsList', async (event) => {
     const ports = await SerialPort.list();
-
-    event.reply('get-ports-list-response', ports);
+    console.log('poooorts', ports);
+    event.reply('getPortsListResponse', ports);
   });
-  ipcMain.on('select-serial-port', async (event) => {
+  ipcMain.on('selectSerialPort', async (event) => {
     try {
       if (serialPort) {
         serialPort.removeAllListeners();

@@ -34,7 +34,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
     stopTimer,
     resetTimer,
   } = useTimerStore();
-  const { playCountdown, stopCountdown } = useCountdownSound();
+  const { playCountdown, stopCountdown, playMatchPoint } = useCountdownSound();
   const { mutateAsync: updateTournament } =
     TournamentQueries.useUpdateTournament();
   const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
@@ -338,6 +338,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
       (gameSettings.manualGameStartTimeInSeconds ||
         DefaultGameSettings.manualGameStartTimeInSeconds) * 1000,
       () => {
+        playMatchPoint();
         setHasGameTimeRanOut(true);
         setShowFinishMatchModal(true);
       },
@@ -351,6 +352,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
     gameSettings,
     isMatchInProgress,
     playCountdown,
+    playMatchPoint,
     startTimer,
     stopTimer,
     tournament,
@@ -396,9 +398,12 @@ const useTournamentLogic = (tournament?: Tournament) => {
   const setFinishMatchModal = useCallback(
     (shouldShowFinishMatchModal: boolean) => {
       stopTimer();
+      if (shouldShowFinishMatchModal) {
+        playMatchPoint();
+      }
       setShowFinishMatchModal(shouldShowFinishMatchModal);
     },
-    [stopTimer],
+    [playMatchPoint, stopTimer],
   );
   useEffect(() => {
     setIsMatchInProgress(timingGame || timingBreak);
