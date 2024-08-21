@@ -2,8 +2,8 @@ import { PortInfo } from 'hooks/main/useIPCRendererMessages';
 import { create } from 'zustand';
 
 interface ButtonState {
-  button1HandshakeConfirmed: boolean;
-  button2HandshakeConfirmed: boolean;
+  button1HandshakeConfirmed?: boolean;
+  button2HandshakeConfirmed?: boolean;
 }
 
 interface SerialButtonsStoreState {

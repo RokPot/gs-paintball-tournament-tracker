@@ -13,6 +13,7 @@ import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import TournamentStage from 'types/TournamentStage';
 
 import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
+import useTimeLeftSpeech from 'hooks/sounds/useTimeLeftSpeech';
 import { useSnackbar } from 'notistack';
 import useConfirmationModalStore from 'store/ConfirmationModalStore';
 import ActivityChangeType from 'types/ActivityChangeType';
@@ -34,6 +35,14 @@ const useTournamentLogic = (tournament?: Tournament) => {
     stopTimer,
     resetTimer,
   } = useTimerStore();
+
+  const {
+    start10SecondsSpeech,
+    start30SecondsSpeech,
+    stop10SecondsSpeech,
+    stop30SecondsSpeech,
+  } = useTimeLeftSpeech();
+
   const { playCountdown, stopCountdown, playMatchPoint } = useCountdownSound();
   const { mutateAsync: updateTournament } =
     TournamentQueries.useUpdateTournament();
@@ -101,6 +110,30 @@ const useTournamentLogic = (tournament?: Tournament) => {
       ? tournamentSettings?.type
       : tournamentSettings?.secondStageType;
   }, [tournament, tournamentSettings]);
+
+  const stopSpeech = useCallback(() => {
+    stop10SecondsSpeech();
+    stop30SecondsSpeech();
+  }, [stop10SecondsSpeech, stop30SecondsSpeech]);
+
+  const startSpeech = useCallback(
+    (seconds: number) => {
+      stopSpeech();
+      switch (seconds) {
+        case 10: {
+          start10SecondsSpeech();
+          break;
+        }
+        case 30: {
+          start30SecondsSpeech();
+          break;
+        }
+        default:
+          break;
+      }
+    },
+    [start10SecondsSpeech, start30SecondsSpeech, stopSpeech],
+  );
 
   const setGameAndBreakDuration = useCallback(
     (newScheduledGame?: TournamentScheduleGame) => {
@@ -320,40 +353,64 @@ const useTournamentLogic = (tournament?: Tournament) => {
     ],
   );
 
+  const onTimerFinished = useCallback(() => {
+    playMatchPoint();
+    setHasGameTimeRanOut(true);
+    setShowFinishMatchModal(true);
+  }, [playMatchPoint]);
+
+  const onBreakFinished = useCallback(() => {}, []);
+
+  const onStartCountDown = useCallback(() => {
+    playCountdown();
+  }, [playCountdown]);
+
+  const onTimer30SecondsLeft = useCallback(() => {
+    startSpeech(30);
+  }, [startSpeech]);
+
+  const onTimer10SecondsLeft = useCallback(() => {
+    startSpeech(30);
+  }, [startSpeech]);
+
   const startStopMatch = useCallback(() => {
     if (!activeScheduledGame || !tournament || !gameSettings) {
       return;
     }
     if (isMatchInProgress) {
       stopTimer();
+      stopSpeech();
       setIsMatchInProgress(false);
       return;
     }
 
     setIsMatchInProgress(true);
-
-    startTimer(
-      200,
-      activeScheduledGame.game.gameTime * 1000,
+    const timerDelayInMs = 200;
+    const timerDurationInMs = activeScheduledGame.game.gameTime * 1000;
+    const breakDurationInMs =
       (gameSettings.manualGameStartTimeInSeconds ||
-        DefaultGameSettings.manualGameStartTimeInSeconds) * 1000,
-      () => {
-        playMatchPoint();
-        setHasGameTimeRanOut(true);
-        setShowFinishMatchModal(true);
-      },
-      undefined,
-      () => {
-        playCountdown();
-      },
+        DefaultGameSettings.manualGameStartTimeInSeconds) * 1000;
+    startTimer(
+      timerDelayInMs,
+      timerDurationInMs,
+      breakDurationInMs,
+      onTimerFinished,
+      onBreakFinished,
+      onStartCountDown,
+      onTimer10SecondsLeft,
+      onTimer30SecondsLeft,
     );
   }, [
     activeScheduledGame,
     gameSettings,
     isMatchInProgress,
-    playCountdown,
-    playMatchPoint,
+    onBreakFinished,
+    onStartCountDown,
+    onTimer10SecondsLeft,
+    onTimer30SecondsLeft,
+    onTimerFinished,
     startTimer,
+    stopSpeech,
     stopTimer,
     tournament,
   ]);
@@ -370,6 +427,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
       if (isCurrentMatchInCountdown || isRefereeAction) {
         stopCountdown();
         stopTimer();
+        stopSpeech();
         return;
       }
 
@@ -381,6 +439,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
           onConfirm: () => {
             stopCountdown();
             stopTimer();
+            stopSpeech();
           },
         });
       }
@@ -389,6 +448,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
       isMatchInProgress,
       openModal,
       stopCountdown,
+      stopSpeech,
       stopTimer,
       timingBreak,
       timingGame,
@@ -398,12 +458,13 @@ const useTournamentLogic = (tournament?: Tournament) => {
   const setFinishMatchModal = useCallback(
     (shouldShowFinishMatchModal: boolean) => {
       stopTimer();
+      stopSpeech();
       if (shouldShowFinishMatchModal) {
         playMatchPoint();
       }
       setShowFinishMatchModal(shouldShowFinishMatchModal);
     },
-    [playMatchPoint, stopTimer],
+    [playMatchPoint, stopSpeech, stopTimer],
   );
   useEffect(() => {
     setIsMatchInProgress(timingGame || timingBreak);

@@ -13,8 +13,8 @@ import {
 import FlexContainer from 'components/shared/FlexContainer';
 import { PortInfo } from 'hooks/main/useIPCRendererMessages';
 import useSerialButton from 'hooks/serial-button/useSerialButton';
-import { useCallback, useEffect, useState } from 'react';
-import useSerialButtonsStore from 'store/SerialButtonsStore';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { ButtonsContext } from 'store/ButtonsContext';
 
 const StyledRootFieldContainer = styled('div')`
   position: relative;
@@ -156,18 +156,40 @@ const Button1SignalConfirmation: React.FC<{ confirmed?: boolean }> = ({
 interface IProps {}
 
 const TournamentButtonsTab: React.FC<IProps> = () => {
-  const { getAvailablePorts, availablePorts, selectReceiverPort } =
-    useSerialButton((e) => {
-      console.log('eeeeee', e);
-    });
-  const theme = useTheme();
-  const { setSelectedPort, setButtonState, buttonState, selectedPort } =
-    useSerialButtonsStore();
+  const [activeStep, setActiveStep] = useState(0);
 
-  const selectRecieverPort = useCallback(
+  const { setSelectedPort, setButtonState, buttonState, selectedPort } =
+    useContext(ButtonsContext);
+
+  const setSerialButtonState = useCallback(
+    (e: string) => {
+      if (e === 'Team1Button') {
+        setButtonState?.({
+          button2HandshakeConfirmed:
+            buttonState?.button2HandshakeConfirmed || false,
+          button1HandshakeConfirmed: true,
+        });
+      }
+      if (e === 'Team2Button') {
+        setButtonState?.({
+          button1HandshakeConfirmed:
+            buttonState?.button1HandshakeConfirmed || false,
+          button2HandshakeConfirmed: true,
+        });
+      }
+    },
+    [buttonState, setButtonState],
+  );
+
+  const { getAvailablePorts, availablePorts, selectReceiverPort } =
+    useSerialButton(setSerialButtonState);
+  const theme = useTheme();
+
+  const onPortSelected = useCallback(
     (selectedUSBPort: PortInfo) => {
       selectReceiverPort(selectedUSBPort);
-      setSelectedPort(selectedUSBPort);
+      setSelectedPort?.(selectedUSBPort);
+      setActiveStep(1);
     },
     [selectReceiverPort, setSelectedPort],
   );
@@ -189,106 +211,120 @@ const TournamentButtonsTab: React.FC<IProps> = () => {
     if (selectedPort) {
       return;
     }
-    selectRecieverPort(preselectedButton);
-  }, [availablePorts, selectRecieverPort, selectedPort]);
+    onPortSelected(preselectedButton);
+  }, [availablePorts, onPortSelected, selectedPort]);
   const steps = [
     'Select Button Reciever Port',
     'Confirm Buttons',
     'We`re ready to go!',
   ];
-  const [activeStep, setActiveStep] = useState(0);
-  const [completed, setCompleted] = useState<{
-    [k: number]: boolean;
-  }>({});
-  const isLastStep = () => {
-    return activeStep === steps.length - 1;
-  };
 
-  const handleNext = () => {
-    const newActiveStep = isLastStep() ? activeStep : activeStep + 1;
-    setActiveStep(newActiveStep);
-  };
-  const handleStep = (step: number) => () => {
+  const handleStep = (step: number) => {
     setActiveStep(step);
   };
+  // console.log(selectedPort);
+  // console.log(availablePorts);
+  console.log(activeStep);
   return (
     <FlexContainer
       flexDirection="column"
       style={{ flexGrow: 1 }}
       overflowY="auto"
     >
-      <Typography variant="p3Medium" color={theme.palette.success.main}>
-        Buttons are confirmed and ready for action!
-      </Typography>
-      <Stepper nonLinear activeStep={activeStep}>
+      {buttonState?.button1HandshakeConfirmed &&
+        buttonState.button2HandshakeConfirmed && (
+          <Typography variant="p3Medium" color={theme.palette.success.main}>
+            Buttons are confirmed and ready for action!
+          </Typography>
+        )}
+      <Stepper
+        nonLinear
+        activeStep={activeStep}
+        style={{ padding: '25px 0px' }}
+      >
         {steps.map((label, index) => (
-          <Step key={label} completed={completed[index]}>
-            <StepButton color="inherit" onClick={handleStep(index)}>
+          <Step key={label}>
+            <StepButton
+              color="inherit"
+              onClick={() => {
+                if (index === 0) {
+                  getAvailablePorts();
+                }
+                handleStep(index);
+              }}
+            >
               {label}
             </StepButton>
           </Step>
         ))}
       </Stepper>
-      {availablePorts?.map((availablePort) => (
-        <Button
-          onClick={() => selectReceiverPort(availablePort)}
-          variant={
-            selectedPort?.pnpId === availablePort.pnpId
-              ? 'contained'
-              : 'outlined'
-          }
-        >
-          {availablePort.path} {availablePort.vendorId} aa
-          {availablePort.manufacturer}bb {availablePort.friendlyName}
-        </Button>
-      ))}
-      <StyledRootFieldContainer>
-        <StyledFieldContainer>
-          <div />
-          <div />
-          <div />
-          <div />
-          <div />
+      {activeStep === 0 &&
+        availablePorts?.map((availablePort) => (
+          <Button
+            onClick={() => onPortSelected(availablePort)}
+            variant={
+              selectedPort?.pnpId === availablePort.pnpId
+                ? 'contained'
+                : 'outlined'
+            }
+          >
+            {availablePort.path} - {availablePort.friendlyName}
+          </Button>
+        ))}
+      {activeStep === 1 && (
+        <Typography variant="p1Medium">
+          Selected Receiver Port: {selectedPort?.friendlyName}
+        </Typography>
+      )}
+      {activeStep === 1 && (
+        <StyledRootFieldContainer>
+          <StyledFieldContainer>
+            <div />
+            <div />
+            <div />
+            <div />
+            <div />
 
-          <div />
+            <div />
 
-          <div />
-          <div />
-          <div />
-          <div />
-          <div />
-        </StyledFieldContainer>
-        <StyledBordersContainer />
-        <StyledTeamBase
-          style={{
-            right: '15px',
-            borderRadius: '50% 0px   0px 50%',
-          }}
-        />
+            <div />
+            <div />
+            <div />
+            <div />
+            <div />
+          </StyledFieldContainer>
+          <StyledBordersContainer />
+          <StyledTeamBase
+            style={{
+              right: '15px',
+              borderRadius: '50% 0px   0px 50%',
+            }}
+          />
 
-        <StyledTeamBase
-          style={{
-            left: '15px',
-          }}
-        />
-        <div
-          style={{
-            border: '1px solid white',
-            height: '270px',
-            position: 'absolute',
-            top: '15px',
-            right: '50%',
-            width: '1px',
-          }}
-        />
-        <Button1SignalConfirmation
-          confirmed={buttonState?.button1HandshakeConfirmed}
-        />
+          <StyledTeamBase
+            style={{
+              left: '15px',
+            }}
+          />
+          <div
+            style={{
+              border: '1px solid white',
+              height: '270px',
+              position: 'absolute',
+              top: '15px',
+              right: '50%',
+              width: '1px',
+            }}
+          />
+          <Button1SignalConfirmation
+            confirmed={buttonState?.button1HandshakeConfirmed}
+          />
 
-        <Button2SignalConfirmation
-          confirmed={buttonState?.button2HandshakeConfirmed}
-        />
-      </StyledRootFieldContainer>
+          <Button2SignalConfirmation
+            confirmed={buttonState?.button2HandshakeConfirmed}
+          />
+        </StyledRootFieldContainer>
+      )}
     </FlexContainer>
   );
 };

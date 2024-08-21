@@ -20,6 +20,8 @@ interface TimerStoreState {
     onFinishCallback?: (hasFinished: boolean) => void,
     onBreakFinishCallback?: (hasFinished: boolean) => void,
     onStartCountdown?: () => void,
+    on10Seconds?: () => void,
+    on30Seconds?: () => void,
   ) => void;
   stopTimer: () => void;
   resetTimer: () => void;
@@ -38,6 +40,8 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
     callback,
     onBreakFinishCallback,
     onStartCountdown,
+    on10Seconds,
+    on30Seconds,
   ) => {
     set(() => ({
       timerFn: callback,
@@ -66,6 +70,12 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
         }
         if (state.breakDuration - delayInMs === 5000) {
           onStartCountdown?.();
+        }
+        if (state.breakDuration === 10000) {
+          on10Seconds?.();
+        }
+        if (state.breakDuration === 30000) {
+          on30Seconds?.();
         }
         localStorage.setItem(
           'gameDuration',

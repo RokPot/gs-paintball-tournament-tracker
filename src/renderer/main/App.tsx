@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SnackbarProvider } from 'notistack';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import ButtonsProvider from 'store/ButtonsContext';
 import ConfirmationModal from '../../components/shared/ConfirmationModal';
 import { theme } from '../../theme/theme';
 import Layout from '../layout/Layout';
@@ -28,60 +29,63 @@ const App = () => {
   const queryClient = new QueryClient();
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <GlobalStyles
-        styles={{
-          '*::-webkit-scrollbar': {
-            width: '0.4em',
-            height: '0.4em',
-          },
+      <ButtonsProvider>
+        <CssBaseline />
+        <GlobalStyles
+          styles={{
+            '*::-webkit-scrollbar': {
+              width: '0.4em',
+              height: '0.4em',
+            },
 
-          '*::-webkit-scrollbar-thumb': {
-            backgroundColor: alpha(theme.palette.primary.main, 0.6),
-            borderRadius: '20px',
-          },
-          '*::-webkit-scrollbar-track': {
-            backgroundColor: alpha(theme.palette.primary.main, 0.15),
-          },
-        }}
-      />
-      <ErrorBoundary
-        fallbackRender={fallbackRender}
-        onReset={(details) => {
-          // Reset the state of your app so the error doesn't happen again
-          console.log(details);
-        }}
-      >
-        <SnackbarProvider
-          maxSnack={5}
-          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+            '*::-webkit-scrollbar-thumb': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.6),
+              borderRadius: '20px',
+            },
+            '*::-webkit-scrollbar-track': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.15),
+            },
+          }}
+        />
+        <ErrorBoundary
+          fallbackRender={fallbackRender}
+          onReset={(details) => {
+            // Reset the state of your app so the error doesn't happen again
+            console.log(details);
+            window.location.reload();
+          }}
         >
-          <QueryClientProvider client={queryClient}>
-            <MemoryRouter>
-              <Routes>
-                <Route path="/results" element={<ResultsPage />} />
+          <SnackbarProvider
+            maxSnack={5}
+            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          >
+            <QueryClientProvider client={queryClient}>
+              <MemoryRouter>
+                <Routes>
+                  <Route path="/results" element={<ResultsPage />} />
 
-                <Route path={routes.HOME} element={<Layout />}>
-                  <Route path={routes.HOME} element={<HomePage />} />
+                  <Route path={routes.HOME} element={<Layout />}>
+                    <Route path={routes.HOME} element={<HomePage />} />
 
-                  <Route path={routes.LEAGUES} element={<LeaguesPage />} />
-                  <Route path={routes.TEAMS} element={<TeamsPage />} />
-                  <Route
-                    path={routes.TOURNAMENT}
-                    element={<TournamentPage />}
-                  />
-                  <Route
-                    path={routes.SCOREBOARD}
-                    element={<ScoreboardPage />}
-                  />
-                </Route>
-              </Routes>
-            </MemoryRouter>
+                    <Route path={routes.LEAGUES} element={<LeaguesPage />} />
+                    <Route path={routes.TEAMS} element={<TeamsPage />} />
+                    <Route
+                      path={routes.TOURNAMENT}
+                      element={<TournamentPage />}
+                    />
+                    <Route
+                      path={routes.SCOREBOARD}
+                      element={<ScoreboardPage />}
+                    />
+                  </Route>
+                </Routes>
+              </MemoryRouter>
 
-            <ConfirmationModal />
-          </QueryClientProvider>
-        </SnackbarProvider>
-      </ErrorBoundary>
+              <ConfirmationModal />
+            </QueryClientProvider>
+          </SnackbarProvider>
+        </ErrorBoundary>
+      </ButtonsProvider>
     </ThemeProvider>
   );
 };

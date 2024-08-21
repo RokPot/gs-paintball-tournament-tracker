@@ -32,7 +32,6 @@ const StyledStackingContainer = styled('div')(
 const HomePage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-
   const { data: leaguesList, isLoading: isFetchingLeaguesList } =
     LeagueQueries.useLeaguesList();
 
