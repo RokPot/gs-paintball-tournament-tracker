@@ -4,6 +4,7 @@ import TimerStoreRenderComponent from './TimerStoreRenderComponent';
 
 const GameTimerStoreRenderComponent: React.FC = () => {
   const { duration } = useTimerStore();
+
   return <TimerStoreRenderComponent duration={duration} />;
 };
 

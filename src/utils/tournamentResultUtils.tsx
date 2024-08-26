@@ -746,11 +746,14 @@ const calculateSingleEliminationsPoints = (finishedGames: Game[]) => {
     ...leaderboardTeams.map((ldbTeam) => ldbTeam.team.id),
   ];
   finishedGamesReversed.forEach((finishedGame) => {
-    const { loserLeaderboardTeam } = prepareLeaderboardTeamsForEliminationsGame(
-      finishedGame,
-      false,
-      true,
-    );
+    const { loserLeaderboardTeam, winnerLeaderboardTeam } =
+      prepareLeaderboardTeamsForEliminationsGame(finishedGame, false, false);
+    if (finishedGamesReversed?.length < 4) {
+      if (!processedTeams.includes(winnerLeaderboardTeam.team.id)) {
+        leaderboardTeams.push(winnerLeaderboardTeam);
+        processedTeams.push(winnerLeaderboardTeam.team.id);
+      }
+    }
     if (!processedTeams.includes(loserLeaderboardTeam.team.id)) {
       leaderboardTeams.push(loserLeaderboardTeam);
       processedTeams.push(loserLeaderboardTeam.team.id);
@@ -875,5 +878,8 @@ export const calculateTournamentLeaderboard = (tournament?: Tournament) => {
       );
     }
   }
+  leaderboard.forEach((team, index) => {
+    team.rank = index + 1;
+  });
   return leaderboard;
 };

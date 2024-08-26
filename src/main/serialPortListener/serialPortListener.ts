@@ -25,14 +25,13 @@ export declare interface PortInfo {
   vendorId: string | undefined;
 }
 // let mainWindow: BrowserWindow | null = null;
+let serialPort: SerialPort | null = null;
+let SerialReadlineParser: ReadlineParser | null = null;
 
 const serialPortListener = (mainWindow: BrowserWindow) => {
-  let serialPort: SerialPort | null = null;
-  let SerialReadlineParser: ReadlineParser | null = null;
   // eslint-disable-next-line react-hooks/rules-of-hooks
   ipcMain.on('getPortsList', async (event) => {
     const ports = await SerialPort.list();
-    console.log('poooorts', ports);
     event.reply('getPortsListResponse', ports);
   });
   ipcMain.on('selectSerialPort', async (event) => {

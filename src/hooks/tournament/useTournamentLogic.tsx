@@ -8,7 +8,6 @@ import Game from 'types/Game';
 import { DefaultGameSettings } from 'types/GameSettings';
 import { GameState, GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
-import Tournament from 'types/Tournament';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import TournamentStage from 'types/TournamentStage';
 
@@ -16,15 +15,22 @@ import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import useTimeLeftSpeech from 'hooks/sounds/useTimeLeftSpeech';
 import { useSnackbar } from 'notistack';
 import useConfirmationModalStore from 'store/ConfirmationModalStore';
+import useTournamentStore from 'store/TournamentStore';
 import ActivityChangeType from 'types/ActivityChangeType';
 import Team from 'types/Team';
 import TournamentActivity from 'types/TournamentActivity';
 import { TournamentStatus } from 'types/TournamentStatus';
+import useBus from 'use-bus';
 import { snackbarSuccessOptions } from 'utils/snackbarUtils';
 import { TournamentFlow } from 'utils/tournamentFlowUtils';
+import { useShallow } from 'zustand/react/shallow';
 import useTournamentFlows from './useTournamentFlows';
 
-const useTournamentLogic = (tournament?: Tournament) => {
+const useTournamentLogic = () => {
+  const { data: activeLeague, isLoading: isFetchingActiveLeague } =
+    LeagueQueries.useActiveLeague();
+  const tournament = activeLeague?.activeTournament;
+
   const {
     setDuration,
     setBreakDuration,
@@ -49,10 +55,28 @@ const useTournamentLogic = (tournament?: Tournament) => {
   const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
   const { updateGameData } = useGameFlows();
   const { openModal } = useConfirmationModalStore();
-  const [isMatchInProgress, setIsMatchInProgress] = useState(false);
+
+  const {
+    isMatchInProgress,
+    setCurrentActiveGame,
+    setIsMatchInProgress,
+    showFinishMatchModal,
+    setShowFinishMatchModal,
+    hasGameTimeRanOut,
+    setHasGameTimeRanOut,
+  } = useTournamentStore(
+    useShallow((state) => ({
+      isMatchInProgress: state.isMatchInProgress,
+      setCurrentActiveGame: state.setCurrentActiveGame,
+      setIsMatchInProgress: state.setIsMatchInProgress,
+      showFinishMatchModal: state.showFinishMatchModal,
+      setShowFinishMatchModal: state.setShowFinishMatchModal,
+      hasGameTimeRanOut: state.hasGameTimeRanOut,
+      setHasGameTimeRanOut: state.setHasGameTimeRanOut,
+    })),
+  );
+
   const [firstLoad, setFirstLoad] = useState(false);
-  const [hasGameTimeRanOut, setHasGameTimeRanOut] = useState(false);
-  const [showFinishMatchModal, setShowFinishMatchModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const { addStageToTournament, addNewTournamentActivity } =
     useTournamentFlows();
@@ -195,7 +219,14 @@ const useTournamentLogic = (tournament?: Tournament) => {
       starterGames.newPairedGame2,
     );
     resetTimer();
-  }, [currentSchedule, resetTimer, setNewActiveGroupAndGames, tournament]);
+    await invalidateSelectedLeague();
+  }, [
+    currentSchedule,
+    invalidateSelectedLeague,
+    resetTimer,
+    setNewActiveGroupAndGames,
+    tournament,
+  ]);
 
   const finishGame = useCallback(
     async (game: Game, gameWinner: GameWinner) => {
@@ -347,7 +378,9 @@ const useTournamentLogic = (tournament?: Tournament) => {
       goToNextTournamentStage,
       sendGameSwitched,
       setGameAndBreakDuration,
+      setIsMatchInProgress,
       setNewActiveGroupAndGames,
+      setShowFinishMatchModal,
       tournament,
       updateGameData,
     ],
@@ -357,7 +390,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
     playMatchPoint();
     setHasGameTimeRanOut(true);
     setShowFinishMatchModal(true);
-  }, [playMatchPoint]);
+  }, [playMatchPoint, setHasGameTimeRanOut, setShowFinishMatchModal]);
 
   const onBreakFinished = useCallback(() => {}, []);
 
@@ -370,26 +403,30 @@ const useTournamentLogic = (tournament?: Tournament) => {
   }, [startSpeech]);
 
   const onTimer10SecondsLeft = useCallback(() => {
-    startSpeech(30);
+    startSpeech(10);
   }, [startSpeech]);
 
   const startStopMatch = useCallback(() => {
     if (!activeScheduledGame || !tournament || !gameSettings) {
       return;
     }
+    setHasGameTimeRanOut(false);
     if (isMatchInProgress) {
       stopTimer();
       stopSpeech();
       setIsMatchInProgress(false);
+      stopCountdown();
       return;
     }
 
     setIsMatchInProgress(true);
+    setCurrentActiveGame(activeScheduledGame.game, true);
     const timerDelayInMs = 200;
     const timerDurationInMs = activeScheduledGame.game.gameTime * 1000;
     const breakDurationInMs =
       (gameSettings.manualGameStartTimeInSeconds ||
         DefaultGameSettings.manualGameStartTimeInSeconds) * 1000;
+
     startTimer(
       timerDelayInMs,
       timerDurationInMs,
@@ -409,7 +446,11 @@ const useTournamentLogic = (tournament?: Tournament) => {
     onTimer10SecondsLeft,
     onTimer30SecondsLeft,
     onTimerFinished,
+    setCurrentActiveGame,
+    setHasGameTimeRanOut,
+    setIsMatchInProgress,
     startTimer,
+    stopCountdown,
     stopSpeech,
     stopTimer,
     tournament,
@@ -464,7 +505,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
       }
       setShowFinishMatchModal(shouldShowFinishMatchModal);
     },
-    [playMatchPoint, stopSpeech, stopTimer],
+    [playMatchPoint, setShowFinishMatchModal, stopSpeech, stopTimer],
   );
   useEffect(() => {
     setIsMatchInProgress(timingGame || timingBreak);
@@ -478,13 +519,16 @@ const useTournamentLogic = (tournament?: Tournament) => {
       !tournament ||
       !gameSettings ||
       firstLoad ||
-      isCurrentMatchInProgress
+      isCurrentMatchInProgress ||
+      hasGameTimeRanOut ||
+      showFinishMatchModal
     ) {
       return;
     }
-    setGameAndBreakDuration(activeScheduledGame);
 
+    setGameAndBreakDuration(activeScheduledGame);
     setFirstLoad(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeScheduledGame,
     firstLoad,
@@ -534,6 +578,22 @@ const useTournamentLogic = (tournament?: Tournament) => {
     ],
   );
 
+  useBus(
+    'FinishMatch',
+    (event: any) => {
+      if (!isMatchInProgress || showFinishMatchModal || timingBreak) {
+        return;
+      }
+      if (event.payload === 'Team1Button') {
+        setFinishMatchModal(true);
+      }
+      if (event.payload === 'Team2Button') {
+        setFinishMatchModal(true);
+      }
+    },
+    [isMatchInProgress, showFinishMatchModal, setFinishMatchModal],
+  );
+
   return useMemo(() => {
     return {
       currentStage,
@@ -550,11 +610,15 @@ const useTournamentLogic = (tournament?: Tournament) => {
       setFinishMatchModal,
       confirmNextTournamentStage,
       onTeamPause,
+      setFirstLoad,
+      activeLeague,
+      isFetchingActiveLeague,
     };
   }, [
     currentStage,
     activeScheduledGame,
-
+    activeLeague,
+    isFetchingActiveLeague,
     timingBreak,
     isMatchInProgress,
     hasGameTimeRanOut,
@@ -567,6 +631,7 @@ const useTournamentLogic = (tournament?: Tournament) => {
     setFinishMatchModal,
     confirmNextTournamentStage,
     onTeamPause,
+    setFirstLoad,
   ]);
 };
 

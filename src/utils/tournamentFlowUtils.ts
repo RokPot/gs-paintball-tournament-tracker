@@ -403,6 +403,7 @@ export namespace TournamentFlow {
       if (team2HasMoreWinsThanTeam1) {
         return { gameWinner: GameWinner.team2, winningTeam: game.team2 };
       }
+
       if (isGameADraw) {
         return { gameWinner: GameWinner.draw };
       }
@@ -427,53 +428,141 @@ export namespace TournamentFlow {
     }
     if (
       (team1HasMoreThanThresholdWins || team2HasMoreThanThresholdWins) &&
-      isGameADraw
+      isGameADraw &&
+      !twoWinsDifference
     ) {
       return { gameWinner: GameWinner.draw };
     }
     return { gameWinner: GameWinner.notYet };
   };
 
-  export const prepareNextGameIfEliminationsTournament = (
+  export const getNextGamesForEliminationsTournament = (
     game: Game,
     currentGroup?: TournamentGroup,
     currentStageTournamentType?: TournamentType,
   ) => {
     if (!currentGroup || !currentStageTournamentType) {
-      return undefined;
+      return {
+        nextRoundGameWinner: undefined,
+        nextRoundGameLoser: undefined,
+      };
     }
+
     switch (currentStageTournamentType) {
       case TournamentType.singleElimination: {
         const currentGameBracketProperties = game.bracketProperties;
         const currentGroupGames = currentGroup.games;
+        let nextRelatedBracketGameForWinningTeam: Game | undefined;
+        let nextRelatedBracketGameForLosingTeam: Game | undefined;
+        if (
+          currentGameBracketProperties?.winnerNextRoundGameNumber !== undefined
+        ) {
+          nextRelatedBracketGameForWinningTeam = currentGroupGames?.find(
+            (newGame) =>
+              newGame.bracketProperties?.round ===
+                currentGameBracketProperties!.round + 1 &&
+              newGame.bracketProperties.roundGameNumber ===
+                currentGameBracketProperties?.winnerNextRoundGameNumber,
+          );
+        }
 
-        const nextRelatedBracketGameForWinningTeam = currentGroupGames?.find(
-          (newGame) =>
-            newGame.bracketProperties?.round ===
-              currentGameBracketProperties!.round + 1 &&
-            newGame.bracketProperties.roundGameNumber ===
-              currentGameBracketProperties?.winnerNextRoundGameNumber,
+        if (
+          currentGameBracketProperties?.loserNextRoundGameNumber !== undefined
+        ) {
+          nextRelatedBracketGameForLosingTeam = currentGroupGames?.find(
+            (newGame) =>
+              newGame.bracketProperties?.round ===
+                currentGameBracketProperties!.round + 1 &&
+              newGame.bracketProperties.roundGameNumber ===
+                currentGameBracketProperties?.loserNextRoundGameNumber,
+          );
+        }
+
+        return {
+          nextRoundGameWinner: nextRelatedBracketGameForWinningTeam,
+          nextRoundGameLoser: nextRelatedBracketGameForLosingTeam,
+        };
+      }
+      case TournamentType.roundRobin:
+      case TournamentType.doubleElimination:
+      case TournamentType.training:
+      default: {
+        break;
+      }
+    }
+    return {
+      nextRoundGameWinner: undefined,
+      nextRoundGameLoser: undefined,
+    };
+  };
+
+  export const prepareNextGameIfEliminationsTournament = (
+    game: Game,
+    currentGroup?: TournamentGroup,
+    currentStageTournamentType?: TournamentType,
+    overrideExisting?: boolean,
+  ) => {
+    if (!currentGroup || !currentStageTournamentType) {
+      return undefined;
+    }
+
+    switch (currentStageTournamentType) {
+      case TournamentType.singleElimination: {
+        const {
+          nextRoundGameLoser: nextRelatedBracketGameForLosingTeam,
+          nextRoundGameWinner: nextRelatedBracketGameForWinningTeam,
+        } = getNextGamesForEliminationsTournament(
+          game,
+          currentGroup,
+          currentStageTournamentType,
         );
+
         if (nextRelatedBracketGameForWinningTeam) {
           const winningTeam =
             game.gameWinner === GameWinner.team1 ? game.team1 : game.team2;
-          if (!nextRelatedBracketGameForWinningTeam.team1.id) {
+          const losingTeam =
+            game.gameWinner === GameWinner.team1 ? game.team2 : game.team1;
+          if (overrideExisting) {
+            if (
+              [winningTeam.id, losingTeam.id].includes(
+                nextRelatedBracketGameForWinningTeam.team1.id,
+              )
+            ) {
+              nextRelatedBracketGameForWinningTeam.team1 = winningTeam;
+            } else if (
+              [winningTeam.id, losingTeam.id].includes(
+                nextRelatedBracketGameForWinningTeam.team2.id,
+              )
+            ) {
+              nextRelatedBracketGameForWinningTeam.team2 = winningTeam;
+            }
+          } else if (!nextRelatedBracketGameForWinningTeam.team1.id) {
             nextRelatedBracketGameForWinningTeam.team1 = winningTeam;
           } else if (!nextRelatedBracketGameForWinningTeam.team2.id) {
             nextRelatedBracketGameForWinningTeam.team2 = winningTeam;
           }
         }
-        const nextRelatedBracketGameForLosingTeam = currentGroupGames?.find(
-          (newGame) =>
-            newGame.bracketProperties?.round ===
-              currentGameBracketProperties!.round + 1 &&
-            newGame.bracketProperties.roundGameNumber ===
-              currentGameBracketProperties?.loserNextRoundGameNumber,
-        );
+
         if (nextRelatedBracketGameForLosingTeam) {
           const losingTeam =
             game.gameWinner === GameWinner.team1 ? game.team2 : game.team1;
-          if (!nextRelatedBracketGameForLosingTeam.team1.id) {
+          const winningTeam =
+            game.gameWinner === GameWinner.team1 ? game.team1 : game.team2;
+          if (overrideExisting) {
+            if (
+              [winningTeam.id, losingTeam.id].includes(
+                nextRelatedBracketGameForLosingTeam.team1.id,
+              )
+            ) {
+              nextRelatedBracketGameForLosingTeam.team1 = losingTeam;
+            } else if (
+              [winningTeam.id, losingTeam.id].includes(
+                nextRelatedBracketGameForLosingTeam.team2.id,
+              )
+            ) {
+              nextRelatedBracketGameForLosingTeam.team2 = losingTeam;
+            }
+          } else if (!nextRelatedBracketGameForLosingTeam.team1.id) {
             nextRelatedBracketGameForLosingTeam.team1 = losingTeam;
           } else if (!nextRelatedBracketGameForLosingTeam.team2.id) {
             nextRelatedBracketGameForLosingTeam.team2 = losingTeam;
@@ -628,6 +717,11 @@ export namespace TournamentFlow {
     ]);
   };
 
+  export const addTwoMinutesToDrawGame = (game: Game) => {
+    game.gameTime += 120;
+    return game;
+  };
+
   export const onAfterFinishedMatchProcedure = (
     currentActiveScheduledGame: TournamentScheduleGame,
     timeLeft: number,
@@ -665,15 +759,30 @@ export namespace TournamentFlow {
         : tournament.settings.secondStageType;
 
     if (gameWinner !== GameWinner.notYet) {
-      // 2. Finish this match, and prepare related matches
-      const finishedAndRelatedGames =
-        TournamentFlow.finishGameAndPrepareNextGames(
+      if (
+        gameWinner === GameWinner.draw &&
+        currentStageTournamentType === TournamentType.singleElimination
+      ) {
+        const extendedGame = TournamentFlow.addTwoMinutesToDrawGame(
           currentActiveScheduledGame.game,
-          gameWinner,
-          groupOfCurrentGame,
-          currentStageTournamentType,
         );
-      returnState.gamesToUpdate.push(...finishedAndRelatedGames);
+        returnState.gamesToUpdate.push(extendedGame);
+      }
+      if (
+        gameWinner !== GameWinner.draw ||
+        (gameWinner === GameWinner.draw &&
+          currentStageTournamentType !== TournamentType.singleElimination)
+      ) {
+        const finishedAndRelatedGames =
+          TournamentFlow.finishGameAndPrepareNextGames(
+            currentActiveScheduledGame.game,
+            gameWinner,
+            groupOfCurrentGame,
+            currentStageTournamentType,
+          );
+        returnState.gamesToUpdate.push(...finishedAndRelatedGames);
+      }
+      // 2. Finish this match, and prepare related matches
     }
 
     // 3. Handle game switching

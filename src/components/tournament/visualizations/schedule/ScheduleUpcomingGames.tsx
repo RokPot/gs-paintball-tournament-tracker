@@ -13,6 +13,7 @@ import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import { CSSProperties, useEffect, useState } from 'react';
 import { GameState } from 'types/GameState';
 import League from 'types/League';
+import Team from 'types/Team';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentStatus } from 'types/TournamentStatus';
 
@@ -21,6 +22,7 @@ interface IProps {
   style?: CSSProperties;
   disableNewWindowOpen?: boolean;
   fontSize?: number;
+  isInResultsWindow?: boolean;
 }
 
 const StyledFlexContainer = styled(FlexContainer)`
@@ -40,6 +42,7 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
   style,
   disableNewWindowOpen,
   fontSize = 14,
+  isInResultsWindow,
 }) => {
   const theme = useTheme();
 
@@ -75,6 +78,13 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
     setUpcomingGames(groupedUpcomingGames);
   }, [activeLeague?.activeTournament]);
 
+  const getTeamName = (team: Team) => {
+    if (isInResultsWindow) {
+      return team.teamTag;
+    }
+    return team.teamName;
+  };
+
   if (
     !activeLeague?.activeTournament ||
     activeLeague?.activeTournament.state.isTournamentFinished ||
@@ -84,7 +94,8 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
   }
   return (
     <StyledFlexContainer
-      flexDirection="row"
+      flexDirection={isInResultsWindow ? 'column' : 'row'}
+      justifyContent={isInResultsWindow ? 'space-around' : 'center'}
       style={{
         ...style,
       }}
@@ -105,27 +116,32 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
                 ? `Next ${pairedGame2 ? 'pairs' : ''}: `
                 : `Upcoming ${pairedGame2 ? 'pair' : ''}: `}
             </Typography>
-            <Typography
-              variant="p1Medium"
-              style={{ textDecoration: 'underline' }}
-              fontSize={fontSize}
-            >
-              {pairedGame1.game.team1.teamName || 'TBD'}
-              <Typography variant="p1" style={{ textDecoration: 'none' }}>
+            <Typography variant="p1Medium" fontSize={fontSize}>
+              {getTeamName(pairedGame1.game.team1) || 'TBD'}
+              <Typography
+                variant="p1"
+                style={{ textDecoration: 'none' }}
+                fontSize={isInResultsWindow ? fontSize - 20 : undefined}
+              >
                 {' vs '}
               </Typography>
-              {pairedGame1.game.team2.teamName || 'TBD'}
+              {getTeamName(pairedGame1.game.team2) || 'TBD'}
             </Typography>
             {pairedGame2 && (
               <>
-                <Typography padding="0px 4px">{', '}</Typography>
                 <Typography
-                  variant="p1Medium"
-                  style={{ textDecoration: 'underline' }}
-                  fontSize={fontSize}
+                  padding="0px 4px"
+                  fontSize={isInResultsWindow ? fontSize - 20 : undefined}
                 >
+                  {', '}
+                </Typography>
+                <Typography variant="p1Medium" fontSize={fontSize}>
                   {pairedGame2.game.team1.teamName || 'TBD'}
-                  <Typography variant="p1" style={{ textDecoration: 'none' }}>
+                  <Typography
+                    variant="p1"
+                    style={{ textDecoration: 'none' }}
+                    fontSize={isInResultsWindow ? fontSize - 20 : undefined}
+                  >
                     {' vs '}
                   </Typography>
                   {pairedGame2.game.team2.teamName || 'TBD'}

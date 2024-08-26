@@ -1,54 +1,54 @@
 import { omit } from 'lodash';
-import { useCallback } from 'react';
+import { useCallback, useContext } from 'react';
+import { PouchDBContext } from 'store/PouchDBContext';
 import { TournamentDto } from 'types/dto/TournamentDto';
 import { TournamentGroupDto } from 'types/dto/TournamentGroupDto';
 import { DocType } from 'types/interfaces/IPouchDB';
 import { getGroupsList } from 'utils/PouchDBUtils';
-import usePouchDB, { pouchDbName } from './pouchDB';
 
 const useGroupService = () => {
-  const db = usePouchDB(pouchDbName);
+  const { database } = useContext(PouchDBContext);
 
   const addNewGroup = useCallback(
     async (group: TournamentGroupDto) => {
-      await db.post(group);
+      await database.post(group);
 
       return true;
     },
-    [db],
+    [database],
   );
 
   const addNewGroupBatch = useCallback(
     async (groups: TournamentGroupDto[]) => {
-      await db.bulkDocs(groups);
+      await database.bulkDocs(groups);
       return true;
     },
-    [db],
+    [database],
   );
 
   const updateGroup = useCallback(
     async (group: TournamentGroupDto) => {
-      const res = await db.get(group._id);
+      const res = await database.get(group._id);
 
       const toUpdate = {
         ...res,
         ...omit(group, ['_rev', '_id']),
       };
-      await db.put(toUpdate);
+      await database.put(toUpdate);
 
       return true;
     },
-    [db],
+    [database],
   );
 
   const deleteGroup = useCallback(
     async (group: TournamentGroupDto) => {
-      const fetchedGroup = await db.get<TournamentGroupDto>(group._id);
-      await db.remove(fetchedGroup._id, fetchedGroup._rev);
+      const fetchedGroup = await database.get<TournamentGroupDto>(group._id);
+      await database.remove(fetchedGroup._id, fetchedGroup._rev);
 
       return true;
     },
-    [db],
+    [database],
   );
 
   const getGroup = useCallback(
@@ -70,14 +70,14 @@ const useGroupService = () => {
           }
         }
       };
-      const result = await db.query<TournamentDto[]>(myMapFunction, {
+      const result = await database.query<TournamentDto[]>(myMapFunction, {
         include_docs: true,
       });
       const groupsList = getGroupsList(result);
       const group = groupsList?.length > 0 ? groupsList[0] : null;
       return group;
     },
-    [db],
+    [database],
   );
 
   const getGroups = useCallback(
@@ -100,13 +100,13 @@ const useGroupService = () => {
           }
         }
       };
-      const result = await db.query<TournamentGroupDto[]>(myMapFunction, {
+      const result = await database.query<TournamentGroupDto[]>(myMapFunction, {
         include_docs: true,
       });
       const groups = getGroupsList(result);
       return groups.sort((a, b) => a.groupIndex - b.groupIndex);
     },
-    [db],
+    [database],
   );
 
   return {

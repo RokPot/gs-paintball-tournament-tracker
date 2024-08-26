@@ -32,5 +32,5 @@ export const convertFromSecondsDayjs = (seconds: number) => {
 };
 
 export const fromDayjsToSeconds = (time: Dayjs) => {
-  return (time.minute() || 1) * (time.second() || 60);
+  return time.minute() * 60 + time.second();
 };

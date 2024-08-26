@@ -1,57 +1,57 @@
 import { omit } from 'lodash';
-import { useCallback } from 'react';
+import { useCallback, useContext } from 'react';
+import { PouchDBContext } from 'store/PouchDBContext';
 import { GameDto } from 'types/dto/GameDto';
 import { DocType } from 'types/interfaces/IPouchDB';
 import { getGamesList } from 'utils/PouchDBUtils';
-import usePouchDB, { pouchDbName } from './pouchDB';
 
 const useGameService = () => {
-  const db = usePouchDB(pouchDbName);
+  const { database } = useContext(PouchDBContext);
 
   const addNewGame = useCallback(
     async (game: GameDto) => {
-      const res = await db.post(game);
-      const newGame = await db.get<GameDto>(res.id);
+      const res = await database.post(game);
+      const newGame = await database.get<GameDto>(res.id);
 
       return newGame;
     },
-    [db],
+    [database],
   );
 
   const addNewGameBatch = useCallback(
     async (games: GameDto[]) => {
-      await db.bulkDocs(games);
+      await database.bulkDocs(games);
 
       return true;
     },
-    [db],
+    [database],
   );
 
   const updateGame = useCallback(
     async (game: GameDto) => {
-      const res = await db.get(game._id);
+      const res = await database.get(game._id);
 
       const toUpdate = {
         ...res,
         ...omit(game, ['_rev', '_id']),
       };
-      await db.put(toUpdate);
+      await database.put(toUpdate);
 
-      const updatedGame = await db.get<GameDto>(game._id);
+      const updatedGame = await database.get<GameDto>(game._id);
 
       return updatedGame;
     },
-    [db],
+    [database],
   );
 
   const deleteGame = useCallback(
     async (game: GameDto) => {
-      const fetchedGame = await db.get<GameDto>(game._id);
-      await db.remove(fetchedGame._id, fetchedGame._rev);
+      const fetchedGame = await database.get<GameDto>(game._id);
+      await database.remove(fetchedGame._id, fetchedGame._rev);
 
       return true;
     },
-    [db],
+    [database],
   );
 
   const getGame = useCallback(
@@ -69,14 +69,14 @@ const useGameService = () => {
           }
         }
       };
-      const result = await db.query<GameDto[]>(myMapFunction, {
+      const result = await database.query<GameDto[]>(myMapFunction, {
         include_docs: true,
       });
       const gamesList = getGamesList(result);
       const game = gamesList?.length > 0 ? gamesList[0] : null;
       return game;
     },
-    [db],
+    [database],
   );
 
   const getGames = useCallback(async () => {
@@ -91,11 +91,11 @@ const useGameService = () => {
         }
       }
     };
-    const result = await db.query<GameDto[]>(myMapFunction, {
+    const result = await database.query<GameDto[]>(myMapFunction, {
       include_docs: true,
     });
     return getGamesList(result);
-  }, [db]);
+  }, [database]);
 
   return {
     addNewGame,

@@ -1,82 +1,86 @@
 import { omit } from 'lodash';
-import { useCallback } from 'react';
+import { useCallback, useContext } from 'react';
+import { PouchDBContext } from 'store/PouchDBContext';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import Team from 'types/Team';
 import { LeaderboardTeamDto } from 'types/dto/LeaderboardTeamDto';
 import { TeamDto } from 'types/dto/TeamDto';
-import usePouchDB, { pouchDbName } from './pouchDB';
 
 const useTeamService = () => {
-  const db = usePouchDB(pouchDbName);
+  const { database } = useContext(PouchDBContext);
 
   const getTeam = useCallback(
     async (teamId: string) => {
       return new Team(
-        await db.get<TeamDto>(teamId, {
+        await database.get<TeamDto>(teamId, {
           attachments: true,
         }),
       );
     },
-    [db],
+    [database],
   );
 
   const addNewTeam = useCallback(
     async (team: Team) => {
-      const res = await db.upsert<TeamDto>(team._id, (doc: any) => {
+      const res = await database.upsert<TeamDto>(team._id, (doc: any) => {
         if (!doc?.teamName) {
           return omit(team.toDto(), ['_id']);
         }
         return doc;
       });
-      const newTeam = new Team(await db.get<TeamDto>(res.id));
+      const newTeam = new Team(await database.get<TeamDto>(res.id));
 
       return newTeam;
     },
-    [db],
+    [database],
   );
 
   const addNewLeaderBoardTeams = useCallback(
     async (teams: LeaderboardTeam[]) => {
-      const res = await db.bulkDocs([...teams.map((team) => team.toDto())]);
+      const res = await database.bulkDocs([
+        ...teams.map((team) => team.toDto()),
+      ]);
       return res;
     },
-    [db],
+    [database],
   );
 
   const addNewLeaderBoardTeam = useCallback(
     async (leaderboardTeam: LeaderboardTeam) => {
-      await db.post(leaderboardTeam.toDto());
+      await database.post(leaderboardTeam.toDto());
       const team = await getTeam(leaderboardTeam.team._id);
       if (!team) {
         return null;
       }
-      const freshLeaderboardTeam = await db.get<LeaderboardTeamDto>(
+      const freshLeaderboardTeam = await database.get<LeaderboardTeamDto>(
         leaderboardTeam._id,
       );
 
       return new LeaderboardTeam({ ...freshLeaderboardTeam, team });
     },
-    [db, getTeam],
+    [database, getTeam],
   );
 
   const updateTeam = useCallback(
     async (team: Team) => {
-      const res = await db.get(team._id);
+      const res = await database.get(team._id);
       const toUpdate = { ...res, ...omit(team.toDto(), ['_rev', '_id']) };
-      await db.put(toUpdate);
-      const updatedTeam = new Team({ ...(await db.get<TeamDto>(team._id)) });
+      await database.put(toUpdate);
+      const updatedTeam = new Team({
+        ...(await database.get<TeamDto>(team._id)),
+      });
 
       return updatedTeam;
     },
-    [db],
+    [database],
   );
   const deleteTeam = useCallback(
     async (team: Team) => {
-      const res = await db.get<Team>(team._id);
+      const res = await database.get<Team>(team._id);
 
-      await db.remove({ _id: res._id, _rev: res._rev });
+      await database.remove({ _id: res._id, _rev: res._rev });
     },
-    [db],
+    [database],
   );
 
   const getTeams = useCallback(async () => {
@@ -85,7 +89,7 @@ const useTeamService = () => {
         emit(doc);
       }
     };
-    const result = await db.query<TeamDto>(myMapFunction, {
+    const result = await database.query<TeamDto>(myMapFunction, {
       include_docs: true,
     });
 
@@ -94,7 +98,7 @@ const useTeamService = () => {
         ?.map((row) => new Team(row.doc!))
         .filter((row) => row !== undefined) || []
     );
-  }, [db]);
+  }, [database]);
 
   return {
     addNewTeam,

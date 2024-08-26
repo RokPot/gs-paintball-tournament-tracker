@@ -1,5 +1,7 @@
 import { PortInfo } from 'hooks/main/useIPCRendererMessages';
-import React, { useMemo, useState } from 'react';
+import useSerialButton from 'hooks/serial-button/useSerialButton';
+import React, { useCallback, useMemo, useState } from 'react';
+import { dispatch } from 'use-bus';
 
 interface ButtonState {
   button1HandshakeConfirmed?: boolean;
@@ -11,6 +13,9 @@ export type ButtonsContextProps = {
   buttonState?: ButtonState;
   setSelectedPort?: (selectedPort: PortInfo) => void;
   setButtonState?: (buttonState: ButtonState) => void;
+  availablePorts?: PortInfo[];
+  refreshAvailablePorts?: () => void;
+  selectReceiverPort?: (port: PortInfo) => void;
 };
 
 export const ButtonsContext = React.createContext<ButtonsContextProps>({});
@@ -23,14 +28,33 @@ const ButtonsProvider: React.FC<{ children: React.ReactNode }> = ({
     button1HandshakeConfirmed: false,
     button2HandshakeConfirmed: false,
   });
+
+  const onButtonClicked = useCallback((ButtonClicked: string) => {
+    dispatch({ type: 'ButtonClicked', payload: ButtonClicked });
+
+    dispatch({ type: 'FinishMatch', payload: ButtonClicked });
+  }, []);
+
+  const { availablePorts, getAvailablePorts, selectReceiverPort } =
+    useSerialButton(onButtonClicked);
+
   const contextValue = useMemo(
     () => ({
       selectedPort,
       setSelectedPort,
       buttonState,
       setButtonState,
+      availablePorts,
+      refreshAvailablePorts: getAvailablePorts,
+      selectReceiverPort,
     }),
-    [buttonState, selectedPort],
+    [
+      availablePorts,
+      buttonState,
+      getAvailablePorts,
+      selectReceiverPort,
+      selectedPort,
+    ],
   );
   return (
     <ButtonsContext.Provider value={contextValue}>

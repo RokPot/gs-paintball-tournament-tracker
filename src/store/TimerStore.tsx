@@ -22,6 +22,7 @@ interface TimerStoreState {
     onStartCountdown?: () => void,
     on10Seconds?: () => void,
     on30Seconds?: () => void,
+    onButtonFinishedClick?: () => void,
   ) => void;
   stopTimer: () => void;
   resetTimer: () => void;

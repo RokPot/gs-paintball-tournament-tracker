@@ -1,57 +1,58 @@
 import { omit } from 'lodash';
-import { useCallback } from 'react';
+import { useCallback, useContext } from 'react';
+import { PouchDBContext } from 'store/PouchDBContext';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentStageDto } from 'types/dto/TournamentStageDto';
 import { DocType } from 'types/interfaces/IPouchDB';
 import { getStagesDtoList } from 'utils/PouchDBUtils';
 import useGroupService from './GroupService';
-import usePouchDB, { pouchDbName } from './pouchDB';
 
 const useStageService = () => {
-  const db = usePouchDB(pouchDbName);
+  const { database } = useContext(PouchDBContext);
+
   const { getGroups } = useGroupService();
 
   const addNewStage = useCallback(
     async (stage: TournamentStageDto) => {
-      await db.post(stage);
+      await database.post(stage);
 
       return true;
     },
-    [db],
+    [database],
   );
 
   const addNewStageBatch = useCallback(
     async (stage: TournamentStageDto[]) => {
-      await db.bulkDocs(stage);
+      await database.bulkDocs(stage);
       return true;
     },
-    [db],
+    [database],
   );
 
   const updateStage = useCallback(
     async (stage: TournamentStageDto) => {
-      const res = await db.get(stage._id);
+      const res = await database.get(stage._id);
 
       const toUpdate = {
         ...res,
         ...omit(stage, ['_rev', '_id']),
       };
-      await db.put(toUpdate);
+      await database.put(toUpdate);
 
       return true;
     },
-    [db],
+    [database],
   );
 
   const deleteStage = useCallback(
     async (stage: TournamentStageDto) => {
-      const fetchedStage = await db.get<TournamentStageDto>(stage._id);
-      await db.remove(fetchedStage._id, fetchedStage._rev);
+      const fetchedStage = await database.get<TournamentStageDto>(stage._id);
+      await database.remove(fetchedStage._id, fetchedStage._rev);
 
       return true;
     },
-    [db],
+    [database],
   );
 
   const getStage = useCallback(
@@ -74,7 +75,7 @@ const useStageService = () => {
         }
       };
 
-      const result = await db.query<TournamentStageDto[]>(myMapFunction, {
+      const result = await database.query<TournamentStageDto[]>(myMapFunction, {
         include_docs: true,
       });
       const stagesDtoList = getStagesDtoList(result);
@@ -114,7 +115,7 @@ const useStageService = () => {
       const group = stagesDtoList?.length > 0 ? stagesDtoList[0] : null;
       return group;
     },
-    [db],
+    [database],
   );
 
   const getStages = useCallback(
@@ -138,7 +139,7 @@ const useStageService = () => {
         }
       };
 
-      const result = await db.query<TournamentStageDto[]>(myMapFunction, {
+      const result = await database.query<TournamentStageDto[]>(myMapFunction, {
         include_docs: true,
       });
       const stagesDtoList = getStagesDtoList(result);
@@ -176,7 +177,7 @@ const useStageService = () => {
       }
       return stagesList.sort((a, b) => a.stage - b.stage);
     },
-    [db],
+    [database],
   );
 
   return {

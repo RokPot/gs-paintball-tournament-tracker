@@ -62,7 +62,6 @@ const DesktopScoreboard: React.FC<IProps> = ({
 
   const showStartTournamentModal =
     isTournamentNotStartedYet && !isFetchingActiveLeague;
-
   return (
     <FlexContainer
       justifyContent="center"
@@ -209,6 +208,7 @@ const DesktopScoreboard: React.FC<IProps> = ({
         title="Finish Match"
         showHeader
         canClose={!hasGameTimeRanOut}
+        canCloseInBackgroundClick={false}
       >
         <FinishMatch
           game={currentGame}

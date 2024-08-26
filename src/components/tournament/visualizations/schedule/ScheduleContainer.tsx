@@ -8,9 +8,11 @@ import FlexContainer from 'components/shared/FlexContainer';
 import useGameFlows from 'hooks/game/useGameFlows';
 import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import { useEffect, useMemo, useState } from 'react';
+import useTournamentStore from 'store/TournamentStore';
 import Game from 'types/Game';
 import League from 'types/League';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
+import { TournamentFlow } from 'utils/tournamentFlowUtils';
 import ScheduleRowGame from './ScheduleRowGame';
 import ScheduleRowGroup, { StyledDivider } from './ScheduleRowGroup';
 
@@ -34,8 +36,10 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
   const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
   const theme = useTheme();
-  const { numberOfTeamSize, switchGames } = selectedTournament.settings;
+
   const { openNewResultsWindow } = useIPCRendererMessages();
+  const { isMatchInProgress, currentActiveGame } = useTournamentStore();
+
   const currentSchedule = useMemo(() => {
     if (!selectedTournament?.currentStageSchedule) {
       return undefined;
@@ -47,15 +51,14 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
     if (!selectedTournament?.currentStageGroups) {
       return undefined;
     }
-    return selectedTournament.currentStageGroups;
-  }, [selectedTournament.currentStageGroups]);
+    return selectedTournament?.currentStageGroups;
+  }, [selectedTournament?.currentStageGroups]);
 
   const onEditGame = (game: Game) => {
     setGameForEditModal(game);
   };
 
   const closeModal = () => {
-    setGameForEditModal(undefined);
     setGameForEditModal(undefined);
   };
 
@@ -65,7 +68,7 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
     }
     const newScheduledRows: ScheduleRow[] = [];
     let currentGroupedGamesLength = 0;
-    const maxGroupedGames = switchGames ? 2 : 1;
+    const maxGroupedGames = selectedTournament?.settings?.switchGames ? 2 : 1;
     currentSchedule?.forEach((scheduledGame, index) => {
       const previousScheduledGame = currentSchedule[index - 1];
       const currentScheduledGame = scheduledGame;
@@ -119,7 +122,7 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
       }
     });
     setScheduleRows(newScheduledRows);
-  }, [currentGroups, currentSchedule, selectedTournament, switchGames]);
+  }, [currentGroups, currentSchedule, selectedTournament]);
 
   if (!currentGroups?.length) {
     return (
@@ -136,7 +139,6 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
       </FlexContainer>
     );
   }
-
   if (!currentSchedule?.length) {
     return (
       <FlexContainer
@@ -204,19 +206,35 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
             game={scheduleRow.scheduledGame?.game!}
             gameNumber={scheduleRow?.scheduledGame?.gameNumber || index}
             onEditGame={onEditGame}
-            disableEditting={isInResultsPage}
+            disableEditting={
+              isInResultsPage ||
+              (isMatchInProgress &&
+                currentActiveGame?.id === scheduleRow.scheduledGame?.game.id)
+            }
+            nextGames={TournamentFlow.getNextGamesForEliminationsTournament(
+              scheduleRow.scheduledGame?.game!,
+              selectedTournament?.currentStageGroups?.find(
+                (group) => group.id === scheduleRow.scheduledGame?.group?.id,
+              ),
+              selectedTournament.state.stage === 1
+                ? selectedTournament?.settings?.type
+                : selectedTournament?.settings?.secondStageType,
+            )}
           />
         );
       })}
-      <CustomModal isModalOpen={!!gameForEditModal} width={600}>
+      <CustomModal isModalOpen={!!gameForEditModal} width={800}>
         {gameForEditModal && (
           <AddOrEditGame
             game={gameForEditModal}
             onConfirm={async (updatedGame) => {
-              await updateGameWithMatchesAndRecalculate(updatedGame);
+              await updateGameWithMatchesAndRecalculate(
+                updatedGame,
+                selectedTournament,
+              );
               closeModal();
             }}
-            sizeOfTeams={numberOfTeamSize}
+            sizeOfTeams={selectedTournament?.settings?.numberOfTeamSize}
             onClose={closeModal}
           />
         )}

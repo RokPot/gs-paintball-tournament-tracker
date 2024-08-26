@@ -16,7 +16,6 @@ const useSerialButton = (onButtonClicked: (data: any) => void) => {
   const getAvailablePorts = useCallback(() => {
     sendGetReceiverPortsList();
     listenToGetReceiverPortsListResponse((result) => {
-      console.log(result);
       setAvailablePorts(result as unknown as PortInfo[]);
     });
   }, [listenToGetReceiverPortsListResponse, sendGetReceiverPortsList]);
@@ -30,7 +29,6 @@ const useSerialButton = (onButtonClicked: (data: any) => void) => {
 
   const onButtonsResponse = useCallback(
     (result: any) => {
-      console.log(result);
       onButtonClicked(result);
     },
     [onButtonClicked],

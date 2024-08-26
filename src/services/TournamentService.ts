@@ -3,59 +3,62 @@ import {
   getTournamentsList,
 } from 'utils/PouchDBUtils';
 import { omit } from 'lodash';
-import { useCallback } from 'react';
+import { useCallback, useContext } from 'react';
 import Tournament from 'types/Tournament';
 import { TournamentDto } from 'types/dto/TournamentDto';
 import { DocType } from 'types/interfaces/IPouchDB';
 import { TournamentActivityDto } from 'types/dto/TournamentActivityDto';
-import usePouchDB, { pouchDbName } from './pouchDB';
+import { PouchDBContext } from 'store/PouchDBContext';
 import useStageService from './StageService';
 
 const useTournamentService = () => {
-  const db = usePouchDB(pouchDbName);
+  const { database } = useContext(PouchDBContext);
+
   const { getStages } = useStageService();
 
   const addNewTournament = useCallback(
     async (tournament: TournamentDto) => {
-      const res = await db.post(tournament);
+      const res = await database.post(tournament);
       const newTournament = new Tournament({
-        ...(await db.get<TournamentDto>(res.id)),
+        ...(await database.get<TournamentDto>(res.id)),
         stages: [],
       });
 
       return newTournament;
     },
-    [db],
+    [database],
   );
 
   const updateTournament = useCallback(
     async (tournament: TournamentDto) => {
-      const res = await db.get(tournament._id);
+      const res = await database.get(tournament._id);
 
       const toUpdate = {
         ...res,
         ...omit(tournament, ['_rev', '_id']),
       };
-      await db.put(toUpdate);
+      await database.put(toUpdate);
 
       const updatedTournament = new Tournament({
-        ...(await db.get<TournamentDto>(tournament._id)),
+        ...(await database.get<TournamentDto>(tournament._id)),
         stages: [],
       });
 
       return updatedTournament;
     },
-    [db],
+    [database],
   );
 
   const deleteTournament = useCallback(
     async (tournament: TournamentDto) => {
-      const fetchedTournament = await db.get<TournamentDto>(tournament._id);
-      await db.remove(fetchedTournament._id, fetchedTournament._rev);
+      const fetchedTournament = await database.get<TournamentDto>(
+        tournament._id,
+      );
+      await database.remove(fetchedTournament._id, fetchedTournament._rev);
 
       return true;
     },
-    [db],
+    [database],
   );
 
   const getTournament = useCallback(
@@ -82,7 +85,7 @@ const useTournamentService = () => {
           }
         }
       };
-      const result = await db.query<TournamentDto[]>(myMapFunction, {
+      const result = await database.query<TournamentDto[]>(myMapFunction, {
         include_docs: true,
       });
       const tournamentsList = getTournamentsList(result);
@@ -97,7 +100,7 @@ const useTournamentService = () => {
       }
       return tournament;
     },
-    [db, getStages],
+    [database, getStages],
   );
 
   const getTournaments = useCallback(async () => {
@@ -111,20 +114,20 @@ const useTournamentService = () => {
         }
       }
     };
-    const result = await db.query<TournamentDto[]>(myMapFunction, {
+    const result = await database.query<TournamentDto[]>(myMapFunction, {
       include_docs: true,
     });
 
     return getTournamentsList(result).map(
       (tournamentResult) => tournamentResult.tournament,
     );
-  }, [db]);
+  }, [database]);
 
   const addNewTournamentActivity = useCallback(
     async (tournamentActivity: TournamentActivityDto) => {
-      await db.post(tournamentActivity);
+      await database.post(tournamentActivity);
     },
-    [db],
+    [database],
   );
 
   const getTournamentActivity = useCallback(
@@ -139,9 +142,12 @@ const useTournamentService = () => {
           }
         }
       };
-      const result = await db.query<TournamentActivityDto[]>(myMapFunction, {
-        include_docs: true,
-      });
+      const result = await database.query<TournamentActivityDto[]>(
+        myMapFunction,
+        {
+          include_docs: true,
+        },
+      );
       const tournamentActivity = getTournamentActivityList(result);
       tournamentActivity.sort(
         (a, b) =>
@@ -149,7 +155,7 @@ const useTournamentService = () => {
       );
       return tournamentActivity;
     },
-    [db],
+    [database],
   );
 
   return {

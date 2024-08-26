@@ -1,47 +1,49 @@
 import { omit } from 'lodash';
-import { useCallback } from 'react';
+import { useCallback, useContext } from 'react';
 import League from 'types/League';
 import { LeagueDto } from 'types/dto/LeagueDto';
 import { getLeaguesList } from 'utils/PouchDBUtils';
 import { DocType } from 'types/interfaces/IPouchDB';
-import usePouchDB, { pouchDbName } from './pouchDB';
+import { PouchDBContext } from 'store/PouchDBContext';
 
 import useTournamentService from './TournamentService';
 
 const useLeagueService = () => {
-  const db = usePouchDB(pouchDbName);
+  const { database } = useContext(PouchDBContext);
   const { getTournament } = useTournamentService();
 
   const addNewLeague = useCallback(
     async (league: League) => {
-      const res = await db.post(league.toDto());
-      const newLeague = new League(await db.get(res.id));
+      const res = await database.post(league.toDto());
+      const newLeague = new League(await database.get(res.id));
       return newLeague;
     },
-    [db],
+    [database],
   );
 
   const updateLeague = useCallback(
     async (league: League) => {
-      const res = await db.get(league._id);
+      const res = await database.get(league._id);
 
       const toUpdate = { ...res, ...omit(league.toDto(), ['_rev', '_id']) };
-      await db.put(toUpdate);
+      await database.put(toUpdate);
 
-      const updatedLeague = new League(await db.get<LeagueDto>(league._id));
+      const updatedLeague = new League(
+        await database.get<LeagueDto>(league._id),
+      );
 
       return updatedLeague;
     },
-    [db],
+    [database],
   );
 
   const deleteLeague = useCallback(
     async (league: League) => {
-      const resultLeague = await db.get<League>(league._id);
-      await db.remove(resultLeague._id, resultLeague._rev);
+      const resultLeague = await database.get<League>(league._id);
+      await database.remove(resultLeague._id, resultLeague._rev);
       return true;
     },
-    [db],
+    [database],
   );
 
   const getLeague = useCallback(
@@ -49,9 +51,9 @@ const useLeagueService = () => {
       if (!leagueId) {
         return null;
       }
-      return new League(await db.get<LeagueDto>(leagueId));
+      return new League(await database.get<LeagueDto>(leagueId));
     },
-    [db],
+    [database],
   );
 
   const getActiveLeague = useCallback(async () => {
@@ -75,7 +77,7 @@ const useLeagueService = () => {
         }
       }
     };
-    const result = await db.query(myMapFunction, {
+    const result = await database.query(myMapFunction, {
       include_docs: true,
     });
     const leagues = getLeaguesList(result);
@@ -95,7 +97,7 @@ const useLeagueService = () => {
 
     activeLeague.activeTournament = activeTournament || undefined;
     return activeLeague;
-  }, [db, getTournament]);
+  }, [database, getTournament]);
 
   const getLeagues = useCallback(async () => {
     const myMapFunction = (doc: any, emit: any) => {
@@ -118,12 +120,12 @@ const useLeagueService = () => {
         }
       }
     };
-    const result = await db.query(myMapFunction, {
+    const result = await database.query(myMapFunction, {
       include_docs: true,
     });
 
     return getLeaguesList(result);
-  }, [db]);
+  }, [database]);
 
   return {
     addNewLeague,

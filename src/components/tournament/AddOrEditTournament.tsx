@@ -147,6 +147,9 @@ const AddOrEditTournament = ({
                 tournament?.state?.isTournamentFinished || false,
               status: tournament?.state?.status || TournamentStatus.created,
               stage: tournament?.state?.stage || 1,
+              pairedGame1Id: tournament?.state?.pairedGame1Id || '',
+              pairedGame2Id: tournament?.state?.pairedGame2Id || '',
+              activeGameId: tournament?.state?.activeGameId || '',
             }),
             teams: values.teams,
             leaderboard: tournament?.leaderboard || [],
@@ -267,9 +270,14 @@ const AddOrEditTournament = ({
             inputProps={{ pattern: '[0-9]*' }}
             type="number"
             label="Number of wins required *"
-            id="name"
+            id="numberOfWinsRequired"
             value={formik.values.settings?.numberOfWinsRequired}
-            onChange={formik.handleChange}
+            onChange={(e) =>
+              formik.setFieldValue('settings', {
+                ...formik.values.settings,
+                numberOfWinsRequired: Number(e.target.value),
+              } as TournamentSettings)
+            }
             placeholder="2"
             variant="outlined"
             style={{ width: '100%' }}

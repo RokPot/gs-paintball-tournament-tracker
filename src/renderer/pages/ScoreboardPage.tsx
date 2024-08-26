@@ -3,10 +3,9 @@ import DesktopScoreboard from 'components/scoreboard/ui/DesktopScoreboard';
 import MobileScoreboard from 'components/scoreboard/ui/MobileScoreboard';
 import LoadingIndicator from 'components/shared/LoadingIndicator';
 import PageContainer from 'components/shared/PageContainer';
-import useTournamentLogic from 'hooks/tournament/useTournamentLogic';
 import { useIsResponsive } from 'hooks/ui/useIsResponsive';
-import { memo, useCallback } from 'react';
-import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import { memo, useCallback, useContext, useEffect } from 'react';
+import { TournamentContext } from 'store/TournamentContext';
 import { Match } from 'types/Match';
 
 const StyledLoadingContainer = styled('div')(
@@ -32,10 +31,23 @@ interface IProps {}
 const ScoreboardPage: React.FC<IProps> = () => {
   const { isMobile } = useIsResponsive();
 
-  const { data: activeLeague, isLoading: isFetchingActiveLeague } =
-    LeagueQueries.useActiveLeague();
+  // const { data: activeLeague, isLoading: isFetchingActiveLeague } =
+  //   LeagueQueries.useActiveLeague();
 
-  const tournament = activeLeague?.activeTournament;
+  // const {
+  //   finishMatch,
+  //   beginTournament,
+  //   startStopMatch,
+  //   setFinishMatchModal,
+  //   activeGame,
+  //   timingBreak,
+  //   isMatchInProgress,
+  //   hasGameTimeRanOut,
+  //   showFinishMatchModal,
+  //   isProcessing,
+  //   confirmNextTournamentStage,
+  //   onTeamPause,
+  // } = useTournamentLogic(tournament);
 
   const {
     finishMatch,
@@ -50,14 +62,23 @@ const ScoreboardPage: React.FC<IProps> = () => {
     isProcessing,
     confirmNextTournamentStage,
     onTeamPause,
-  } = useTournamentLogic(tournament);
-
+    activeLeague,
+    isFetchingActiveLeague,
+    setFirstLoad,
+  } = useContext(TournamentContext);
+  const tournament = activeLeague?.activeTournament;
   const finishMatchInternal = useCallback(
     async (match: Match) => {
-      await finishMatch(match);
+      await finishMatch?.(match);
     },
     [finishMatch],
   );
+  // preveri če dela brez tega
+  // const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
+
+  useEffect(() => {
+    setFirstLoad?.(false);
+  }, []);
 
   if (isMobile) {
     return (
@@ -66,7 +87,6 @@ const ScoreboardPage: React.FC<IProps> = () => {
       </PageContainer>
     );
   }
-
   return (
     <PageContainer padding="0px">
       {(isProcessing || isFetchingActiveLeague) && (
@@ -76,19 +96,19 @@ const ScoreboardPage: React.FC<IProps> = () => {
       )}
       <DesktopScoreboard
         startStopMatch={() => {
-          startStopMatch();
+          startStopMatch!();
         }}
-        isMatchInProgress={isMatchInProgress}
+        isMatchInProgress={!!isMatchInProgress}
         activeScheduledGame={activeGame}
-        hasGameTimeRanOut={hasGameTimeRanOut}
-        showFinishMatchModal={showFinishMatchModal}
-        isCurrentlyInCountdown={timingBreak}
+        hasGameTimeRanOut={!!hasGameTimeRanOut}
+        showFinishMatchModal={!!showFinishMatchModal}
+        isCurrentlyInCountdown={!!timingBreak}
         isTournamentFinished={!!tournament?.state?.isTournamentFinished}
-        setShowFinishMatchModal={setFinishMatchModal}
+        setShowFinishMatchModal={setFinishMatchModal!}
         finishMatch={finishMatchInternal}
-        onStartTournament={beginTournament}
-        confirmNextTournamentStage={confirmNextTournamentStage}
-        onTeamPause={onTeamPause}
+        onStartTournament={beginTournament!}
+        confirmNextTournamentStage={confirmNextTournamentStage!}
+        onTeamPause={onTeamPause!}
         isFetchingActiveLeague={isFetchingActiveLeague}
         tournament={tournament}
       />

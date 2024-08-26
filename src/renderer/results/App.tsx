@@ -1,6 +1,7 @@
 import { CssBaseline, GlobalStyles, ThemeProvider, alpha } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import PouchDBProvider from 'store/PouchDBContext';
 import { theme } from '../../theme/theme';
 import ResultsPage from '../pages/ResultsPage';
 
@@ -26,13 +27,15 @@ const App = () => {
           },
         }}
       />
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <Routes>
-            <Route path="/" element={<ResultsPage />} />
-          </Routes>
-        </MemoryRouter>
-      </QueryClientProvider>
+      <PouchDBProvider>
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <Routes>
+              <Route path="/" element={<ResultsPage />} />
+            </Routes>
+          </MemoryRouter>
+        </QueryClientProvider>
+      </PouchDBProvider>
     </ThemeProvider>
   );
 };

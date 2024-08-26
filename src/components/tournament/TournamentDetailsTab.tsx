@@ -16,7 +16,7 @@ const TournamentDetailsTab = ({ activeLeague }: IProps) => {
   const tournamentLeaderboard = useMemo(() => {
     return calculateTournamentLeaderboard(selectedTournament);
   }, [selectedTournament]);
-
+  console.log(tournamentLeaderboard);
   if (!selectedTournament || !activeLeague) {
     return null;
   }

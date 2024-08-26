@@ -263,8 +263,8 @@ const TournamentPage = () => {
           height="100%"
           flexDirection="column"
           alignItems="stretch"
-          maxHeight="100%"
           overflow="hidden"
+          style={{ maxHeight: 'calc(100% - 100px)' }}
         >
           <CustomTabs
             items={Object.values(TournamentTabs).map((key) => ({

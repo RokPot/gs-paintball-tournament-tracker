@@ -39,6 +39,10 @@ const StyledScoreCardContainer = styled('div')(
 interface IProps {
   gameNumber: number;
   game: Game;
+  nextGames?: {
+    nextRoundGameWinner: Game | undefined;
+    nextRoundGameLoser: Game | undefined;
+  };
   onEditGame: (gameToEdit: Game) => void;
   disableEditting?: boolean;
 }
@@ -48,22 +52,23 @@ const ScheduleRowGame: React.FC<IProps> = ({
   gameNumber,
   onEditGame,
   disableEditting,
+  nextGames,
 }) => {
+  const areThereNextGames =
+    !!nextGames?.nextRoundGameWinner && !!nextGames?.nextRoundGameLoser;
+  const areAllNextGamesInCreatedState =
+    nextGames?.nextRoundGameWinner?.gameState === GameState.created &&
+    nextGames?.nextRoundGameLoser?.gameState === GameState.created;
+  const canEditGame =
+    !disableEditting &&
+    ((areThereNextGames && areAllNextGamesInCreatedState) ||
+      !areThereNextGames);
+
   const theme = useTheme();
   return (
     <StyledGameContainer>
       <FlexContainer alignItems="center" width="100%" height="50px" gap={8}>
         <Typography variant="h6Medium" textAlign="end" marginBottom="0px">
-          {/* {game.bracketProperties?.isFirstPlaceGame ? (
-            <FontAwesomeIcon icon={faTrophy} color="#FFD700" fontSize={20} />
-          ) : (
-            ''
-          )}
-          {game.bracketProperties?.isThridPlaceGame ? (
-            <FontAwesomeIcon icon={faTrophy} color="#CD7F32" fontSize={20} />
-          ) : (
-            ''
-          )} */}
           Game: {gameNumber}
         </Typography>
 
@@ -132,7 +137,7 @@ const ScheduleRowGame: React.FC<IProps> = ({
         ) : (
           ''
         )}
-        {!disableEditting && game?.gameState === GameState.finished && (
+        {canEditGame && (
           <div style={{ marginLeft: 'auto' }}>
             <CustomDropdownMenu
               icon={faEllipsisVertical}

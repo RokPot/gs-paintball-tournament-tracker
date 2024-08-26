@@ -18,31 +18,7 @@ const StyledGameStatusCircle = styled('div')(
 
 const StyledAnimatedGameStatusCircle = styled(StyledGameStatusCircle)(
   (props: IStyledGameStatusCircleProps & { theme?: Theme }) => css`
-    -webkit-animation: glow linear 5s infinite;
-    animation: glow linear 5s infinite;
-
-    @-webkit-keyframes glow {
-      0% {
-        background-color: transparent;
-      }
-      50% {
-        background-color: ${props.color};
-      }
-      100% {
-        background-color: transparent;
-      }
-    }
-    @keyframes glow {
-      0% {
-        background-color: transparent;
-      }
-      50% {
-        background-color: ${props.color};
-      }
-      100% {
-        background-color: transparent;
-      }
-    }
+    background-color: ${props.color};
   `,
 );
 

@@ -28,6 +28,7 @@ interface IProps {
   title?: string;
   showHeader?: boolean;
   canClose?: boolean;
+  canCloseInBackgroundClick?: boolean;
 }
 const style = {
   position: 'absolute' as 'absolute',
@@ -48,10 +49,18 @@ const CustomModal = ({
   title,
   showHeader = false,
   canClose = true,
+  canCloseInBackgroundClick = true,
 }: IProps) => {
   const theme = useTheme();
   return (
-    <Modal open={isModalOpen} onClose={onClose}>
+    <Modal
+      open={isModalOpen}
+      onClose={() => {
+        if (canCloseInBackgroundClick) {
+          onClose?.();
+        }
+      }}
+    >
       <Box style={fullScreen ? fullScreenStyle : style}>
         <StyledModalContainer
           style={{

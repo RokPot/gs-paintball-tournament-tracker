@@ -34,12 +34,18 @@ const useLeagueFlows = () => {
         await updateExistingLeagueMutate(updatedLeague);
         enqueueSnackbar('Tournament selected', snackbarSuccessOptions);
         await invalidateSelectedLeague();
+        await invalidateLeaguesList();
       } catch (e) {
         processError(e);
         enqueueSnackbar('Something went wrong', snackbarErrorOptions);
       }
     },
-    [enqueueSnackbar, invalidateSelectedLeague, updateExistingLeagueMutate],
+    [
+      enqueueSnackbar,
+      invalidateLeaguesList,
+      invalidateSelectedLeague,
+      updateExistingLeagueMutate,
+    ],
   );
 
   const setSelectedLeague = async (

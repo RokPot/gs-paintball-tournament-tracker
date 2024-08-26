@@ -25,8 +25,12 @@ const ResultsPage: React.FC<IProps> = () => {
 
   const { listenToGameSwitched } = useIPCRendererMessages();
   useEffect(() => {
-    listenToGameSwitched(() => {
-      refetch();
+    listenToGameSwitched(async () => {
+      try {
+        await refetch();
+      } catch (e) {
+        alert(e);
+      }
     });
   }, []);
 
@@ -97,15 +101,16 @@ const ResultsPage: React.FC<IProps> = () => {
       <ScheduleUpcomingGames
         activeLeague={activeLeague}
         disableNewWindowOpen
+        isInResultsWindow
         style={{
           marginLeft: '0px',
           marginBottom: '0px',
           marginRight: '0px',
           width: '100%',
-          fontSize: '23px',
-          height: '80px',
+          fontSize: '50px',
+          height: '200px',
         }}
-        fontSize={23}
+        fontSize={60}
       />
     </FlexContainer>
   );

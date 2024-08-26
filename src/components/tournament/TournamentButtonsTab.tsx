@@ -12,9 +12,9 @@ import {
 } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import { PortInfo } from 'hooks/main/useIPCRendererMessages';
-import useSerialButton from 'hooks/serial-button/useSerialButton';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { ButtonsContext } from 'store/ButtonsContext';
+import useBus from 'use-bus';
 
 const StyledRootFieldContainer = styled('div')`
   position: relative;
@@ -158,19 +158,30 @@ interface IProps {}
 const TournamentButtonsTab: React.FC<IProps> = () => {
   const [activeStep, setActiveStep] = useState(0);
 
-  const { setSelectedPort, setButtonState, buttonState, selectedPort } =
-    useContext(ButtonsContext);
+  const {
+    setSelectedPort,
+    setButtonState,
+    buttonState,
+    selectedPort,
+    availablePorts,
+    refreshAvailablePorts,
+    selectReceiverPort,
+  } = useContext(ButtonsContext);
 
-  const setSerialButtonState = useCallback(
-    (e: string) => {
-      if (e === 'Team1Button') {
+  useBus(
+    'ButtonClicked',
+    ({ type, payload }) => {
+      if (type !== 'ButtonClicked') {
+        return;
+      }
+      if (payload === 'Team1Button') {
         setButtonState?.({
           button2HandshakeConfirmed:
             buttonState?.button2HandshakeConfirmed || false,
           button1HandshakeConfirmed: true,
         });
       }
-      if (e === 'Team2Button') {
+      if (payload === 'Team2Button') {
         setButtonState?.({
           button1HandshakeConfirmed:
             buttonState?.button1HandshakeConfirmed || false,
@@ -178,16 +189,14 @@ const TournamentButtonsTab: React.FC<IProps> = () => {
         });
       }
     },
-    [buttonState, setButtonState],
+    [setButtonState, buttonState],
   );
 
-  const { getAvailablePorts, availablePorts, selectReceiverPort } =
-    useSerialButton(setSerialButtonState);
   const theme = useTheme();
 
   const onPortSelected = useCallback(
     (selectedUSBPort: PortInfo) => {
-      selectReceiverPort(selectedUSBPort);
+      selectReceiverPort?.(selectedUSBPort);
       setSelectedPort?.(selectedUSBPort);
       setActiveStep(1);
     },
@@ -195,8 +204,8 @@ const TournamentButtonsTab: React.FC<IProps> = () => {
   );
 
   useEffect(() => {
-    getAvailablePorts();
-  }, [getAvailablePorts]);
+    refreshAvailablePorts?.();
+  }, [refreshAvailablePorts]);
 
   useEffect(() => {
     if (!availablePorts?.length) {
@@ -222,9 +231,7 @@ const TournamentButtonsTab: React.FC<IProps> = () => {
   const handleStep = (step: number) => {
     setActiveStep(step);
   };
-  // console.log(selectedPort);
-  // console.log(availablePorts);
-  console.log(activeStep);
+
   return (
     <FlexContainer
       flexDirection="column"
@@ -248,7 +255,7 @@ const TournamentButtonsTab: React.FC<IProps> = () => {
               color="inherit"
               onClick={() => {
                 if (index === 0) {
-                  getAvailablePorts();
+                  refreshAvailablePorts?.();
                 }
                 handleStep(index);
               }}
@@ -258,25 +265,31 @@ const TournamentButtonsTab: React.FC<IProps> = () => {
           </Step>
         ))}
       </Stepper>
-      {activeStep === 0 &&
-        availablePorts?.map((availablePort) => (
-          <Button
-            onClick={() => onPortSelected(availablePort)}
-            variant={
-              selectedPort?.pnpId === availablePort.pnpId
-                ? 'contained'
-                : 'outlined'
-            }
-          >
-            {availablePort.path} - {availablePort.friendlyName}
-          </Button>
-        ))}
-      {activeStep === 1 && (
+      {activeStep === 0 && (
+        <>
+          {availablePorts?.length === 0 && (
+            <Typography variant="p1Medium">No ports detected.</Typography>
+          )}
+          {availablePorts?.map((availablePort) => (
+            <Button
+              onClick={() => onPortSelected(availablePort)}
+              variant={
+                selectedPort?.pnpId === availablePort.pnpId
+                  ? 'contained'
+                  : 'outlined'
+              }
+            >
+              {availablePort.path} - {availablePort.friendlyName}
+            </Button>
+          ))}
+        </>
+      )}
+      {activeStep > 0 && (
         <Typography variant="p1Medium">
           Selected Receiver Port: {selectedPort?.friendlyName}
         </Typography>
       )}
-      {activeStep === 1 && (
+      {activeStep > 0 && (
         <StyledRootFieldContainer>
           <StyledFieldContainer>
             <div />
