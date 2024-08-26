@@ -29,6 +29,12 @@ import useTournamentFlows from './useTournamentFlows';
 const useTournamentLogic = () => {
   const { data: activeLeague, isLoading: isFetchingActiveLeague } =
     LeagueQueries.useActiveLeague();
+
+  const { mutateAsync: updateTournament } =
+    TournamentQueries.useUpdateTournament();
+
+  const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
+
   const tournament = activeLeague?.activeTournament;
 
   const {
@@ -50,9 +56,7 @@ const useTournamentLogic = () => {
   } = useTimeLeftSpeech();
 
   const { playCountdown, stopCountdown, playMatchPoint } = useCountdownSound();
-  const { mutateAsync: updateTournament } =
-    TournamentQueries.useUpdateTournament();
-  const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
+
   const { updateGameData } = useGameFlows();
   const { openModal } = useConfirmationModalStore();
 
@@ -186,15 +190,17 @@ const useTournamentLogic = () => {
       newActiveGame.game.gameState = GameState.playing;
       tournament.state.pairedGame1Id = newGame1.id;
       tournament.state.pairedGame2Id = newGame2?.id;
+
       if (newGame1) {
         await updateGameData(newGame1.game);
       }
       if (newGame2) {
         await updateGameData(newGame2.game);
       }
-
-      await updateTournament(tournament);
-      await invalidateSelectedLeague();
+      await Promise.all([
+        updateTournament(tournament),
+        invalidateSelectedLeague(),
+      ]);
     },
     [invalidateSelectedLeague, tournament, updateGameData, updateTournament],
   );

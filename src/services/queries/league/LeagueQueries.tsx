@@ -12,7 +12,8 @@ export namespace LeagueQueries {
 
   export const useActiveLeague = () => {
     const { getActiveLeague } = useLeagueService();
-
+    console.log('calling this');
+    console.trace();
     return useQuery({
       queryKey: LeagueQueries.keys.selectedLeague(),
       queryFn: () => getActiveLeague().then((res) => res),

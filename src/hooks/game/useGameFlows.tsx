@@ -92,6 +92,8 @@ const useGameFlows = () => {
     [addNewTournamentActivity, invalidateSelectedLeague, updateGame],
   );
 
+  const getActiveGame = useCallback((gameId: string) => {}, []);
+
   return { updateGameData, updateGameWithMatchesAndRecalculate };
 };
 
