@@ -603,16 +603,14 @@ export namespace TournamentFlow {
     }
 
     scheduledGame.game.gameTime = timeLeftInMilliseconds / 1000;
-    scheduledGame.game.team1Wins += [
-      MatchState.team1Win,
-      MatchState.draw,
-    ].includes(match.matchState)
+    scheduledGame.game.team1Wins += [MatchState.team1Win].includes(
+      match.matchState,
+    )
       ? 1
       : 0;
-    scheduledGame.game.team2Wins += [
-      MatchState.team2Win,
-      MatchState.draw,
-    ].includes(match.matchState)
+    scheduledGame.game.team2Wins += [MatchState.team2Win].includes(
+      match.matchState,
+    )
       ? 1
       : 0;
     return scheduledGame;

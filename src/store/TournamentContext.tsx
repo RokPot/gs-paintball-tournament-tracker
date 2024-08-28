@@ -1,5 +1,6 @@
 import useTournamentLogic from 'hooks/tournament/useTournamentLogic';
 import React, { useMemo } from 'react';
+import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import League from 'types/League';
 import { Match } from 'types/Match';
 import Team from 'types/Team';
@@ -33,6 +34,13 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const {
+    data: activeLeague,
+    isLoading: isFetchingActiveLeague1,
+    isSuccess,
+    isFetching,
+  } = LeagueQueries.useActiveLeague();
+  console.log('activeLeague1', isSuccess, isFetching, activeLeague?._rev);
+  const {
     finishMatch,
     beginTournament,
     startStopMatch,
@@ -46,9 +54,8 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
     confirmNextTournamentStage,
     onTeamPause,
     setFirstLoad,
-    activeLeague,
     isFetchingActiveLeague,
-  } = useTournamentLogic();
+  } = useTournamentLogic(activeLeague);
 
   const contextValue = useMemo(
     () => ({

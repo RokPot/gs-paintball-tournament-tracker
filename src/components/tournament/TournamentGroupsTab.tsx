@@ -1,8 +1,11 @@
 import { Typography } from '@mui/material';
 import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import FlexContainer from 'components/shared/FlexContainer';
+import { useState } from 'react';
 import League from 'types/League';
+import TournamentStage from 'types/TournamentStage';
 import TournamentGroupCard from './TournamentGroupCard';
+import TournamentStageTabSwitch from './TournamentStageTabSwitch';
 
 interface IProps {
   activeLeague: League;
@@ -10,7 +13,9 @@ interface IProps {
 
 const TournamentGroupsTab: React.FC<IProps> = ({ activeLeague }) => {
   const selectedTournament = activeLeague?.activeTournament;
-
+  const [selectedStage, setSelectedStage] = useState<
+    TournamentStage | undefined
+  >(selectedTournament?.currentStage);
   if (!selectedTournament?.stages?.length) {
     return (
       <FlexContainer
@@ -35,7 +40,11 @@ const TournamentGroupsTab: React.FC<IProps> = ({ activeLeague }) => {
       alignItems="stretch"
       overflowY="auto"
     >
-      {selectedTournament?.currentStage?.groups
+      <TournamentStageTabSwitch
+        selectedTournament={selectedTournament}
+        onStageSelected={setSelectedStage}
+      />
+      {selectedStage?.groups
         .sort((a, b) => a.groupIndex - b.groupIndex)
         .map((group, index) => (
           <TournamentGroupCard key={index} group={group} />

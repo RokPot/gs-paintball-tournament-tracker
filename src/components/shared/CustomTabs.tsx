@@ -55,10 +55,13 @@ const StyledTab = styled((props: StyledTabProps) => (
 interface IProps {
   items: { label: string; value: string }[];
   onTabChanged: (activeTab: string) => void;
+  activeTab?: string;
 }
 
-const CustomTabs = ({ items, onTabChanged }: IProps) => {
-  const [value, setValue] = React.useState(0);
+const CustomTabs = ({ items, onTabChanged, activeTab }: IProps) => {
+  const [value, setValue] = React.useState(
+    items?.findIndex((item) => item.value === activeTab) || 0,
+  );
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);

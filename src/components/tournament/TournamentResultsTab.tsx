@@ -6,7 +6,9 @@ import LeaderboardList from 'components/teams/LeaderboardList';
 import { useMemo, useState } from 'react';
 import League from 'types/League';
 import TournamentGroup from 'types/TournamentGroup';
+import TournamentStage from 'types/TournamentStage';
 import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
+import TournamentStageTabSwitch from './TournamentStageTabSwitch';
 
 interface IProps {
   activeLeague: League;
@@ -14,6 +16,10 @@ interface IProps {
 
 const TournamentResultsTab = ({ activeLeague }: IProps) => {
   const selectedTournament = activeLeague?.activeTournament;
+
+  const [selectedStage, setSelectedStage] = useState<
+    TournamentStage | undefined
+  >(activeLeague?.activeTournament?.currentStage);
 
   const [selectedGroup, setSelectedGroup] = useState<
     TournamentGroup | undefined
@@ -53,18 +59,20 @@ const TournamentResultsTab = ({ activeLeague }: IProps) => {
       height="100%"
       overflowY="auto"
     >
+      <TournamentStageTabSwitch
+        selectedTournament={selectedTournament}
+        onStageSelected={setSelectedStage}
+      />
       <CustomTabs
         items={
-          selectedTournament?.currentStage?.groups?.map((group) => ({
+          selectedStage?.groups?.map((group) => ({
             label: `Group ${group.groupIndex}`,
             value: group.id,
           })) || []
         }
         onTabChanged={(newTabGroupId) => {
           setSelectedGroup(
-            selectedTournament?.currentStage?.groups.find(
-              (group) => group.id === newTabGroupId,
-            ),
+            selectedStage?.groups.find((group) => group.id === newTabGroupId),
           );
         }}
       />

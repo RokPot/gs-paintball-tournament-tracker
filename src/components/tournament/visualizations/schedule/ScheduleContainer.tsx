@@ -5,6 +5,7 @@ import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import AddOrEditGame from 'components/game/AddOrEditGame';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
+import TournamentStageTabSwitch from 'components/tournament/TournamentStageTabSwitch';
 import useGameFlows from 'hooks/game/useGameFlows';
 import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import { useEffect, useMemo, useState } from 'react';
@@ -12,6 +13,7 @@ import useTournamentStore from 'store/TournamentStore';
 import Game from 'types/Game';
 import League from 'types/League';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
+import TournamentStage from 'types/TournamentStage';
 import { TournamentFlow } from 'utils/tournamentFlowUtils';
 import ScheduleRowGame from './ScheduleRowGame';
 import ScheduleRowGroup, { StyledDivider } from './ScheduleRowGroup';
@@ -35,24 +37,27 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
   const { updateGameWithMatchesAndRecalculate } = useGameFlows();
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
   const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
+  const [selectedStage, setSelectedStage] = useState<
+    TournamentStage | undefined
+  >(activeLeague?.activeTournament?.currentStage);
   const theme = useTheme();
 
   const { openNewResultsWindow } = useIPCRendererMessages();
   const { isMatchInProgress, currentActiveGame } = useTournamentStore();
 
   const currentSchedule = useMemo(() => {
-    if (!selectedTournament?.currentStageSchedule) {
+    if (!selectedStage?.schedule) {
       return undefined;
     }
-    return selectedTournament.currentStageSchedule;
-  }, [selectedTournament?.currentStageSchedule]);
+    return selectedStage?.schedule;
+  }, [selectedStage?.schedule]);
 
   const currentGroups = useMemo(() => {
-    if (!selectedTournament?.currentStageGroups) {
+    if (!selectedStage?.groups) {
       return undefined;
     }
-    return selectedTournament?.currentStageGroups;
-  }, [selectedTournament?.currentStageGroups]);
+    return selectedStage.groups;
+  }, [selectedStage?.groups]);
 
   const onEditGame = (game: Game) => {
     setGameForEditModal(game);
@@ -186,7 +191,10 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
           </IconButton>
         </Tooltip>
       )}
-
+      <TournamentStageTabSwitch
+        selectedTournament={selectedTournament}
+        onStageSelected={setSelectedStage}
+      />
       {scheduleRows?.map((scheduleRow, index) => {
         if (scheduleRow.showDivider) {
           return <StyledDivider key={`${index}1`} />;

@@ -23,13 +23,11 @@ import { TournamentStatus } from 'types/TournamentStatus';
 import useBus from 'use-bus';
 import { snackbarSuccessOptions } from 'utils/snackbarUtils';
 import { TournamentFlow } from 'utils/tournamentFlowUtils';
-import { useShallow } from 'zustand/react/shallow';
 import useTournamentFlows from './useTournamentFlows';
 
 const useTournamentLogic = () => {
   const { data: activeLeague, isLoading: isFetchingActiveLeague } =
     LeagueQueries.useActiveLeague();
-
   const { mutateAsync: updateTournament } =
     TournamentQueries.useUpdateTournament();
 
@@ -68,17 +66,7 @@ const useTournamentLogic = () => {
     setShowFinishMatchModal,
     hasGameTimeRanOut,
     setHasGameTimeRanOut,
-  } = useTournamentStore(
-    useShallow((state) => ({
-      isMatchInProgress: state.isMatchInProgress,
-      setCurrentActiveGame: state.setCurrentActiveGame,
-      setIsMatchInProgress: state.setIsMatchInProgress,
-      showFinishMatchModal: state.showFinishMatchModal,
-      setShowFinishMatchModal: state.setShowFinishMatchModal,
-      hasGameTimeRanOut: state.hasGameTimeRanOut,
-      setHasGameTimeRanOut: state.setHasGameTimeRanOut,
-    })),
-  );
+  } = useTournamentStore();
 
   const [firstLoad, setFirstLoad] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);

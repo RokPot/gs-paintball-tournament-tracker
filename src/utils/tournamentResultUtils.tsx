@@ -661,23 +661,33 @@ const prepareLeaderboardTeamsForEliminationsGame = (
   const gameRound = finishedGame.bracketProperties?.round || 1;
   let winningTeamTotalWins = 0;
   let winningTeamTotalLosses = 0;
+  let winningTeamTotalPoints = 0;
   let losingTeamTotalWins = 0;
   let losingTeamTotalLosses = 0;
+  let losingTeamTotalPoints = 0;
+
   if (isFirstPlacementGame) {
-    winningTeamTotalWins = gameRound;
+    winningTeamTotalWins = gameRound + 1;
     winningTeamTotalLosses = 0;
-    losingTeamTotalWins = gameRound - 1;
+    winningTeamTotalPoints = winningTeamTotalWins * 3;
+    losingTeamTotalWins = gameRound + 1 - 1;
     losingTeamTotalLosses = 1;
+    losingTeamTotalPoints = losingTeamTotalWins * 3;
   } else if (isThirdPlacementGame) {
-    winningTeamTotalWins = gameRound - 1;
+    winningTeamTotalWins = gameRound + 1 - 1;
     winningTeamTotalLosses = 1;
-    losingTeamTotalWins = gameRound - 2;
+    winningTeamTotalPoints = winningTeamTotalWins * 3;
+    losingTeamTotalWins = gameRound + 1 - 2;
     losingTeamTotalLosses = 2;
+    losingTeamTotalPoints = losingTeamTotalWins * 3;
   } else {
     winningTeamTotalWins = gameRound;
     winningTeamTotalLosses = 0;
+    winningTeamTotalPoints = winningTeamTotalWins * 3;
+
     losingTeamTotalWins = gameRound - 1;
     losingTeamTotalLosses = 1;
+    losingTeamTotalPoints = losingTeamTotalWins * 3;
   }
 
   const winnerLeaderboardTeam = new LeaderboardTeam({
@@ -686,7 +696,7 @@ const prepareLeaderboardTeamsForEliminationsGame = (
     rank: 0,
     team: winningTeam,
     totalLosses: winningTeamTotalLosses,
-    totalPoints: 0,
+    totalPoints: winningTeamTotalPoints,
     totalDraws: 0,
     totalWins: winningTeamTotalWins,
     previousRank: ((finishedGame.bracketProperties?.round || 1) - 1) * 3 + 3,
@@ -704,7 +714,7 @@ const prepareLeaderboardTeamsForEliminationsGame = (
     rank: 0,
     team: losingTeam,
     totalLosses: losingTeamTotalLosses,
-    totalPoints: 0,
+    totalPoints: losingTeamTotalPoints,
     totalDraws: 0,
     totalWins: losingTeamTotalWins,
     previousRank: ((finishedGame.bracketProperties?.round || 1) - 1) * 3,

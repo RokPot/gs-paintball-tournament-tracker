@@ -1,38 +1,25 @@
 import { Typography } from '@mui/material';
 import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import FlexContainer from 'components/shared/FlexContainer';
+import { useState } from 'react';
 import League from 'types/League';
-import Team from 'types/Team';
-import { v4 } from 'uuid';
+import TournamentStage from 'types/TournamentStage';
+import TournamentStageTabSwitch from './TournamentStageTabSwitch';
 import TournamentTypesPreview from './visualizations/TournamentTypesPreview';
 
 interface IProps {
   activeLeague: League;
 }
-function randomColor() {
-  const hex = Math.floor(Math.random() * 16777215).toString(16);
-  const color = `#${hex}`;
 
-  return color;
-}
 const TournamentBracketsTab: React.FC<IProps> = ({ activeLeague }) => {
   const selectedTournament = activeLeague?.activeTournament;
 
+  const [selectedStage, setSelectedStage] = useState<
+    TournamentStage | undefined
+  >(selectedTournament?.currentStage);
+
   if (!selectedTournament || !activeLeague) {
     return null;
-  }
-
-  const numberOfTeams = 0;
-  const teamss: Team[] = selectedTournament.teams;
-  for (let i = 0; i < numberOfTeams; i += 1) {
-    const newTeam = new Team({
-      _id: v4(),
-      id: v4(),
-      teamName: `TBD${i + 1}`,
-      teamTag: `TBD${i + 1}`,
-      color: randomColor(),
-    });
-    teamss.push(newTeam);
   }
 
   if (!selectedTournament?.stages?.length) {
@@ -60,13 +47,17 @@ const TournamentBracketsTab: React.FC<IProps> = ({ activeLeague }) => {
       gap={16}
       overflowY="auto"
     >
+      <TournamentStageTabSwitch
+        selectedTournament={selectedTournament}
+        onStageSelected={setSelectedStage}
+      />
       <FlexContainer
         flexDirection="row"
         gap={16}
         height="100%"
         alignItems="flex-start"
       >
-        {selectedTournament?.currentStage?.groups.map((group, index) => (
+        {selectedStage?.groups.map((group, index) => (
           <FlexContainer
             flexDirection="column"
             alignItems="center"
