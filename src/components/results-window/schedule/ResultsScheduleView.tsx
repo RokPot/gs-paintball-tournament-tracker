@@ -1,12 +1,12 @@
 import FlexContainer from 'components/shared/FlexContainer';
-import ScheduleContainer from 'components/tournament/visualizations/schedule/ScheduleContainer';
 import League from 'types/League';
+import ResultsScheduleContainer from './ResultsScheduleContainer';
 
 interface IProps {
   activeLeague: League | undefined | null;
 }
 
-const ScheduleView: React.FC<IProps> = ({ activeLeague }) => {
+const ResultsScheduleView: React.FC<IProps> = ({ activeLeague }) => {
   if (!activeLeague) {
     return null;
   }
@@ -17,9 +17,11 @@ const ScheduleView: React.FC<IProps> = ({ activeLeague }) => {
       alignItems="flex-start"
       flexDirection="column"
     >
-      <ScheduleContainer activeLeague={activeLeague} isInResultsPage />
+      <ResultsScheduleContainer
+        activeTournament={activeLeague?.activeTournament}
+      />
     </FlexContainer>
   );
 };
 
-export default ScheduleView;
+export default ResultsScheduleView;

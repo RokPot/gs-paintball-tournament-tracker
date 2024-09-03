@@ -14,6 +14,7 @@ const useGameFlows = () => {
   const { mutateAsync: updateGame } = GameQueries.useUpdateGame();
   const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
   const { addNewTournamentActivity } = useTournamentFlows();
+
   const updateGameData = useCallback(
     async (game: Game) => {
       await updateGame(game);
@@ -60,7 +61,7 @@ const useGameFlows = () => {
         gameTime: game.gameTime,
         match: game.matches?.[0],
       });
-      // TO DO rokpot recalculate leaderboard, recalculate scoreboard
+
       const scheduledGame = tournament.currentStageSchedule?.find(
         (currentStageScheduledGame) =>
           currentStageScheduledGame.game.id === game.id,
@@ -91,8 +92,6 @@ const useGameFlows = () => {
     },
     [addNewTournamentActivity, invalidateSelectedLeague, updateGame],
   );
-
-  const getActiveGame = useCallback((gameId: string) => {}, []);
 
   return { updateGameData, updateGameWithMatchesAndRecalculate };
 };

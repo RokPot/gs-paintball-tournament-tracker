@@ -1,6 +1,9 @@
 import { GridApiCommunity } from '@mui/x-data-grid/internals';
+import { useRef } from 'react';
 
-const useScrollTo = () => {
+const useScrollTo = (scrollBackUpAfterFinish: boolean) => {
+  const startScrollingTop = useRef(false);
+  const bottomEndPosition = useRef(0);
   const scrollDivToBottom = (
     timeForScrollingInMs: number,
     scrollElement: React.RefObject<HTMLDivElement>,
@@ -19,17 +22,35 @@ const useScrollTo = () => {
       const currenttime = new Date().getTime();
       const timediff = currenttime - starttime;
       const timePercent = timediff / timeForScrollingInMs;
-      const scrollToPosition = startScrollPos + scrollDifference * timePercent;
-
+      const scrollToBottomPosition =
+        startScrollPos + scrollDifference * timePercent;
+      const scrollToTopPosition =
+        bottomEndPosition.current - scrollDifference * timePercent;
+      console.log(
+        'scroll to: ',
+        startScrollingTop?.current
+          ? scrollToTopPosition
+          : scrollToBottomPosition,
+      );
       scrollElement?.current?.scrollTo({
-        top: scrollToPosition,
+        top: startScrollingTop?.current
+          ? scrollToTopPosition
+          : scrollToBottomPosition,
         left: 0,
       });
 
       if (timePercent < 1) {
         requestAnimationFrame(() => scrollController());
       } else {
-        scrollElement?.current?.scrollTo(0, startScrollPos + scrollDifference);
+        scrollElement?.current?.scrollTo(
+          0,
+          startScrollingTop?.current ? 0 : startScrollPos + scrollDifference,
+        );
+
+        if (scrollBackUpAfterFinish) {
+          startScrollingTop.current = !startScrollingTop.current;
+          bottomEndPosition.current = startScrollPos + scrollDifference;
+        }
         onScrollFinished();
       }
     };

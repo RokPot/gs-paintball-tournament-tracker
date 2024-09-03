@@ -11,7 +11,6 @@ import { theme } from '../../theme/theme';
 import Layout from '../layout/Layout';
 import HomePage from '../pages/HomePage';
 import LeaguesPage from '../pages/LeaguesPage';
-import ResultsPage from '../pages/ResultsPage';
 import ScoreboardPage from '../pages/ScoreboardPage';
 import TeamsPage from '../pages/TeamsPage';
 import TournamentPage from '../pages/TournamentPage';
@@ -74,11 +73,9 @@ const App = () => {
               anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
             >
               <QueryClientProvider client={queryClient}>
-                <TournamentProvider>
-                  <MemoryRouter>
+                <MemoryRouter>
+                  <TournamentProvider>
                     <Routes>
-                      <Route path="/results" element={<ResultsPage />} />
-
                       <Route path={routes.HOME} element={<Layout />}>
                         <Route path={routes.HOME} element={<HomePage />} />
 
@@ -97,8 +94,8 @@ const App = () => {
                         />
                       </Route>
                     </Routes>
-                  </MemoryRouter>
-                </TournamentProvider>
+                  </TournamentProvider>
+                </MemoryRouter>
 
                 <ConfirmationModal />
               </QueryClientProvider>

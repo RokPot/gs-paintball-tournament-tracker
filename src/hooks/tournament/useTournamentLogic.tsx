@@ -14,9 +14,11 @@ import TournamentStage from 'types/TournamentStage';
 import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import useTimeLeftSpeech from 'hooks/sounds/useTimeLeftSpeech';
 import { useSnackbar } from 'notistack';
+import { useLocation } from 'react-router-dom';
 import useConfirmationModalStore from 'store/ConfirmationModalStore';
 import useTournamentStore from 'store/TournamentStore';
 import ActivityChangeType from 'types/ActivityChangeType';
+import League from 'types/League';
 import Team from 'types/Team';
 import TournamentActivity from 'types/TournamentActivity';
 import { TournamentStatus } from 'types/TournamentStatus';
@@ -25,15 +27,13 @@ import { snackbarSuccessOptions } from 'utils/snackbarUtils';
 import { TournamentFlow } from 'utils/tournamentFlowUtils';
 import useTournamentFlows from './useTournamentFlows';
 
-const useTournamentLogic = () => {
-  const { data: activeLeague, isLoading: isFetchingActiveLeague } =
-    LeagueQueries.useActiveLeague();
+const useTournamentLogic = (activeLeague?: League | null) => {
   const { mutateAsync: updateTournament } =
     TournamentQueries.useUpdateTournament();
 
   const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
 
-  const tournament = activeLeague?.activeTournament;
+  const location = useLocation();
 
   const {
     setDuration,
@@ -68,6 +68,7 @@ const useTournamentLogic = () => {
     setHasGameTimeRanOut,
   } = useTournamentStore();
 
+  const [dirtyCount, setDirtyCount] = useState(0);
   const [firstLoad, setFirstLoad] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const { addStageToTournament, addNewTournamentActivity } =
@@ -75,6 +76,17 @@ const useTournamentLogic = () => {
 
   const { sendGameSwitched } = useIPCRendererMessages();
   const { enqueueSnackbar } = useSnackbar();
+
+  const forceRefreshTournament = useCallback(() => {
+    setDirtyCount((prev) => prev + 1);
+  }, []);
+
+  const tournament = useMemo(() => {
+    if (!activeLeague) {
+      return undefined;
+    }
+    return activeLeague?.activeTournament;
+  }, [activeLeague, location, dirtyCount]);
 
   const currentSchedule = useMemo(() => {
     if (!tournament?.currentStageSchedule) {
@@ -189,8 +201,15 @@ const useTournamentLogic = () => {
         updateTournament(tournament),
         invalidateSelectedLeague(),
       ]);
+      forceRefreshTournament();
     },
-    [invalidateSelectedLeague, tournament, updateGameData, updateTournament],
+    [
+      forceRefreshTournament,
+      invalidateSelectedLeague,
+      tournament,
+      updateGameData,
+      updateTournament,
+    ],
   );
 
   const beginTournament = useCallback(async () => {
@@ -214,8 +233,10 @@ const useTournamentLogic = () => {
     );
     resetTimer();
     await invalidateSelectedLeague();
+    forceRefreshTournament();
   }, [
     currentSchedule,
+    forceRefreshTournament,
     invalidateSelectedLeague,
     resetTimer,
     setNewActiveGroupAndGames,
@@ -261,7 +282,13 @@ const useTournamentLogic = () => {
 
     await updateTournament(tournament);
     await invalidateSelectedLeague();
-  }, [invalidateSelectedLeague, tournament, updateTournament]);
+    forceRefreshTournament();
+  }, [
+    forceRefreshTournament,
+    invalidateSelectedLeague,
+    tournament,
+    updateTournament,
+  ]);
 
   const goToNextTournamentStage = useCallback(async () => {
     if (!tournament?.state) {
@@ -605,14 +632,11 @@ const useTournamentLogic = () => {
       confirmNextTournamentStage,
       onTeamPause,
       setFirstLoad,
-      activeLeague,
-      isFetchingActiveLeague,
+      forceRefreshTournament,
     };
   }, [
     currentStage,
     activeScheduledGame,
-    activeLeague,
-    isFetchingActiveLeague,
     timingBreak,
     isMatchInProgress,
     hasGameTimeRanOut,
@@ -626,6 +650,7 @@ const useTournamentLogic = () => {
     confirmNextTournamentStage,
     onTeamPause,
     setFirstLoad,
+    forceRefreshTournament,
   ]);
 };
 

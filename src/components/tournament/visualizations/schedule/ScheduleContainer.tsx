@@ -8,56 +8,36 @@ import FlexContainer from 'components/shared/FlexContainer';
 import TournamentStageTabSwitch from 'components/tournament/TournamentStageTabSwitch';
 import useGameFlows from 'hooks/game/useGameFlows';
 import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
-import { useEffect, useMemo, useState } from 'react';
+import useGetScheduleRows from 'hooks/ui/useGetScheduleRows';
+import { useState } from 'react';
 import useTournamentStore from 'store/TournamentStore';
 import Game from 'types/Game';
-import League from 'types/League';
-import TournamentScheduleGame from 'types/TournamentScheduleGame';
+import Tournament from 'types/Tournament';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentFlow } from 'utils/tournamentFlowUtils';
 import ScheduleRowGame from './ScheduleRowGame';
 import ScheduleRowGroup, { StyledDivider } from './ScheduleRowGroup';
 
-interface ScheduleRow {
-  showDivider?: boolean;
-  showGroup?: boolean;
-  scheduledGame?: TournamentScheduleGame;
-  previousGroupIndex?: number;
-  groupIndex?: number;
-  nextGroupIndex?: number;
-}
-
 interface IProps {
-  activeLeague: League;
   isInResultsPage?: boolean;
+  activeTournament?: Tournament;
 }
 
-const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
-  const selectedTournament = activeLeague.activeTournament!;
+const ScheduleContainer = ({ isInResultsPage, activeTournament }: IProps) => {
   const { updateGameWithMatchesAndRecalculate } = useGameFlows();
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
-  const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
   const [selectedStage, setSelectedStage] = useState<
     TournamentStage | undefined
-  >(activeLeague?.activeTournament?.currentStage);
+  >(activeTournament?.currentStage);
   const theme = useTheme();
 
   const { openNewResultsWindow } = useIPCRendererMessages();
   const { isMatchInProgress, currentActiveGame } = useTournamentStore();
 
-  const currentSchedule = useMemo(() => {
-    if (!selectedStage?.schedule) {
-      return undefined;
-    }
-    return selectedStage?.schedule;
-  }, [selectedStage?.schedule]);
-
-  const currentGroups = useMemo(() => {
-    if (!selectedStage?.groups) {
-      return undefined;
-    }
-    return selectedStage.groups;
-  }, [selectedStage?.groups]);
+  const { scheduleRows } = useGetScheduleRows(
+    selectedStage,
+    activeTournament?.settings,
+  );
 
   const onEditGame = (game: Game) => {
     setGameForEditModal(game);
@@ -67,69 +47,7 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
     setGameForEditModal(undefined);
   };
 
-  useEffect(() => {
-    if (!currentGroups?.length || !currentSchedule?.length) {
-      return;
-    }
-    const newScheduledRows: ScheduleRow[] = [];
-    let currentGroupedGamesLength = 0;
-    const maxGroupedGames = selectedTournament?.settings?.switchGames ? 2 : 1;
-    currentSchedule?.forEach((scheduledGame, index) => {
-      const previousScheduledGame = currentSchedule[index - 1];
-      const currentScheduledGame = scheduledGame;
-      const nextScheduledGame = currentSchedule[index + 1];
-
-      const isNextGroupDifferent =
-        index > 0 &&
-        previousScheduledGame?.group.groupIndex !==
-          currentScheduledGame?.group.groupIndex;
-      const isFirstRow = index === 0;
-
-      if (isFirstRow) {
-        newScheduledRows.push({
-          showGroup: true,
-          groupIndex: currentScheduledGame.group.groupIndex,
-        });
-        newScheduledRows.push({
-          scheduledGame,
-        });
-        currentGroupedGamesLength += 1;
-        if (maxGroupedGames === currentGroupedGamesLength) {
-          // newScheduledRows.push({ showDivider: true });
-          currentGroupedGamesLength = 0;
-        }
-        return;
-      }
-      if (isNextGroupDifferent) {
-        newScheduledRows.push({
-          showGroup: true,
-          groupIndex: currentScheduledGame.group.groupIndex,
-        });
-      }
-      currentGroupedGamesLength += 1;
-      newScheduledRows.push({
-        scheduledGame,
-      });
-      if (maxGroupedGames === currentGroupedGamesLength) {
-        if (nextScheduledGame?.group.id === currentScheduledGame.group.id) {
-          // newScheduledRows.push({ showDivider: true });
-          currentGroupedGamesLength = 0;
-        }
-      }
-      if (maxGroupedGames !== currentGroupedGamesLength) {
-        if (
-          nextScheduledGame?.group.id !== currentScheduledGame.group.id &&
-          index + 1 < (currentSchedule?.length || 0)
-        ) {
-          // newScheduledRows.push({ showDivider: true });
-          currentGroupedGamesLength = 0;
-        }
-      }
-    });
-    setScheduleRows(newScheduledRows);
-  }, [currentGroups, currentSchedule, selectedTournament]);
-
-  if (!currentGroups?.length) {
+  if (!activeTournament) {
     return (
       <FlexContainer
         justifyContent="center"
@@ -138,13 +56,12 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
       >
         <EmptyInboxIcon fill="transparent" width="250px" />
 
-        <Typography variant="h3">
-          Tournament has not yet been initialized.
-        </Typography>
+        <Typography variant="h3">No active tournament.</Typography>
       </FlexContainer>
     );
   }
-  if (!currentSchedule?.length) {
+
+  if (!scheduleRows?.length) {
     return (
       <FlexContainer
         justifyContent="center"
@@ -192,7 +109,7 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
         </Tooltip>
       )}
       <TournamentStageTabSwitch
-        selectedTournament={selectedTournament}
+        selectedTournament={activeTournament}
         onStageSelected={setSelectedStage}
       />
       {scheduleRows?.map((scheduleRow, index) => {
@@ -221,12 +138,12 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
             }
             nextGames={TournamentFlow.getNextGamesForEliminationsTournament(
               scheduleRow.scheduledGame?.game!,
-              selectedTournament?.currentStageGroups?.find(
+              activeTournament?.currentStageGroups?.find(
                 (group) => group.id === scheduleRow.scheduledGame?.group?.id,
               ),
-              selectedTournament.state.stage === 1
-                ? selectedTournament?.settings?.type
-                : selectedTournament?.settings?.secondStageType,
+              activeTournament.state.stage === 1
+                ? activeTournament?.settings?.type
+                : activeTournament?.settings?.secondStageType,
             )}
           />
         );
@@ -238,11 +155,11 @@ const ScheduleContainer = ({ activeLeague, isInResultsPage }: IProps) => {
             onConfirm={async (updatedGame) => {
               await updateGameWithMatchesAndRecalculate(
                 updatedGame,
-                selectedTournament,
+                activeTournament,
               );
               closeModal();
             }}
-            sizeOfTeams={selectedTournament?.settings?.numberOfTeamSize}
+            sizeOfTeams={activeTournament?.settings?.numberOfTeamSize}
             onClose={closeModal}
           />
         )}

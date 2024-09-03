@@ -3,27 +3,23 @@ import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import CustomTabs from 'components/shared/CustomTabs';
 import FlexContainer from 'components/shared/FlexContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
-import { useMemo, useState } from 'react';
-import League from 'types/League';
+import { useContext, useMemo, useState } from 'react';
+import { TournamentContext } from 'store/TournamentContext';
 import TournamentGroup from 'types/TournamentGroup';
 import TournamentStage from 'types/TournamentStage';
 import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
 import TournamentStageTabSwitch from './TournamentStageTabSwitch';
 
-interface IProps {
-  activeLeague: League;
-}
-
-const TournamentResultsTab = ({ activeLeague }: IProps) => {
-  const selectedTournament = activeLeague?.activeTournament;
+const TournamentResultsTab = () => {
+  const { activeTournament } = useContext(TournamentContext);
 
   const [selectedStage, setSelectedStage] = useState<
     TournamentStage | undefined
-  >(activeLeague?.activeTournament?.currentStage);
+  >(activeTournament?.currentStage);
 
   const [selectedGroup, setSelectedGroup] = useState<
     TournamentGroup | undefined
-  >(selectedTournament?.currentStage?.groups?.[0]);
+  >(activeTournament?.currentStage?.groups?.[0]);
 
   const groupLeaderboard = useMemo(() => {
     if (!selectedGroup) {
@@ -32,11 +28,11 @@ const TournamentResultsTab = ({ activeLeague }: IProps) => {
 
     return calculateTournamentGroupLeaderboard(
       selectedGroup,
-      selectedTournament!.settings,
+      activeTournament!.settings,
     );
-  }, [selectedGroup, selectedTournament]);
+  }, [selectedGroup, activeTournament]);
 
-  if (!selectedTournament?.stages?.length) {
+  if (!activeTournament?.stages?.length) {
     return (
       <FlexContainer
         justifyContent="center"
@@ -60,7 +56,7 @@ const TournamentResultsTab = ({ activeLeague }: IProps) => {
       overflowY="auto"
     >
       <TournamentStageTabSwitch
-        selectedTournament={selectedTournament}
+        selectedTournament={activeTournament}
         onStageSelected={setSelectedStage}
       />
       <CustomTabs

@@ -26,7 +26,7 @@ const LeaderboardList: React.FC<IProps> = ({
   const getColor = (index: number) => {
     switch (index) {
       case 1:
-        return '#FFD700';
+        return '#FFD800';
       case 2:
         return '#c0c0c0';
       case 3:
@@ -109,27 +109,27 @@ const LeaderboardList: React.FC<IProps> = ({
     },
     {
       field: 'totalPoints',
-      headerName: 'Total points',
-      minWidth: 130,
-      maxWidth: 130,
+      headerName: 'Points',
+      minWidth: 80,
+      maxWidth: 80,
     },
     {
       field: 'totalWins',
-      headerName: 'Total wins',
-      minWidth: 130,
-      maxWidth: 130,
+      headerName: 'Wins',
+      minWidth: 80,
+      maxWidth: 80,
     },
     {
       field: 'totalLosses',
-      headerName: 'Total losses',
-      minWidth: 130,
-      maxWidth: 130,
+      headerName: 'Losses',
+      minWidth: 80,
+      maxWidth: 80,
     },
     {
       field: 'totalDraws',
-      headerName: 'Total draws',
-      minWidth: 130,
-      maxWidth: 130,
+      headerName: 'Draws',
+      minWidth: 80,
+      maxWidth: 80,
     },
   ];
 

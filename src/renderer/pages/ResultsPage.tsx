@@ -1,11 +1,12 @@
-import LeaderboardView from 'components/results-window/LeaderboardView';
-import ScheduleView from 'components/results-window/ScheduleView';
+import { useTheme } from '@mui/material';
 import CurrentGameView from 'components/results-window/current-game-view/CurrentGameView';
+import LeaderboardView from 'components/results-window/LeaderboardView';
+import ResultsWindowUpcomingGamesSection from 'components/results-window/ResultsWindowUpcomingGamesSection';
+import ResultsScheduleView from 'components/results-window/schedule/ResultsScheduleView';
 import FlexContainer from 'components/shared/FlexContainer';
-import ScheduleUpcomingGames from 'components/tournament/visualizations/schedule/ScheduleUpcomingGames';
 import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import useScrollTo from 'hooks/ui/useScrollTo';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import { setTimeout } from 'worker-timers';
 
@@ -13,15 +14,13 @@ interface IProps {}
 
 const ResultsPage: React.FC<IProps> = () => {
   const { data: activeLeague, refetch } = LeagueQueries.useActiveLeague();
-  const highest = 1;
-  const [currentActiveView, setCurentActiveView] = useState(0);
-  const [
-    currentActiveViewAnimationProgress,
-    setCurrentActiveViewAnimationProgress,
-  ] = useState(true);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { scrollDivToBottom } = useScrollTo();
+  const theme = useTheme();
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const leaderboardScrollRef = useRef<HTMLDivElement>(null);
+  const { scrollDivToBottom: scrollScheduleDiv } = useScrollTo(true);
+  const { scrollDivToBottom: scrollLeaderboardDiv } = useScrollTo(true);
 
   const { listenToGameSwitched } = useIPCRendererMessages();
   useEffect(() => {
@@ -29,89 +28,90 @@ const ResultsPage: React.FC<IProps> = () => {
       try {
         await refetch();
       } catch (e) {
-        alert(e);
+        console.error(e);
       }
     });
   }, []);
 
-  const currentActiveElement = useMemo(() => {
-    switch (currentActiveView) {
-      case 0:
-        return <LeaderboardView activeLeague={activeLeague} />;
-      case 1:
-        return <ScheduleView activeLeague={activeLeague} />;
-      default:
-        return null;
-    }
-  }, [activeLeague, currentActiveView]);
+  const SECONDS_BEFORE_SCHEDULE_SCROLL_DELAY = 1000 * 2;
+  const SECONDS_FOR_SCHEDULE_SCROLLER = 1000 * 20;
 
-  const setNewActiveViewAndAnimate = useCallback(() => {
-    setCurentActiveView((curr) => {
-      if (curr + 1 > highest) {
-        return 0;
-      }
-      return curr + 1;
-    });
-    const startScrollingAfterSeconds = 1000 * 2;
-    setTimeout(() => {
-      const scrollToBottomInSeconds = 1000 * 15;
-      scrollDivToBottom(scrollToBottomInSeconds, scrollRef, () => {
-        setTimeout(() => {
-          setCurrentActiveViewAnimationProgress(false);
-        }, startScrollingAfterSeconds);
-      });
-    }, startScrollingAfterSeconds);
-  }, []);
+  const SECONDS_BEFORE_LEADERBOARD_SCROLL_DELAY = 1000 * 2;
+  const SECONDS_FOR_LEADERBOARD_SCROLLER = 1000 * 25;
 
-  useEffect(() => {
+  const refreshLeagueAndAnimate = useCallback(async () => {
     const getLeague = async () => {
       await refetch();
-      setNewActiveViewAndAnimate();
     };
 
     getLeague();
-  }, [refetch, setNewActiveViewAndAnimate]);
+
+    const startScheduleScroll = () => {
+      scrollScheduleDiv(SECONDS_FOR_SCHEDULE_SCROLLER, scrollRef, () => {
+        setTimeout(() => {
+          startScheduleScroll();
+        }, SECONDS_BEFORE_SCHEDULE_SCROLL_DELAY);
+      });
+    };
+    const startLeaderboardScroll = () => {
+      scrollLeaderboardDiv(
+        SECONDS_FOR_LEADERBOARD_SCROLLER,
+        leaderboardScrollRef,
+        () => {
+          setTimeout(() => {
+            startLeaderboardScroll();
+          }, SECONDS_BEFORE_LEADERBOARD_SCROLL_DELAY);
+        },
+      );
+    };
+    setTimeout(() => {
+      startScheduleScroll();
+    }, SECONDS_BEFORE_SCHEDULE_SCROLL_DELAY);
+
+    setTimeout(() => {
+      startLeaderboardScroll();
+    }, SECONDS_BEFORE_LEADERBOARD_SCROLL_DELAY);
+  }, []);
 
   useEffect(() => {
-    const getLeague = async () => {
-      await refetch();
-      setCurrentActiveViewAnimationProgress(true);
-      setNewActiveViewAndAnimate();
-    };
-    if (!currentActiveViewAnimationProgress) {
-      getLeague();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentActiveViewAnimationProgress]);
+    refreshLeagueAndAnimate();
+  }, [refreshLeagueAndAnimate]);
+
   return (
     <FlexContainer flexDirection="column" height="100%" alignItems="flex-start">
       <CurrentGameView activeLeague={activeLeague} />
-      <div
-        style={{
-          height: '100%',
-          maxHeight: '100%',
-          width: '100%',
-          overflowY: 'hidden',
-        }}
-        ref={scrollRef}
+      <FlexContainer
+        flexDirection="row"
+        height="100%"
+        width="100%"
+        style={{ height: 'calc(100% - 430px)' }}
       >
-        {currentActiveElement}
-      </div>
+        <div
+          style={{
+            height: '100%',
+            maxHeight: '100%',
+            width: '100%',
+            overflowY: 'hidden',
+          }}
+          ref={scrollRef}
+        >
+          <ResultsScheduleView activeLeague={activeLeague} />
+        </div>
+        <div
+          style={{
+            height: '100%',
+            maxHeight: '100%',
+            width: '100%',
+            overflowY: 'hidden',
+            borderLeft: `1px solid ${theme.palette.divider}`,
+          }}
+          ref={leaderboardScrollRef}
+        >
+          <LeaderboardView activeLeague={activeLeague} />
+        </div>
+      </FlexContainer>
 
-      <ScheduleUpcomingGames
-        activeLeague={activeLeague}
-        disableNewWindowOpen
-        isInResultsWindow
-        style={{
-          marginLeft: '0px',
-          marginBottom: '0px',
-          marginRight: '0px',
-          width: '100%',
-          fontSize: '50px',
-          height: '200px',
-        }}
-        fontSize={60}
-      />
+      <ResultsWindowUpcomingGamesSection activeLeague={activeLeague} />
     </FlexContainer>
   );
 };

@@ -1,12 +1,10 @@
-import League from 'types/League';
+import { useContext } from 'react';
+import { TournamentContext } from 'store/TournamentContext';
 import ScheduleContainer from './visualizations/schedule/ScheduleContainer';
 
-interface IProps {
-  activeLeague: League;
-}
-
-const TournamentScheduleTab = ({ activeLeague }: IProps) => {
-  return <ScheduleContainer activeLeague={activeLeague} />;
+const TournamentScheduleTab = () => {
+  const { activeTournament } = useContext(TournamentContext);
+  return <ScheduleContainer activeTournament={activeTournament} />;
 };
 
 export default TournamentScheduleTab;

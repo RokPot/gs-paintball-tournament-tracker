@@ -1,22 +1,36 @@
 import { Typography } from '@mui/material';
 import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import FlexContainer from 'components/shared/FlexContainer';
-import { useState } from 'react';
-import League from 'types/League';
+import { useContext, useState } from 'react';
+import { TournamentContext } from 'store/TournamentContext';
 import TournamentStage from 'types/TournamentStage';
 import TournamentGroupCard from './TournamentGroupCard';
 import TournamentStageTabSwitch from './TournamentStageTabSwitch';
 
-interface IProps {
-  activeLeague: League;
-}
+interface IProps {}
 
-const TournamentGroupsTab: React.FC<IProps> = ({ activeLeague }) => {
-  const selectedTournament = activeLeague?.activeTournament;
+const TournamentGroupsTab: React.FC<IProps> = () => {
+  const { activeTournament } = useContext(TournamentContext);
+
   const [selectedStage, setSelectedStage] = useState<
     TournamentStage | undefined
-  >(selectedTournament?.currentStage);
-  if (!selectedTournament?.stages?.length) {
+  >(activeTournament?.currentStage);
+
+  if (!activeTournament) {
+    return (
+      <FlexContainer
+        justifyContent="center"
+        alignItems="center"
+        flexDirection="column"
+      >
+        <EmptyInboxIcon width="250px" />
+
+        <Typography variant="h3">No active tournament.</Typography>
+      </FlexContainer>
+    );
+  }
+
+  if (!activeTournament?.stages?.length) {
     return (
       <FlexContainer
         justifyContent="center"
@@ -41,7 +55,7 @@ const TournamentGroupsTab: React.FC<IProps> = ({ activeLeague }) => {
       overflowY="auto"
     >
       <TournamentStageTabSwitch
-        selectedTournament={selectedTournament}
+        selectedTournament={activeTournament}
         onStageSelected={setSelectedStage}
       />
       {selectedStage?.groups

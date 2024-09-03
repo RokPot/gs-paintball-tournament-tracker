@@ -276,27 +276,17 @@ const TournamentPage = () => {
             }}
           />
           {activeTab === TournamentTabs.tournamentDetails && (
-            <TournamentDetailsTab activeLeague={activeLeague} />
+            <TournamentDetailsTab />
           )}
-          {activeTab === TournamentTabs.groups && (
-            <TournamentGroupsTab activeLeague={activeLeague} />
-          )}
-          {activeTab === TournamentTabs.brackets && (
-            <TournamentBracketsTab activeLeague={activeLeague} />
-          )}
-          {activeTab === TournamentTabs.results && (
-            <TournamentResultsTab activeLeague={activeLeague} />
-          )}
-          {activeTab === TournamentTabs.activity && (
-            <TournamentActivityTab activeLeague={activeLeague} />
-          )}
-          {activeTab === TournamentTabs.schedule && (
-            <TournamentScheduleTab activeLeague={activeLeague} />
-          )}
+          {activeTab === TournamentTabs.groups && <TournamentGroupsTab />}
+          {activeTab === TournamentTabs.brackets && <TournamentBracketsTab />}
+          {activeTab === TournamentTabs.results && <TournamentResultsTab />}
+          {activeTab === TournamentTabs.activity && <TournamentActivityTab />}
+          {activeTab === TournamentTabs.schedule && <TournamentScheduleTab />}
           {activeTab === TournamentTabs.buttons && <TournamentButtonsTab />}
         </FlexContainer>
       )}
-      <ScheduleUpcomingGames activeLeague={activeLeague} />
+      <ScheduleUpcomingGames />
 
       <CustomModal
         isModalOpen={addOrEditTournamentModalProps?.isOpen}

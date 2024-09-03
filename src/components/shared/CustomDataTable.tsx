@@ -26,7 +26,7 @@ const CustomDataTable: React.FC<IProps> = ({
   automaticScrolling,
 }) => {
   const apiRef = useGridApiRef();
-  const { scrollDataGridToBottom } = useScrollTo();
+  const { scrollDataGridToBottom } = useScrollTo(true);
 
   useEffect(() => {
     if (!automaticScrolling) {

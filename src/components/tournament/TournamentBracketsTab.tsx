@@ -1,28 +1,24 @@
 import { Typography } from '@mui/material';
 import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import FlexContainer from 'components/shared/FlexContainer';
-import { useState } from 'react';
-import League from 'types/League';
+import { useContext, useState } from 'react';
+import { TournamentContext } from 'store/TournamentContext';
 import TournamentStage from 'types/TournamentStage';
 import TournamentStageTabSwitch from './TournamentStageTabSwitch';
 import TournamentTypesPreview from './visualizations/TournamentTypesPreview';
 
-interface IProps {
-  activeLeague: League;
-}
-
-const TournamentBracketsTab: React.FC<IProps> = ({ activeLeague }) => {
-  const selectedTournament = activeLeague?.activeTournament;
+const TournamentBracketsTab: React.FC = () => {
+  const { activeTournament, activeLeague } = useContext(TournamentContext);
 
   const [selectedStage, setSelectedStage] = useState<
     TournamentStage | undefined
-  >(selectedTournament?.currentStage);
+  >(activeTournament?.currentStage);
 
-  if (!selectedTournament || !activeLeague) {
+  if (!activeTournament || !activeLeague) {
     return null;
   }
 
-  if (!selectedTournament?.stages?.length) {
+  if (!activeTournament?.stages?.length) {
     return (
       <FlexContainer
         justifyContent="center"
@@ -48,7 +44,7 @@ const TournamentBracketsTab: React.FC<IProps> = ({ activeLeague }) => {
       overflowY="auto"
     >
       <TournamentStageTabSwitch
-        selectedTournament={selectedTournament}
+        selectedTournament={activeTournament}
         onStageSelected={setSelectedStage}
       />
       <FlexContainer

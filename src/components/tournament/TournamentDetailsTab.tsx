@@ -1,23 +1,19 @@
 import { Typography } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
-import { useMemo } from 'react';
-import League from 'types/League';
+import { useContext, useMemo } from 'react';
+import { TournamentContext } from 'store/TournamentContext';
 import { calculateTournamentLeaderboard } from 'utils/tournamentResultUtils';
 import TournamentDetailsList from './TournamentDetailsList';
 
-interface IProps {
-  activeLeague: League;
-}
-
-const TournamentDetailsTab = ({ activeLeague }: IProps) => {
-  const selectedTournament = activeLeague?.activeTournament;
+const TournamentDetailsTab = () => {
+  const { activeTournament, activeLeague } = useContext(TournamentContext);
 
   const tournamentLeaderboard = useMemo(() => {
-    return calculateTournamentLeaderboard(selectedTournament);
-  }, [selectedTournament]);
-  console.log(tournamentLeaderboard);
-  if (!selectedTournament || !activeLeague) {
+    return calculateTournamentLeaderboard(activeTournament);
+  }, [activeTournament]);
+
+  if (!activeTournament || !activeLeague) {
     return null;
   }
 
@@ -27,7 +23,7 @@ const TournamentDetailsTab = ({ activeLeague }: IProps) => {
       style={{ flexGrow: 1 }}
       overflowY="auto"
     >
-      <TournamentDetailsList tournament={selectedTournament} />
+      <TournamentDetailsList tournament={activeTournament} />
 
       <Typography variant="h5">Tournament leaderboard</Typography>
 

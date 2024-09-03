@@ -4,12 +4,14 @@ import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import League from 'types/League';
 import { Match } from 'types/Match';
 import Team from 'types/Team';
+import Tournament from 'types/Tournament';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import TournamentStage from 'types/TournamentStage';
 
 export type TournamentContextProps = {
   activeLeague?: League | null;
   isFetchingActiveLeague?: boolean;
+  activeTournament?: Tournament;
   currentStage?: number;
   activeGame?: TournamentScheduleGame;
   timingBreak?: boolean;
@@ -24,6 +26,7 @@ export type TournamentContextProps = {
   confirmNextTournamentStage?: (nextStage: TournamentStage) => Promise<void>;
   onTeamPause?: (team: Team, isRefereeAction?: boolean | undefined) => void;
   setFirstLoad?: (isFirstLoad: boolean) => void;
+  forceRefreshTournament?: () => void;
 };
 
 export const TournamentContext = React.createContext<TournamentContextProps>(
@@ -35,7 +38,7 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const {
     data: activeLeague,
-    isLoading: isFetchingActiveLeague1,
+    isLoading: isFetchingActiveLeague,
     isSuccess,
     isFetching,
   } = LeagueQueries.useActiveLeague();
@@ -54,7 +57,7 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
     confirmNextTournamentStage,
     onTeamPause,
     setFirstLoad,
-    isFetchingActiveLeague,
+    forceRefreshTournament,
   } = useTournamentLogic(activeLeague);
 
   const contextValue = useMemo(
@@ -74,6 +77,8 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
       confirmNextTournamentStage,
       onTeamPause,
       setFirstLoad,
+      forceRefreshTournament,
+      activeTournament: activeLeague?.activeTournament,
     }),
     [
       activeGame,
@@ -91,6 +96,7 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
       startStopMatch,
       timingBreak,
       setFirstLoad,
+      forceRefreshTournament,
     ],
   );
   return (

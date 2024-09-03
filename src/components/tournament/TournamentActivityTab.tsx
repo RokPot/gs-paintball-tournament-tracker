@@ -1,21 +1,18 @@
 import { Typography } from '@mui/material';
 import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import FlexContainer from 'components/shared/FlexContainer';
+import { useContext } from 'react';
 import { TournamentQueries } from 'services/queries/tournament/TournamentQueries';
-import League from 'types/League';
+import { TournamentContext } from 'store/TournamentContext';
 import TournamentActivityRow from './tournament-page/TournamentActivityRow';
 
-interface IProps {
-  activeLeague: League;
-}
-
-const TournamentActivityTab = ({ activeLeague }: IProps) => {
-  const selectedTournament = activeLeague?.activeTournament;
+const TournamentActivityTab = () => {
+  const { activeTournament } = useContext(TournamentContext);
 
   const { data: activityList, isFetching } =
-    TournamentQueries.useTournamentActivityList(selectedTournament?.id || '');
+    TournamentQueries.useTournamentActivityList(activeTournament?.id || '');
 
-  if (!selectedTournament?.stages?.length) {
+  if (!activeTournament?.stages?.length) {
     return (
       <FlexContainer
         justifyContent="center"
@@ -54,7 +51,7 @@ const TournamentActivityTab = ({ activeLeague }: IProps) => {
       overflowY="auto"
     >
       {activityList?.map((activity) => {
-        const scheduledGame = selectedTournament.stages
+        const scheduledGame = activeTournament.stages
           ?.flatMap((stage) => stage.schedule)
           ?.find((schedGame) => schedGame.game.id === activity.game.id);
         return (
