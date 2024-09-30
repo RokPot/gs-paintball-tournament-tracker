@@ -3,7 +3,7 @@ import * as PouchDB from 'pouchdb-browser';
 import plugin from 'pouchdb-upsert';
 
 export const pouchDbName = 'dbVersion6';
-
+// GS Turnir history: dbVersion6
 PouchDB.default.plugin(plugin);
 const usePouchDB = (dbName: string) => {
   const APouchDB = PouchDB.default.defaults({});
