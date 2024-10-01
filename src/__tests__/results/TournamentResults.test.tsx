@@ -774,7 +774,7 @@ describe('TournamentResults', () => {
         gameWinner: GameWinner.team1,
         gameTime: 300,
         team1Wins: 2,
-        team2Wins: 0,
+        team2Wins: 1,
         matches: [
           {
             id: '1',
@@ -807,7 +807,7 @@ describe('TournamentResults', () => {
         gameWinner: GameWinner.team1,
         gameTime: 260,
         team1Wins: 2,
-        team2Wins: 0,
+        team2Wins: 1,
         matches: [
           {
             id: '1',
@@ -840,7 +840,7 @@ describe('TournamentResults', () => {
         gameWinner: GameWinner.team1,
         gameTime: 400,
         team1Wins: 2,
-        team2Wins: 0,
+        team2Wins: 1,
         matches: [
           {
             id: '1',
@@ -889,6 +889,13 @@ describe('TournamentResults', () => {
             team1Margin: -3,
             team2Margin: 3,
           },
+          {
+            id: '2',
+            matchDurationInSeconds: 10,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+          },
         ],
       }),
     ];
@@ -911,12 +918,12 @@ describe('TournamentResults', () => {
       ...DefaultTournamentSettings,
     });
     expect(leaderboard.length).toBe(6);
-    expect(leaderboard[0].team.id).toBe(team1.id);
-    expect(leaderboard[1].team.id).toBe(team2.id);
-    expect(leaderboard[2].team.id).toBe(team3.id);
-    expect(leaderboard[3].team.id).toBe(team5.id);
-    expect(leaderboard[4].team.id).toBe(team4.id);
-    expect(leaderboard[5].team.id).toBe(team6.id);
+    expect(leaderboard[0].team.id).toBe(team2.id);
+    expect(leaderboard[1].team.id).toBe(team1.id);
+    expect(leaderboard[2].team.id).toBe(team5.id);
+    expect(leaderboard[3].team.id).toBe(team4.id);
+    expect(leaderboard[4].team.id).toBe(team6.id);
+    expect(leaderboard[5].team.id).toBe(team3.id);
   });
 
   it('should calculate stage 2 results 2 stage 1 groups, 1 stage 2 group', () => {
