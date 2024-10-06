@@ -46,12 +46,19 @@ interface LeaderboardTeamGameWins {
   gameTimeRemainingSum: number;
 }
 
+interface TiedPartialUnrankedTeams {
+  tiedTeams: LeaderboardTeam[];
+  fromRank: number;
+  toRank: number;
+}
+
 type ResolvedTieBreaks = ResolvedTiedTeam[] | typeof NotViableTiebreaker;
 
 const sortResolvedTeamsInACheck = <T,>(
   checkSortedTeams: T[],
   propToCheck: keyof T,
   propToPropagate: keyof T,
+  startFromRank: number,
   beforeIterationCheck?: (sortedTeam: T, index: number) => boolean,
 ) => {
   const sortedTeams: ResolvedTiedTeam[] = [];
@@ -68,7 +75,7 @@ const sortResolvedTeamsInACheck = <T,>(
           nextSortedTeam?.[propToCheck] !== currentSortedTeam[propToCheck])
       ) {
         sortedTeams.push({
-          rank: i,
+          rank: startFromRank + i,
           teamId: currentSortedTeam[propToPropagate] as string,
         });
       } else {
@@ -118,28 +125,59 @@ const prepareTiedTeamsForProcessing = (
   return { leaderboardTeamGameWins, teamsTiedId };
 };
 
-export const reorderResolvedTies = (
+export const swapElements = (array: any[], index1: number, index2: number) => {
+  [array[index1], array[index2]] = [array[index2], array[index1]];
+};
+
+export const reorderResolvedTiesAndGroupUnresolvedTies = (
   resolvedTiedTeams: ResolvedTieBreaks,
   tiedLeaderboardTeams: LeaderboardTeam[],
-  resolvedLeaderboardTeams: LeaderboardTeam[],
+  resolvedLeaderboardTeams: ResolvedTiedTeam[],
+  fromStartRank: number,
 ) => {
   if (resolvedTiedTeams === NotViableTiebreaker) {
     return {
-      teamsLeft: tiedLeaderboardTeams,
-      sortedLeaderboardTeam: [],
+      tiedPartialUnrakedTeams: undefined,
+      sortedLeaderboardTeam: resolvedLeaderboardTeams,
     };
   }
   const sortedLeaderboardTeam = [...resolvedLeaderboardTeams];
-  const teamsLeft = [];
+  let teamsLeft: LeaderboardTeam[] = [];
 
+  let currentRankStart: number | null = null;
+  const tiedPartialUnrakedTeams: TiedPartialUnrankedTeams[] = [];
   for (let t = 0; t < resolvedTiedTeams.length; t += 1) {
-    if (resolvedTiedTeams[t].rank !== -1) {
+    const resolvedTeam = resolvedTiedTeams[t];
+    // If rank is higher not -1 we can sort it.
+    // -1 means that the team couldn't be sorted yet
+    if (resolvedTeam.rank !== -1) {
+      if (currentRankStart !== null) {
+        // If we have a range this means we have a partial grouped unranked teams which we need to solve seperately
+        tiedPartialUnrakedTeams.push({
+          fromRank: currentRankStart,
+          toRank: fromStartRank + t - 1,
+          tiedTeams: teamsLeft,
+        });
+
+        currentRankStart = null;
+        teamsLeft = [];
+      }
+
+      const newRank = resolvedTeam.rank;
+      const oldRankIndex = sortedLeaderboardTeam.findIndex(
+        (tmpSortedLeaderboardTeam) =>
+          tmpSortedLeaderboardTeam.teamId === resolvedTeam.teamId,
+      );
+
       // If we have a rank we can sort  it
-      const teamToBeReplaced = tiedLeaderboardTeams.find(
-        (leaderboardTeam) =>
-          leaderboardTeam.team.id === resolvedTiedTeams[t].teamId,
-      )!;
-      sortedLeaderboardTeam.push(teamToBeReplaced);
+      if (newRank >= 0 && oldRankIndex >= 0) {
+        swapElements(sortedLeaderboardTeam, oldRankIndex, newRank);
+
+        sortedLeaderboardTeam[newRank] = {
+          ...sortedLeaderboardTeam[newRank],
+          rank: resolvedTeam.rank,
+        };
+      }
     } else {
       // If we don't have a rank this means that the team couldn't be sorted
       const teamNotResolved = tiedLeaderboardTeams.find(
@@ -147,10 +185,28 @@ export const reorderResolvedTies = (
           leaderboardTeam.team.id === resolvedTiedTeams[t].teamId,
       )!;
       teamsLeft.push(teamNotResolved);
+      // If we don't have currentRanke means this is a start of a new range
+      if (currentRankStart === null) {
+        currentRankStart = fromStartRank + t;
+      }
     }
   }
+
+  // Handle the case where the last teams ranks(s) are -1
+  if (currentRankStart !== null) {
+    // If we have a range this means we have a partial grouped unranked teams which we need to solve seperately
+    tiedPartialUnrakedTeams.push({
+      fromRank: currentRankStart,
+      toRank: resolvedTiedTeams.length - 1,
+      tiedTeams: teamsLeft,
+    });
+
+    currentRankStart = null;
+    teamsLeft = [];
+  }
+
   return {
-    teamsLeft,
+    tiedPartialUnrakedTeams,
     sortedLeaderboardTeam,
   };
 };
@@ -266,6 +322,7 @@ const getGameTimeSumForTeams = (
 const resolveWithHeadToHeadCheck = (
   leaderboardTeamsTied: LeaderboardTeam[],
   finishedGames: Game[],
+  startFromRank: number,
 ): ResolvedTieBreaks => {
   const { leaderboardTeamGameWins, teamsTiedId } =
     prepareTiedTeamsForProcessing(leaderboardTeamsTied);
@@ -297,6 +354,7 @@ const resolveWithHeadToHeadCheck = (
     leaderboardTeamGameWins,
     'numberOfWins',
     'teamId',
+    startFromRank,
     (sortedTeam, index) =>
       sortedTeam.numberOfWins === leaderboardTeamGameWins.length - index - 1,
   );
@@ -305,6 +363,7 @@ const resolveWithHeadToHeadCheck = (
 const resolveWithLeastTimeRemainingCheck = (
   leaderboardTeamsTied: LeaderboardTeam[],
   finishedGames: Game[],
+  startFromRank: number,
   checkOnlyTiedGames: boolean,
 ): ResolvedTieBreaks => {
   const leaderBoardTeamGameTimes = getGameTimeSumForTeams(
@@ -335,12 +394,14 @@ const resolveWithLeastTimeRemainingCheck = (
     leaderBoardTeamGameTimes,
     'gameTimeRemainingSum',
     'teamId',
+    startFromRank,
   );
 };
 
 const resolveWithMostTimeRemainingCheck = (
   leaderboardTeamsTied: LeaderboardTeam[],
   finishedGames: Game[],
+  startFromRank: number,
   checkOnlyTiedGames: boolean,
 ): ResolvedTieBreaks => {
   const leaderBoardTeamGameTimes = getGameTimeSumForTeams(
@@ -371,6 +432,7 @@ const resolveWithMostTimeRemainingCheck = (
     leaderBoardTeamGameTimes,
     'gameTimeRemainingSum',
     'teamId',
+    startFromRank,
   );
 };
 
@@ -384,6 +446,7 @@ const resolveWithHighestNumberOfCleanGamesCheck = (
   leaderboardTeamsTied: LeaderboardTeam[],
   finishedGames: Game[],
   tournamentSettings: TournamentSettings,
+  startFromRank: number,
 ): ResolvedTieBreaks => {
   const { leaderboardTeamGameWins, teamsTiedId } =
     prepareTiedTeamsForProcessing(leaderboardTeamsTied);
@@ -399,7 +462,7 @@ const resolveWithHighestNumberOfCleanGamesCheck = (
         }
       }
     }
-    if (finishedGame.gameWinner === GameWinner.team1) {
+    if (finishedGame.gameWinner === GameWinner.team2) {
       if (teamsTiedId.includes(finishedGame.team2.id)) {
         if (finishedGame.team2Wins >= tournamentSettings.numberOfWinsRequired) {
           const currentLeaderboardTeam = leaderboardTeamGameWins.find(
@@ -416,12 +479,14 @@ const resolveWithHighestNumberOfCleanGamesCheck = (
     leaderboardTeamGameWins,
     'numberOfWins',
     'teamId',
+    startFromRank,
   );
 };
 
 const resolveWithNumberOfMatchesWonInTiedGamesCheck = (
   leaderboardTeamsTied: LeaderboardTeam[],
   finishedGames: Game[],
+  startFromRank: number,
 ): ResolvedTieBreaks => {
   const { leaderboardTeamGameWins, teamsTiedId } =
     prepareTiedTeamsForProcessing(leaderboardTeamsTied);
@@ -452,12 +517,14 @@ const resolveWithNumberOfMatchesWonInTiedGamesCheck = (
     leaderboardTeamGameWins,
     'numberOfWins',
     'teamId',
+    startFromRank,
   );
 };
 
 const resolveWithMatchMarginCheck = (
   leaderboardTeamsTied: LeaderboardTeam[],
   finishedGames: Game[],
+  startFromRank: number,
 ): ResolvedTieBreaks => {
   const { leaderboardTeamGameWins, teamsTiedId } =
     prepareTiedTeamsForProcessing(leaderboardTeamsTied);
@@ -469,6 +536,7 @@ const resolveWithMatchMarginCheck = (
       )!;
       finishedGame.matches.forEach((match) => {
         currentLeaderboardTeam1.matchMargin += match.team1Margin;
+        currentLeaderboardTeam1.numberOfGamesPlayed += 1;
       });
     }
     if (teamsTiedId.includes(finishedGame.team2.id)) {
@@ -477,15 +545,21 @@ const resolveWithMatchMarginCheck = (
       )!;
       finishedGame.matches.forEach((match) => {
         currentLeaderboardTeam2.matchMargin += match.team2Margin;
+        currentLeaderboardTeam2.numberOfGamesPlayed += 1;
       });
     }
   });
-  leaderboardTeamGameWins.sort((a, b) => b.matchMargin - a.matchMargin);
+  leaderboardTeamGameWins.sort(
+    (a, b) =>
+      b.matchMargin / b.numberOfGamesPlayed -
+      a.matchMargin / a.numberOfGamesPlayed,
+  );
 
   return sortResolvedTeamsInACheck(
     leaderboardTeamGameWins,
     'matchMargin',
     'teamId',
+    startFromRank,
   );
 };
 
@@ -494,10 +568,15 @@ const resolveTiedTeamsWithTieBreakCheck = (
   tiedTeams: LeaderboardTeam[],
   finishedGames: Game[],
   tournamentSettings: TournamentSettings,
+  startFromRank: number,
 ) => {
   switch (tieBreakCheck) {
     case TieResolveCheck.HeadToHead: {
-      return resolveWithHeadToHeadCheck(tiedTeams, finishedGames);
+      return resolveWithHeadToHeadCheck(
+        tiedTeams,
+        finishedGames,
+        startFromRank,
+      );
     }
     case TieResolveCheck.NumberOfPoints: {
       return resolveWithHighestNumberOfPointsCheck();
@@ -507,29 +586,51 @@ const resolveTiedTeamsWithTieBreakCheck = (
         tiedTeams,
         finishedGames,
         tournamentSettings,
+        startFromRank,
       );
     }
     case TieResolveCheck.NumberOfMatchesWonInTiedGames: {
       return resolveWithNumberOfMatchesWonInTiedGamesCheck(
         tiedTeams,
         finishedGames,
+        startFromRank,
       );
     }
     case TieResolveCheck.MatchMargin: {
-      return resolveWithMatchMarginCheck(tiedTeams, finishedGames);
+      return resolveWithMatchMarginCheck(
+        tiedTeams,
+        finishedGames,
+        startFromRank,
+      );
     }
     case TieResolveCheck.GreatestTimeRemainingAmongAllWonGames:
-      return resolveWithMostTimeRemainingCheck(tiedTeams, finishedGames, false);
+      return resolveWithMostTimeRemainingCheck(
+        tiedTeams,
+        finishedGames,
+        startFromRank,
+        false,
+      );
     case TieResolveCheck.GreatestTimeRemainingAmongTiedWonGames:
-      return resolveWithMostTimeRemainingCheck(tiedTeams, finishedGames, true);
+      return resolveWithMostTimeRemainingCheck(
+        tiedTeams,
+        finishedGames,
+        startFromRank,
+        true,
+      );
     case TieResolveCheck.LeastTimeRemainingAmongAllLostGames:
       return resolveWithLeastTimeRemainingCheck(
         tiedTeams,
         finishedGames,
+        startFromRank,
         false,
       );
     case TieResolveCheck.LeastTimeRemainingAmongTiedLostGames:
-      return resolveWithLeastTimeRemainingCheck(tiedTeams, finishedGames, true);
+      return resolveWithLeastTimeRemainingCheck(
+        tiedTeams,
+        finishedGames,
+        startFromRank,
+        true,
+      );
     default: {
       break;
     }
@@ -542,33 +643,77 @@ export const tryToResolveDraws = (
   finishedGames: Game[],
   tournamentSettings: TournamentSettings,
 ) => {
-  let teamsTiedLeft = [...tiedTeams];
   let sortingLeaderboardTeams: LeaderboardTeam[] = [];
+  let resolvedTiedTeams: ResolvedTiedTeam[] = [
+    ...tiedTeams.map((team) => ({
+      rank: -1,
+      teamId: team.team.id,
+      isResolved: false,
+    })),
+  ];
+
+  let tiedPartialUnrakedTeams: TiedPartialUnrankedTeams[] = [
+    {
+      fromRank: 0,
+      toRank: tiedTeams.length,
+      tiedTeams,
+    },
+  ];
+  let nextTiedPartialUnrakedTeams: TiedPartialUnrankedTeams[] = [];
+
   for (let j = 0; j < tieBreakChecks.length; j += 1) {
     const tieBreakCheck = tieBreakChecks[j];
-    const resolvedTieBreaks = resolveTiedTeamsWithTieBreakCheck(
-      tieBreakCheck,
-      teamsTiedLeft,
-      finishedGames,
-      tournamentSettings,
-    );
-    const { sortedLeaderboardTeam, teamsLeft } = reorderResolvedTies(
-      resolvedTieBreaks,
-      tiedTeams,
-      sortingLeaderboardTeams,
-    );
-    teamsTiedLeft = [...teamsLeft];
-    sortingLeaderboardTeams = [...sortedLeaderboardTeam];
-    if (!teamsLeft?.length) {
+    for (let i = 0; i < tiedPartialUnrakedTeams.length; i += 1) {
+      const currentPartialUnrankedTeamsGroup = tiedPartialUnrakedTeams[i];
+      const resolvedTieBreaks = resolveTiedTeamsWithTieBreakCheck(
+        tieBreakCheck,
+        currentPartialUnrankedTeamsGroup.tiedTeams,
+        finishedGames,
+        tournamentSettings,
+        currentPartialUnrankedTeamsGroup.fromRank,
+      );
+
+      const {
+        sortedLeaderboardTeam: newlySortedLeaderboardTeams,
+        tiedPartialUnrakedTeams: newTiedPartialUnrakedTeams,
+      } = reorderResolvedTiesAndGroupUnresolvedTies(
+        resolvedTieBreaks,
+        currentPartialUnrankedTeamsGroup.tiedTeams,
+        resolvedTiedTeams,
+        currentPartialUnrankedTeamsGroup.fromRank,
+      );
+
+      resolvedTiedTeams = [...newlySortedLeaderboardTeams];
+
+      if (newTiedPartialUnrakedTeams === undefined) {
+        nextTiedPartialUnrakedTeams.push(currentPartialUnrankedTeamsGroup);
+      } else if (newTiedPartialUnrakedTeams.length > 0) {
+        nextTiedPartialUnrakedTeams.push(...newTiedPartialUnrakedTeams);
+      }
+    }
+    tiedPartialUnrakedTeams = [...nextTiedPartialUnrakedTeams];
+    nextTiedPartialUnrakedTeams = [];
+
+    if (!tiedPartialUnrakedTeams?.length) {
       break;
     }
     if (j === tieBreakChecks.length - 1) {
       // todo rokpot, maybe this not the best approach
-      sortingLeaderboardTeams = [...sortingLeaderboardTeams, ...teamsTiedLeft];
+      sortingLeaderboardTeams = [
+        ...sortingLeaderboardTeams,
+        ...tiedPartialUnrakedTeams
+          .map((tiedPartialUnrakedTeam) => tiedPartialUnrakedTeam.tiedTeams)
+          .flat(),
+      ];
     }
   }
 
-  return sortingLeaderboardTeams;
+  return (
+    resolvedTiedTeams?.map(
+      (resolvedTiedTeam) =>
+        tiedTeams.find((team) => team.team.id === resolvedTiedTeam.teamId)!,
+    ) || []
+  );
 };
 
 const calculateTournamentRoundRobinLeaderboardPoints = (
