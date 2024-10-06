@@ -133,6 +133,7 @@ export const reorderResolvedTiesAndGroupUnresolvedTies = (
   resolvedTiedTeams: ResolvedTieBreaks,
   tiedLeaderboardTeams: LeaderboardTeam[],
   resolvedLeaderboardTeams: ResolvedTiedTeam[],
+  fromStartRank: number,
 ) => {
   if (resolvedTiedTeams === NotViableTiebreaker) {
     return {
@@ -154,7 +155,7 @@ export const reorderResolvedTiesAndGroupUnresolvedTies = (
         // If we have a range this means we have a partial grouped unranked teams which we need to solve seperately
         tiedPartialUnrakedTeams.push({
           fromRank: currentRankStart,
-          toRank: t - 1,
+          toRank: fromStartRank + t - 1,
           tiedTeams: teamsLeft,
         });
 
@@ -186,7 +187,7 @@ export const reorderResolvedTiesAndGroupUnresolvedTies = (
       teamsLeft.push(teamNotResolved);
       // If we don't have currentRanke means this is a start of a new range
       if (currentRankStart === null) {
-        currentRankStart = t;
+        currentRankStart = fromStartRank + t;
       }
     }
   }
@@ -206,43 +207,6 @@ export const reorderResolvedTiesAndGroupUnresolvedTies = (
 
   return {
     tiedPartialUnrakedTeams,
-    sortedLeaderboardTeam,
-  };
-};
-
-export const reorderResolvedTies = (
-  resolvedTiedTeams: ResolvedTieBreaks,
-  tiedLeaderboardTeams: LeaderboardTeam[],
-  resolvedLeaderboardTeams: LeaderboardTeam[],
-) => {
-  if (resolvedTiedTeams === NotViableTiebreaker) {
-    return {
-      teamsLeft: tiedLeaderboardTeams,
-      sortedLeaderboardTeam: [],
-    };
-  }
-  const sortedLeaderboardTeam = [...resolvedLeaderboardTeams];
-  const teamsLeft = [];
-
-  for (let t = 0; t < resolvedTiedTeams.length; t += 1) {
-    if (resolvedTiedTeams[t].rank !== -1) {
-      // If we have a rank we can sort  it
-      const teamToBeReplaced = tiedLeaderboardTeams.find(
-        (leaderboardTeam) =>
-          leaderboardTeam.team.id === resolvedTiedTeams[t].teamId,
-      )!;
-      sortedLeaderboardTeam.push(teamToBeReplaced);
-    } else {
-      // If we don't have a rank this means that the team couldn't be sorted
-      const teamNotResolved = tiedLeaderboardTeams.find(
-        (leaderboardTeam) =>
-          leaderboardTeam.team.id === resolvedTiedTeams[t].teamId,
-      )!;
-      teamsLeft.push(teamNotResolved);
-    }
-  }
-  return {
-    teamsLeft,
     sortedLeaderboardTeam,
   };
 };
@@ -716,6 +680,7 @@ export const tryToResolveDraws = (
         resolvedTieBreaks,
         currentPartialUnrankedTeamsGroup.tiedTeams,
         resolvedTiedTeams,
+        currentPartialUnrankedTeamsGroup.fromRank,
       );
 
       resolvedTiedTeams = [...newlySortedLeaderboardTeams];

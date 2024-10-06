@@ -1460,107 +1460,248 @@ describe('TournamentResults', () => {
     expect(leaderboard[2].team.id).toBe(team2.id);
   });
 
-  // it('should calculate three-way tiebreaker in 2 steps, #1: 0, -1, -1, #2: 0, 1, 2', () => {
-  //   // TEAM 1 = DarkWolf
-  //   // TEAM 2 = Darksun Junior
-  //   // TEAM 3 = Darksun
-  //   const threeWayTie = [
-  //     TestUtils.generateGame({
-  //       index: 1,
-  //       team1,
-  //       team2,
-  //       gameState: GameState.finished,
-  //       gameWinner: GameWinner.team2,
-  //       team1Wins: 0,
-  //       team2Wins: 1,
-  //       matches: [
-  //         TestUtils.generateMatch({
-  //           index: 0,
-  //           matchState: MatchState.team2Win,
-  //           team1Margin: -3,
-  //           team2Margin: 3,
-  //           matchDurationInSeconds: 250000,
-  //         }),
-  //         TestUtils.generateMatch({
-  //           index: 1,
-  //           matchState: MatchState.draw,
-  //           team1Margin: 2,
-  //           team2Margin: 3,
-  //           matchDurationInSeconds: 0,
-  //         }),
-  //       ],
-  //     }),
-  //     TestUtils.generateGame({
-  //       index: 1,
-  //       team1,
-  //       team2: team3,
-  //       gameState: GameState.finished,
-  //       gameWinner: GameWinner.team1,
-  //       team1Wins: 2,
-  //       team2Wins: 0,
-  //       matches: [
-  //         TestUtils.generateMatch({
-  //           index: 0,
-  //           matchState: MatchState.team1Win,
-  //           team1Margin: 1,
-  //           team2Margin: -3,
-  //           matchDurationInSeconds: 250000,
-  //         }),
-  //         TestUtils.generateMatch({
-  //           index: 1,
-  //           matchState: MatchState.team1Win,
-  //           team1Margin: 2,
-  //           team2Margin: -3,
-  //           matchDurationInSeconds: 0,
-  //         }),
-  //       ],
-  //     }),
-  //     TestUtils.generateGame({
-  //       index: 1,
-  //       team1: team2,
-  //       team2: team3,
-  //       gameState: GameState.finished,
-  //       gameWinner: GameWinner.team2,
-  //       team1Wins: 0,
-  //       team2Wins: 2,
-  //       matches: [
-  //         TestUtils.generateMatch({
-  //           index: 0,
-  //           matchState: MatchState.team2Win,
-  //           team1Margin: -3,
-  //           team2Margin: 3,
-  //           matchDurationInSeconds: 250000,
-  //         }),
-  //         TestUtils.generateMatch({
-  //           index: 1,
-  //           matchState: MatchState.team2Win,
-  //           team1Margin: -3,
-  //           team2Margin: 3,
-  //           matchDurationInSeconds: 0,
-  //         }),
-  //       ],
-  //     }),
-  //   ];
-  //   // Team 1 - 2 Wins
-  //   // Team 2 - 1 Win
-  //   // Team 3 - 1 Win
-  //   // Team 4 - 2 Wins
-  //   const newGroup = TestUtils.generateTournamentGroup(
-  //     1,
-  //     threeWayTie,
-  //     [team1, team2, team3],
-  //     TournamentType.roundRobin,
-  //   );
-  //   const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
-  //     ...DefaultTournamentSettings,
-  //   });
-  //   expect(leaderboard.length).toBe(3);
-  //   expect(leaderboard[0].team.id).toBe(team1.id);
-  //   expect(leaderboard[1].team.id).toBe(team3.id);
-  //   expect(leaderboard[2].team.id).toBe(team2.id);
-  // });
+  it('should calculate three-way tiebreaker in 2 steps, #1: 0, -1, -1, #2: 0, 1, 2', () => {
+    const threeWayTie = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+        team1Wins: 1,
+        team2Wins: 2,
+        matches: [
+          TestUtils.generateMatch({
+            index: 0,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+            matchDurationInSeconds: 250000,
+          }),
+          TestUtils.generateMatch({
+            index: 1,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+            matchDurationInSeconds: 0,
+          }),
+          TestUtils.generateMatch({
+            index: 1,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+            matchDurationInSeconds: 0,
+          }),
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 1,
+        matches: [
+          TestUtils.generateMatch({
+            index: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: -2,
+            matchDurationInSeconds: 250000,
+          }),
+          TestUtils.generateMatch({
+            index: 1,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: -3,
+            matchDurationInSeconds: 0,
+          }),
+          TestUtils.generateMatch({
+            index: 2,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 2,
+            matchDurationInSeconds: 0,
+          }),
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team2,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+        team1Wins: 1,
+        team2Wins: 2,
+        matches: [
+          TestUtils.generateMatch({
+            index: 0,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 2,
+            matchDurationInSeconds: 250000,
+          }),
+          TestUtils.generateMatch({
+            index: 1,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 2,
+            matchDurationInSeconds: 0,
+          }),
+          TestUtils.generateMatch({
+            index: 1,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: -3,
+            matchDurationInSeconds: 0,
+          }),
+        ],
+      }),
+    ];
+    // Team 1 - 1 Wins
+    // Team 2 - 1 Win
+    // Team 3 - 1 Win
+    const newGroup = TestUtils.generateTournamentGroup(
+      1,
+      threeWayTie,
+      [team1, team2, team3],
+      TournamentType.roundRobin,
+    );
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
+      ...DefaultTournamentSettings,
+    });
+    // T2 , T1, T3
+    expect(leaderboard.length).toBe(3);
+    expect(leaderboard[0].team.id).toBe(team2.id);
+    expect(leaderboard[1].team.id).toBe(team1.id);
+    expect(leaderboard[2].team.id).toBe(team3.id);
+  });
 
-  // it('should calculate three-way tiebreaker in 2 steps, #1: 0, -1, -1, 3 #2: 0, 1, 2 3', () => {
+  it('should calculate 4-way tiebreaker in 2 steps, #1: 0, -1, -1, 3 #2: 0, 1, 2 3', () => {
+    const threeWayTie = [
+      // Team 2 Wins : 2 - 1, -3/3, -3/3, 3/-3
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+        team1Wins: 1,
+        team2Wins: 2,
+        matches: [
+          TestUtils.generateMatch({
+            index: 0,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+            matchDurationInSeconds: 250000,
+          }),
+          TestUtils.generateMatch({
+            index: 1,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+            matchDurationInSeconds: 0,
+          }),
+          TestUtils.generateMatch({
+            index: 1,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+            matchDurationInSeconds: 0,
+          }),
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team1,
+        team1Wins: 2,
+        team2Wins: 1,
+        matches: [
+          TestUtils.generateMatch({
+            index: 0,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+            matchDurationInSeconds: 250000,
+          }),
+          TestUtils.generateMatch({
+            index: 1,
+            matchState: MatchState.team1Win,
+            team1Margin: 3,
+            team2Margin: -3,
+            matchDurationInSeconds: 0,
+          }),
+          TestUtils.generateMatch({
+            index: 2,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 3,
+            matchDurationInSeconds: 0,
+          }),
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1: team2,
+        team2: team3,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+        team1Wins: 1,
+        team2Wins: 2,
+        matches: [
+          TestUtils.generateMatch({
+            index: 0,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 2,
+            matchDurationInSeconds: 250000,
+          }),
+          TestUtils.generateMatch({
+            index: 1,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 2,
+            matchDurationInSeconds: 0,
+          }),
+          TestUtils.generateMatch({
+            index: 1,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: -3,
+            matchDurationInSeconds: 0,
+          }),
+        ],
+      }),
+    ];
+    // Team 1 - 1 Wins
+    // Team 2 - 1 Win
+    // Team 3 - 1 Win
+    const newGroup = TestUtils.generateTournamentGroup(
+      1,
+      threeWayTie,
+      [team1, team2, team3],
+      TournamentType.roundRobin,
+    );
+    const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {
+      ...DefaultTournamentSettings,
+    });
+    // Team 1 vs Team 2 : 1 - 2, -3/3, -3/3, 3/-3
+    // Team 1 vs Team 3: 2 - 1, 3/-3, 3/-3, -3/3:
+    // T2 , T1, T3
+    // todo rokpot: fix this test
+    expect(leaderboard.length).toBe(3);
+    expect(leaderboard[0].team.id).toBe(team2.id);
+    expect(leaderboard[1].team.id).toBe(team1.id);
+    expect(leaderboard[2].team.id).toBe(team3.id);
+    expect(leaderboard[2].team.id).toBe(team4.id);
+  });
+
+  // it('should calculate 5-way tiebreaker in 2 steps, #1: -1, -1, 2, -1, -1 #2: 0, 1, 2, 3, 4', () => {
   //   // TEAM 1 = DarkWolf
   //   // TEAM 2 = Darksun Junior
   //   // TEAM 3 = Darksun
