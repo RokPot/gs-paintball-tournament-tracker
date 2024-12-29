@@ -3,7 +3,7 @@ import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
 
-interface ScheduleRow {
+export interface ScheduleRow {
   showDivider?: boolean;
   showGroup?: boolean;
   scheduledGame?: TournamentScheduleGame;

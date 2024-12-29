@@ -1,5 +1,6 @@
 import { compact } from 'lodash';
 import Game from 'types/Game';
+import { MATCH_POINTS_CONSTANTS } from 'types/GamePointsConstants';
 import { GameState, GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
 import MatchState from 'types/MatchState';
@@ -603,16 +604,22 @@ export namespace TournamentFlow {
     }
 
     scheduledGame.game.gameTime = timeLeftInMilliseconds / 1000;
-    scheduledGame.game.team1Wins += [MatchState.team1Win].includes(
-      match.matchState,
-    )
-      ? 1
-      : 0;
-    scheduledGame.game.team2Wins += [MatchState.team2Win].includes(
-      match.matchState,
-    )
-      ? 1
-      : 0;
+
+    switch (match.matchState) {
+      case MatchState.team1Win:
+        scheduledGame.game.team1Wins += MATCH_POINTS_CONSTANTS.WIN;
+        break;
+      case MatchState.team2Win:
+        scheduledGame.game.team2Wins += MATCH_POINTS_CONSTANTS.WIN;
+        break;
+      case MatchState.draw:
+        scheduledGame.game.team1Wins += MATCH_POINTS_CONSTANTS.DRAW;
+        scheduledGame.game.team2Wins += MATCH_POINTS_CONSTANTS.DRAW;
+        break;
+      default:
+        break;
+    }
+
     return scheduledGame;
   };
 
