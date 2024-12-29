@@ -1,4 +1,7 @@
-import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowUpRightFromSquare,
+  faExpand,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IconButton, Tooltip, Typography, useTheme } from '@mui/material';
 import EmptyInboxIcon from 'assets/icons/EmptyInbox';
@@ -6,6 +9,7 @@ import AddOrEditGame from 'components/game/AddOrEditGame';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import TournamentStageTabSwitch from 'components/tournament/TournamentStageTabSwitch';
+import usePdfExporter from 'hooks/exporter/usePdfExporter';
 import useGameFlows from 'hooks/game/useGameFlows';
 import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import useGetScheduleRows from 'hooks/ui/useGetScheduleRows';
@@ -19,17 +23,17 @@ import ScheduleRowGame from './ScheduleRowGame';
 import ScheduleRowGroup, { StyledDivider } from './ScheduleRowGroup';
 
 interface IProps {
-  isInResultsPage?: boolean;
   activeTournament?: Tournament;
 }
 
-const ScheduleContainer = ({ isInResultsPage, activeTournament }: IProps) => {
+const ScheduleContainer = ({ activeTournament }: IProps) => {
   const { updateGameWithMatchesAndRecalculate } = useGameFlows();
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
   const [selectedStage, setSelectedStage] = useState<
     TournamentStage | undefined
   >(activeTournament?.currentStage);
   const theme = useTheme();
+  const { exportScheduleToPdf } = usePdfExporter();
 
   const { openNewResultsWindow } = useIPCRendererMessages();
   const { isMatchInProgress, currentActiveGame } = useTournamentStore();
@@ -74,7 +78,6 @@ const ScheduleContainer = ({ isInResultsPage, activeTournament }: IProps) => {
       </FlexContainer>
     );
   }
-
   return (
     <FlexContainer
       flexDirection="column"
@@ -86,19 +89,20 @@ const ScheduleContainer = ({ isInResultsPage, activeTournament }: IProps) => {
         paddingTop: '8px',
       }}
       position="relative"
-      overflowY={!isInResultsPage ? 'auto' : undefined}
+      overflowY="auto"
     >
-      {!isInResultsPage && (
-        <Tooltip title="Open Schedule In New Window" arrow placement="left">
-          <IconButton
-            onClick={openNewResultsWindow}
-            style={{
-              width: '40px',
-              position: 'absolute',
-              right: '8px',
-              top: '0px',
-            }}
-          >
+      <FlexContainer
+        justifyContent="center"
+        alignItems="center"
+        style={{
+          position: 'absolute',
+          right: '8px',
+          top: '0px',
+          zIndex: 2,
+        }}
+      >
+        <Tooltip title="Open Schedule In New Window" arrow>
+          <IconButton onClick={openNewResultsWindow}>
             <FontAwesomeIcon
               icon={faArrowUpRightFromSquare}
               width={15}
@@ -107,7 +111,18 @@ const ScheduleContainer = ({ isInResultsPage, activeTournament }: IProps) => {
             />
           </IconButton>
         </Tooltip>
-      )}
+        <Tooltip title="Export Schedule" arrow>
+          <IconButton onClick={() => exportScheduleToPdf(scheduleRows)}>
+            <FontAwesomeIcon
+              icon={faExpand}
+              width={15}
+              height={15}
+              color={theme.palette.primary.main}
+            />
+          </IconButton>
+        </Tooltip>
+      </FlexContainer>
+
       <TournamentStageTabSwitch
         selectedTournament={activeTournament}
         onStageSelected={setSelectedStage}
@@ -132,9 +147,8 @@ const ScheduleContainer = ({ isInResultsPage, activeTournament }: IProps) => {
             gameNumber={scheduleRow?.scheduledGame?.gameNumber || index}
             onEditGame={onEditGame}
             disableEditting={
-              isInResultsPage ||
-              (isMatchInProgress &&
-                currentActiveGame?.id === scheduleRow.scheduledGame?.game.id)
+              isMatchInProgress &&
+              currentActiveGame?.id === scheduleRow.scheduledGame?.game.id
             }
             nextGames={TournamentFlow.getNextGamesForEliminationsTournament(
               scheduleRow.scheduledGame?.game!,

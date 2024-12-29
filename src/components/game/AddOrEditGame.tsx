@@ -10,6 +10,7 @@ import {
   Select,
   Theme,
   Typography,
+  alpha,
   css,
   styled,
   useTheme,
@@ -128,7 +129,7 @@ const AddOrEditGame = ({
     } finally {
       setIsProcessing(false);
     }
-  }, [game, gameFormik, onConfirm]);
+  }, [game, gameFormik, onConfirm, matches]);
 
   const updateMatch = useCallback(() => {
     if (!game || !selectedMatch) {
@@ -427,6 +428,14 @@ const AddOrEditGame = ({
                 width="100%"
                 cursor="pointer"
                 onClick={() => onMatchSelected(match)}
+                alignItems="center"
+                position="relative"
+                style={{
+                  backgroundColor:
+                    selectedMatch?.id === match.id
+                      ? alpha(theme.palette.primary.light, 0.2)
+                      : '',
+                }}
               >
                 <FlexContainer
                   flexDirection="row"
@@ -510,7 +519,14 @@ const AddOrEditGame = ({
                   </Typography>
                 </Typography>
                 <IconButton
-                  style={{ width: '20px', height: '20px', marginLeft: 'auto' }}
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    marginLeft: 'auto',
+                    position: 'absolute',
+                    top: 23,
+                    right: 5,
+                  }}
                   onClick={(e) => {
                     removeMatch?.(match.id);
                     e.preventDefault();
@@ -523,7 +539,14 @@ const AddOrEditGame = ({
             );
           })}
         </FlexContainer>
-        <FlexContainer flexDirection="column" gap={8}>
+        <FlexContainer
+          flexDirection="column"
+          gap={8}
+          style={{
+            borderLeft: `solid 1px ${theme.palette.divider}`,
+            paddingLeft: '16px',
+          }}
+        >
           {selectedMatch && (
             <>
               <Typography variant="p1Medium">
@@ -561,7 +584,7 @@ const AddOrEditGame = ({
                 <TimePicker
                   disabled={false}
                   sx={{ width: '100%' }}
-                  label="Game time"
+                  label="Match duration"
                   views={['minutes', 'seconds']}
                   format="mm:ss"
                   value={matchFormik?.values?.matchDurationInSeconds}
@@ -640,7 +663,15 @@ const AddOrEditGame = ({
         </FlexContainer>
       </FlexContainer>
 
-      <FlexContainer flexDirection="row" gap={16} width="100%">
+      <FlexContainer
+        flexDirection="row"
+        gap={16}
+        width="100%"
+        style={{
+          borderTop: `solid 1px ${theme.palette.divider}`,
+          paddingTop: '16px',
+        }}
+      >
         <LoadingButton
           variant="contained"
           onClick={onGameConfirm}
