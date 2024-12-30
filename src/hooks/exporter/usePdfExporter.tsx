@@ -1,6 +1,7 @@
 import { ScheduleRow } from 'hooks/ui/useGetScheduleRows';
 import jsPDF from 'jspdf';
 import { useCallback } from 'react';
+import Tournament from 'types/Tournament';
 
 const usePdfExporter = () => {
   const exportScheduleToPdf = useCallback((scheduleRows: ScheduleRow[]) => {
@@ -82,7 +83,9 @@ const usePdfExporter = () => {
     doc.save('schedule.pdf');
   }, []);
 
-  return { exportScheduleToPdf };
+  const exportTournamentRules = useCallback((tournament: Tournament) => {}, []);
+
+  return { exportScheduleToPdf, exportTournamentRules };
 };
 
 export default usePdfExporter;

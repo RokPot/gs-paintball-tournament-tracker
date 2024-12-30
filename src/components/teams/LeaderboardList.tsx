@@ -143,11 +143,12 @@ const LeaderboardList: React.FC<IProps> = ({
       setRowsPerPage(teams?.length || 0);
       return;
     }
-    const containerRefHeight = containerRef.current.offsetHeight;
+    const containerRefHeight =
+      containerRef.current.offsetHeight - (hideFooter ? 0 : 60);
     const rowHeight = 60;
     const availableRowsPerPage = Math.floor(containerRefHeight / rowHeight);
     setRowsPerPage(availableRowsPerPage || 5);
-  }, [showAllTeamsAtOnce, teams?.length]);
+  }, [hideFooter, showAllTeamsAtOnce, teams?.length]);
 
   const areRowsPerPageAvailable = rowsPerPage !== null && rowsPerPage > 0;
 

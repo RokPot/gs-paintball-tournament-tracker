@@ -1,6 +1,6 @@
 import {
   faArrowUpRightFromSquare,
-  faExpand,
+  faFileExport,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IconButton, Tooltip, Typography, useTheme } from '@mui/material';
@@ -114,7 +114,7 @@ const ScheduleContainer = ({ activeTournament }: IProps) => {
         <Tooltip title="Export Schedule" arrow>
           <IconButton onClick={() => exportScheduleToPdf(scheduleRows)}>
             <FontAwesomeIcon
-              icon={faExpand}
+              icon={faFileExport}
               width={15}
               height={15}
               color={theme.palette.primary.main}
