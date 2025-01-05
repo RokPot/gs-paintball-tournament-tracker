@@ -4,7 +4,7 @@ import MobileScoreboard from 'components/scoreboard/ui/MobileScoreboard';
 import LoadingIndicator from 'components/shared/LoadingIndicator';
 import PageContainer from 'components/shared/PageContainer';
 import { useIsResponsive } from 'hooks/ui/useIsResponsive';
-import { memo, useCallback, useContext, useEffect } from 'react';
+import { memo, useCallback, useContext } from 'react';
 import { TournamentContext } from 'store/TournamentContext';
 import { Match } from 'types/Match';
 
@@ -31,24 +31,6 @@ interface IProps {}
 const ScoreboardPage: React.FC<IProps> = () => {
   const { isMobile } = useIsResponsive();
 
-  // const { data: activeLeague, isLoading: isFetchingActiveLeague } =
-  //   LeagueQueries.useActiveLeague();
-
-  // const {
-  //   finishMatch,
-  //   beginTournament,
-  //   startStopMatch,
-  //   setFinishMatchModal,
-  //   activeGame,
-  //   timingBreak,
-  //   isMatchInProgress,
-  //   hasGameTimeRanOut,
-  //   showFinishMatchModal,
-  //   isProcessing,
-  //   confirmNextTournamentStage,
-  //   onTeamPause,
-  // } = useTournamentLogic(tournament);
-
   const {
     finishMatch,
     beginTournament,
@@ -64,21 +46,16 @@ const ScoreboardPage: React.FC<IProps> = () => {
     onTeamPause,
     activeLeague,
     isFetchingActiveLeague,
-    setFirstLoad,
   } = useContext(TournamentContext);
+
   const tournament = activeLeague?.activeTournament;
+
   const finishMatchInternal = useCallback(
     async (match: Match) => {
       await finishMatch?.(match);
     },
     [finishMatch],
   );
-  // preveri če dela brez tega
-  // const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
-  console.log('activeGame', activeGame, new Date());
-  useEffect(() => {
-    setFirstLoad?.(false);
-  }, []);
 
   if (isMobile) {
     return (
@@ -87,6 +64,7 @@ const ScoreboardPage: React.FC<IProps> = () => {
       </PageContainer>
     );
   }
+
   return (
     <PageContainer padding="0px">
       {(isProcessing || isFetchingActiveLeague) && (

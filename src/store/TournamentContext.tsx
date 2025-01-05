@@ -25,7 +25,6 @@ export type TournamentContextProps = {
   isProcessing?: boolean;
   confirmNextTournamentStage?: (nextStage: TournamentStage) => Promise<void>;
   onTeamPause?: (team: Team, isRefereeAction?: boolean | undefined) => void;
-  setFirstLoad?: (isFirstLoad: boolean) => void;
   forceRefreshTournament?: () => void;
 };
 
@@ -36,13 +35,9 @@ export const TournamentContext = React.createContext<TournamentContextProps>(
 const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const {
-    data: activeLeague,
-    isLoading: isFetchingActiveLeague,
-    isSuccess,
-    isFetching,
-  } = LeagueQueries.useActiveLeague();
-  console.log('activeLeague1', isSuccess, isFetching, activeLeague?._rev);
+  const { data: activeLeague, isLoading: isFetchingActiveLeague } =
+    LeagueQueries.useActiveLeague();
+
   const {
     finishMatch,
     beginTournament,
@@ -56,7 +51,6 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
     isProcessing,
     confirmNextTournamentStage,
     onTeamPause,
-    setFirstLoad,
     forceRefreshTournament,
   } = useTournamentLogic(activeLeague);
 
@@ -76,7 +70,6 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
       isProcessing,
       confirmNextTournamentStage,
       onTeamPause,
-      setFirstLoad,
       forceRefreshTournament,
       activeTournament: activeLeague?.activeTournament,
     }),
@@ -95,7 +88,6 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
       showFinishMatchModal,
       startStopMatch,
       timingBreak,
-      setFirstLoad,
       forceRefreshTournament,
     ],
   );

@@ -69,7 +69,6 @@ const useTournamentLogic = (activeLeague?: League | null) => {
   } = useTournamentStore();
 
   const [dirtyCount, setDirtyCount] = useState(0);
-  const [firstLoad, setFirstLoad] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const { addStageToTournament, addNewTournamentActivity } =
     useTournamentFlows();
@@ -539,7 +538,6 @@ const useTournamentLogic = (activeLeague?: League | null) => {
       !activeScheduledGame ||
       !tournament ||
       !gameSettings ||
-      firstLoad ||
       isCurrentMatchInProgress ||
       hasGameTimeRanOut ||
       showFinishMatchModal
@@ -548,11 +546,9 @@ const useTournamentLogic = (activeLeague?: League | null) => {
     }
 
     setGameAndBreakDuration(activeScheduledGame);
-    setFirstLoad(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeScheduledGame,
-    firstLoad,
     gameSettings,
     isMatchInProgress,
     setGameAndBreakDuration,
@@ -631,7 +627,6 @@ const useTournamentLogic = (activeLeague?: League | null) => {
       setFinishMatchModal,
       confirmNextTournamentStage,
       onTeamPause,
-      setFirstLoad,
       forceRefreshTournament,
     };
   }, [
@@ -649,7 +644,6 @@ const useTournamentLogic = (activeLeague?: League | null) => {
     setFinishMatchModal,
     confirmNextTournamentStage,
     onTeamPause,
-    setFirstLoad,
     forceRefreshTournament,
   ]);
 };
