@@ -11,6 +11,7 @@
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 
+import log from 'electron-log/main';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import serialPortListener from './serialPortListener/serialPortListener';
@@ -125,6 +126,11 @@ app.on('window-all-closed', () => {
   }
 });
 
+log.initialize();
+
+log.transports.file.resolvePathFn = () =>
+  path.join('', 'D:/Projects/gs-paintball-tournament-tracker/logs/mainLog.log');
+
 app
   .whenReady()
   .then(async () => {
@@ -139,7 +145,10 @@ app
       }
     });
   })
-  .catch(console.log);
+  .catch((e) => {
+    console.error('Something went wrong', e);
+    log.error(e);
+  });
 
 ipcMain.on('openNewWindow', async () => {
   resultsWindows.push(await createWindow('results/index.html'));

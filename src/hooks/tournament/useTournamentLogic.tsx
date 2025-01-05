@@ -497,7 +497,7 @@ const useTournamentLogic = (activeLeague?: League | null) => {
         openModal({
           title: 'Team Pause Confirmation',
           Confirmation:
-            'Pause will force the game to pase and game time will be reset',
+            'Pause will force the game to stop and game time will be reset',
           onConfirm: () => {
             stopCountdown();
             stopTimer();

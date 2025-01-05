@@ -9,11 +9,14 @@ const StyledGameContainer = styled('div')(
   (props) => css`
     padding: 8px;
     border-radius: 3px;
-
+    display: flex;
+    flex-direction: row;
     width: 100%;
     &:hover {
       background: ${props.theme.palette.grey[200]};
     }
+
+    border-bottom: 1px solid ${props.theme.palette.divider};
   `,
 );
 
@@ -37,24 +40,34 @@ interface IProps {
 
 const ScheduleRowGame: React.FC<IProps> = ({ game, gameNumber }) => {
   const theme = useTheme();
+  const fontSize = 1.2;
+  const fontSizeH1 = `${fontSize * 2}em`;
+  const fontSizeH2 = `${fontSize}em`;
   return (
     <StyledGameContainer>
-      <FlexContainer alignItems="center" width="100%" height="50px" gap={8}>
+      <FlexContainer
+        alignItems="center"
+        width="100%"
+        height="50px"
+        gap={8}
+        position="relative"
+      >
         <Typography
           variant="h6Medium"
-          textAlign="end"
+          textAlign="start"
           marginBottom="0px"
-          fontSize={25}
+          minWidth="50px"
+          fontSize={fontSizeH1}
         >
-          Game: {gameNumber}
+          {gameNumber}:
         </Typography>
 
         <Typography
           variant="p1"
-          minWidth="250px"
           textAlign="end"
-          maxWidth="250px"
-          fontSize={30}
+          maxWidth="40%"
+          width="100%"
+          fontSize={fontSizeH1}
         >
           {game.team1.id === undefined ? 'TBD' : game.team1.teamName}
         </Typography>
@@ -62,13 +75,13 @@ const ScheduleRowGame: React.FC<IProps> = ({ game, gameNumber }) => {
           <Typography
             variant="p1Bold"
             color={theme.palette.common.white}
-            fontSize={30}
+            fontSize={fontSizeH1}
           >
             {game.team1Wins}
           </Typography>
         </StyledScoreCardContainer>
 
-        <Typography variant="p2Medium" fontSize={30}>
+        <Typography variant="p2Medium" fontSize={fontSizeH1}>
           VS
         </Typography>
 
@@ -76,36 +89,41 @@ const ScheduleRowGame: React.FC<IProps> = ({ game, gameNumber }) => {
           <Typography
             variant="p1Bold"
             color={theme.palette.common.white}
-            fontSize={30}
+            fontSize={fontSizeH1}
           >
             {game.team2Wins}
           </Typography>
         </StyledScoreCardContainer>
-        <Typography variant="p1" maxWidth="250px" fontSize={30}>
+        <Typography
+          variant="p1"
+          maxWidth="30%"
+          width="100%"
+          fontSize={fontSizeH1}
+        >
           {game.team2.id === undefined ? 'TBD' : game.team2.teamName}
         </Typography>
-        <ScheduleGameStatus gameState={game.gameState} />
-        {game.bracketProperties?.isThridPlaceGame ? (
+      </FlexContainer>
+      <FlexContainer minWidth="190px" justifyContent="flex-end">
+        {game.bracketProperties?.isThridPlaceGame && (
           <Typography
             variant="p2Medium"
             marginBottom="0px"
             paddingLeft="8px"
             textAlign="center"
             color={theme.palette.text.secondary}
+            fontSize={fontSizeH2}
             style={{ display: 'flex', alignItems: 'center' }}
           >
             <FontAwesomeIcon
               icon={faTrophy}
               color="#CD7F32"
-              fontSize={20}
+              fontSize={fontSizeH2}
               style={{ paddingRight: '8px' }}
             />
             Third place Game
           </Typography>
-        ) : (
-          ''
         )}
-        {game.bracketProperties?.isFirstPlaceGame ? (
+        {game.bracketProperties?.isFirstPlaceGame && (
           <Typography
             variant="p2Medium"
             textAlign="end"
@@ -117,14 +135,13 @@ const ScheduleRowGame: React.FC<IProps> = ({ game, gameNumber }) => {
             <FontAwesomeIcon
               icon={faTrophy}
               color="#FFD700"
-              fontSize={20}
+              fontSize={fontSizeH2}
               style={{ paddingRight: '8px' }}
             />
             First place Game
           </Typography>
-        ) : (
-          ''
         )}
+        <ScheduleGameStatus gameState={game.gameState} />
       </FlexContainer>
     </StyledGameContainer>
   );

@@ -26,12 +26,7 @@ const useScrollTo = (scrollBackUpAfterFinish: boolean) => {
         startScrollPos + scrollDifference * timePercent;
       const scrollToTopPosition =
         bottomEndPosition.current - scrollDifference * timePercent;
-      console.log(
-        'scroll to: ',
-        startScrollingTop?.current
-          ? scrollToTopPosition
-          : scrollToBottomPosition,
-      );
+
       scrollElement?.current?.scrollTo({
         top: startScrollingTop?.current
           ? scrollToTopPosition

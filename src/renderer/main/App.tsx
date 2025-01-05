@@ -1,7 +1,16 @@
-import { CssBaseline, GlobalStyles, ThemeProvider, alpha } from '@mui/material';
+import {
+  Button,
+  CssBaseline,
+  GlobalStyles,
+  ThemeProvider,
+  Typography,
+  alpha,
+} from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import ErrorPlaceholderIcon from 'assets/icons/ErrorPlaceholder';
+import FlexContainer from 'components/shared/FlexContainer';
 import { SnackbarProvider } from 'notistack';
-import { ErrorBoundary } from 'react-error-boundary';
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import ButtonsProvider from 'store/ButtonsContext';
 import PouchDBProvider from 'store/PouchDBContext';
@@ -16,58 +25,62 @@ import TeamsPage from '../pages/TeamsPage';
 import TournamentPage from '../pages/TournamentPage';
 import routes from './Routes';
 
-function fallbackRender({ error, resetErrorBoundary }: any) {
-  console.log('ERROR MESSAGE ONE TWO ONE TWO');
-  alert(error);
+const Fallback = ({ error, resetErrorBoundary }: FallbackProps) => {
   return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre style={{ color: 'red' }}>
-        {error.message} Error: {error} {resetErrorBoundary}
-      </pre>
-    </div>
+    <FlexContainer
+      height="100vh"
+      width="100vw"
+      alignItems="center"
+      justifyContent="center"
+      flexDirection="column"
+    >
+      <div style={{ width: '500px', height: '500px' }}>
+        <ErrorPlaceholderIcon />
+      </div>
+      <Typography variant="h2Medium">Something went wrong</Typography>
+      <Typography variant="body2">{error.message}</Typography>
+      <Button
+        onClick={() => {
+          resetErrorBoundary();
+        }}
+      >
+        Go Back
+      </Button>
+    </FlexContainer>
   );
-}
+};
+
 const App = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        refetchOnWindowFocus: true,
+        refetchOnWindowFocus: false,
       },
     },
   });
   return (
     <ThemeProvider theme={theme}>
-      <PouchDBProvider>
-        <ButtonsProvider>
-          <CssBaseline />
-          <GlobalStyles
-            styles={{
-              '*::-webkit-scrollbar': {
-                width: '0.4em',
-                height: '0.4em',
-              },
+      <CssBaseline />
+      <GlobalStyles
+        styles={{
+          '*::-webkit-scrollbar': {
+            width: '0.4em',
+            height: '0.4em',
+          },
 
-              '*::-webkit-scrollbar-thumb': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.6),
-                borderRadius: '20px',
-              },
-              '*::-webkit-scrollbar-track': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.15),
-              },
-            }}
-          />
-          <ErrorBoundary
-            fallbackRender={fallbackRender}
-            onReset={(details) => {
-              // Reset the state of your app so the error doesn't happen again
-              // todo rokpot properly handle crashes
-              // eslint-disable-next-line no-console
-              console.log(details);
-              console.log('RESEEEEEEEEEEEEEEET');
-              window.location.reload();
-            }}
-          >
+          '*::-webkit-scrollbar-thumb': {
+            backgroundColor: alpha(theme.palette.primary.main, 0.6),
+            borderRadius: '20px',
+          },
+          '*::-webkit-scrollbar-track': {
+            backgroundColor: alpha(theme.palette.primary.main, 0.15),
+          },
+        }}
+      />
+
+      <ErrorBoundary fallbackRender={Fallback}>
+        <PouchDBProvider>
+          <ButtonsProvider>
             <SnackbarProvider
               maxSnack={5}
               anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
@@ -100,9 +113,9 @@ const App = () => {
                 <ConfirmationModal />
               </QueryClientProvider>
             </SnackbarProvider>
-          </ErrorBoundary>
-        </ButtonsProvider>
-      </PouchDBProvider>
+          </ButtonsProvider>
+        </PouchDBProvider>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 };

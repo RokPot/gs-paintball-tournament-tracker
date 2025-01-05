@@ -14,6 +14,9 @@ interface IProps {
 const CurrentGameView: React.FC<IProps> = ({ activeLeague }) => {
   const theme = useTheme();
   const [gameDuration, setGameDuration] = useState<number>();
+  const fontSize = 1;
+  const fontSizeH1 = `${fontSize * 8}em`;
+  const fontSizeH2 = `${fontSize * 10}em`;
 
   const activeScheduledGame = useMemo(() => {
     if (!activeLeague) {
@@ -58,31 +61,39 @@ const CurrentGameView: React.FC<IProps> = ({ activeLeague }) => {
       justifyContent="space-between"
       padding="16px"
     >
-      <div style={{ position: 'absolute', top: '15px', left: '15px' }}>
-        <Typography variant="p1Medium" color={theme.palette.text.secondary}>
-          Active game
-        </Typography>
-      </div>
-
       <FlexContainer
         gap={16}
         width="100%"
         alignItems="center"
         justifyContent="center"
       >
-        <TeamDisplay team={activeScheduledGame.game.team1} />
-        <ScoreDisplay teamWins={activeScheduledGame.game.team1Wins} />
+        <TeamDisplay
+          team={activeScheduledGame.game.team1}
+          fontSize={fontSizeH1}
+          align="end"
+        />
+        <ScoreDisplay
+          teamWins={activeScheduledGame.game.team1Wins}
+          fontSize={fontSizeH1}
+        />
         <Typography variant="h6Medium" fontSize={30}>
           VS
         </Typography>
-        <ScoreDisplay teamWins={activeScheduledGame.game.team2Wins} />
-        <TeamDisplay team={activeScheduledGame.game.team2} />
+        <ScoreDisplay
+          teamWins={activeScheduledGame.game.team2Wins}
+          fontSize={fontSizeH1}
+        />
+        <TeamDisplay
+          team={activeScheduledGame.game.team2}
+          fontSize={fontSizeH1}
+          align="start"
+        />
       </FlexContainer>
       <FlexContainer width="100%" alignItems="center" justifyContent="center">
         <Typography
           variant="h3Medium"
-          fontSize={150}
-          lineHeight={1}
+          fontSize={fontSizeH2}
+          lineHeight="0.8em"
           variantMapping={{ h3Medium: 'span' }}
         >
           {formattedDuration.formatted}

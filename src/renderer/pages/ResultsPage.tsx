@@ -71,6 +71,7 @@ const ResultsPage: React.FC<IProps> = () => {
     setTimeout(() => {
       startLeaderboardScroll();
     }, SECONDS_BEFORE_LEADERBOARD_SCROLL_DELAY);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -78,13 +79,20 @@ const ResultsPage: React.FC<IProps> = () => {
   }, [refreshLeagueAndAnimate]);
 
   return (
-    <FlexContainer flexDirection="column" height="100%" alignItems="flex-start">
-      <CurrentGameView activeLeague={activeLeague} />
+    <FlexContainer
+      flexDirection="column"
+      height="100vh"
+      alignItems="flex-start"
+    >
+      <div style={{ width: '100%' }}>
+        <CurrentGameView activeLeague={activeLeague} />
+      </div>
+
       <FlexContainer
         flexDirection="row"
         height="100%"
         width="100%"
-        style={{ height: 'calc(100% - 430px)' }}
+        style={{ flex: 1, minHeight: 0 }}
       >
         <div
           style={{
@@ -101,7 +109,7 @@ const ResultsPage: React.FC<IProps> = () => {
           style={{
             height: '100%',
             maxHeight: '100%',
-            width: '100%',
+            width: '1200px',
             overflowY: 'hidden',
             borderLeft: `1px solid ${theme.palette.divider}`,
           }}
@@ -111,7 +119,9 @@ const ResultsPage: React.FC<IProps> = () => {
         </div>
       </FlexContainer>
 
-      <ResultsWindowUpcomingGamesSection activeLeague={activeLeague} />
+      <div style={{ flex: '0 0 auto', width: '100%' }}>
+        <ResultsWindowUpcomingGamesSection activeLeague={activeLeague} />
+      </div>
     </FlexContainer>
   );
 };

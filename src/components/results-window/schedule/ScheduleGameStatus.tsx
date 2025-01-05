@@ -10,7 +10,7 @@ const StyledGameStatusCircle = styled('div')(
     border-radius: 10px;
     height: 13px;
     width: 13px;
-
+    min-width: 13px;
     background-color: ${props.color};
     margin: 4px;
   `,

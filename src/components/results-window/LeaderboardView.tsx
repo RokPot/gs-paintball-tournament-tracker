@@ -1,9 +1,9 @@
 import FlexContainer from 'components/shared/FlexContainer';
-import LeaderboardList from 'components/teams/LeaderboardList';
 import { useEffect, useState } from 'react';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import League from 'types/League';
 import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
+import ResultsPageLeaderboardList from './ResultsPageLeaderboardList';
 
 interface IProps {
   activeLeague: League | undefined | null;
@@ -32,8 +32,9 @@ const LeaderboardView: React.FC<IProps> = ({ activeLeague }) => {
   }, [activeTournament]);
   return (
     <FlexContainer width="100%" height="100%" flexDirection="column">
-      {groupedLeaderBoardTeams?.map((groupedLeaderBoardTeam) => (
-        <LeaderboardList
+      {groupedLeaderBoardTeams?.map((groupedLeaderBoardTeam, index) => (
+        <ResultsPageLeaderboardList
+          key={index}
           showHeader
           hideFooter
           teams={groupedLeaderBoardTeam}

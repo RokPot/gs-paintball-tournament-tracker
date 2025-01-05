@@ -75,7 +75,7 @@ const ScoreboardPage: React.FC<IProps> = () => {
   );
   // preveri če dela brez tega
   // const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
-
+  console.log('activeGame', activeGame, new Date());
   useEffect(() => {
     setFirstLoad?.(false);
   }, []);

@@ -1,5 +1,6 @@
 import { ScheduleRow } from 'hooks/ui/useGetScheduleRows';
 import jsPDF from 'jspdf';
+import { isArray } from 'lodash';
 import { useCallback } from 'react';
 import Tournament from 'types/Tournament';
 
@@ -51,6 +52,7 @@ const usePdfExporter = () => {
             spaceBetweenInPixels,
           offset,
         );
+
         const afterTeam1TextOffset =
           afterGameNumberTextOffset + maxTeamNameLength;
 
@@ -75,7 +77,15 @@ const usePdfExporter = () => {
         );
         const afterLine2Offset = afterVsTextOffset + lineWidth;
 
-        doc.text(team2Name, afterLine2Offset + spaceBetweenInPixels, offset);
+        const splitTeam2Name = doc.splitTextToSize(team2Name, 65);
+        const isSplitTeam2 =
+          isArray(splitTeam2Name) && splitTeam2Name.length > 1;
+
+        doc.text(
+          splitTeam2Name,
+          afterLine2Offset + spaceBetweenInPixels,
+          offset - (isSplitTeam2 ? (splitTeam2Name.length - 1) * 2 : 0),
+        );
       }
       offset += scheduleRows[i].showGroup ? groupRowHeight : rowHeight;
     }

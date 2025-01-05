@@ -12,22 +12,23 @@ interface IProps {
 }
 
 const StyledFlexContainer = styled(FlexContainer)`
-  position: sticky;
-  bottom: -16px;
-  height: 180px;
-  min-height: 180px;
+  height: auto;
   width: 100%;
   margin: 0px;
   background: ${(theme) => lighten(theme.theme?.palette?.primary.light, 0.7)};
   box-shadow: 0 -4px 4px ${(theme) => lighten(theme.theme?.palette?.primary.light, 0.5)};
 
-  padding: 8px;
+  padding: 8px 8px 0px 8px;
 `;
 
 const ResultsWindowUpcomingGamesSection: React.FC<IProps> = ({
   activeLeague,
 }) => {
-  const fontSize = 60;
+  const fontSize = 1;
+
+  const fontSizeH1 = `${fontSize * 7}em`;
+  const fontSizeH2 = `${fontSize}em`;
+
   const theme = useTheme();
 
   const [upcomingGames, setUpcomingGames] = useState<
@@ -88,23 +89,29 @@ const ResultsWindowUpcomingGamesSection: React.FC<IProps> = ({
   }
   return (
     <StyledFlexContainer flexDirection="column" justifyContent="space-around">
-      <div>
+      <div style={{ marginTop: '-20px', marginBottom: '-10px' }}>
         <Typography
           variant="p1Bold"
           marginRight="8px"
           marginLeft="8px"
           color={theme.palette.text.secondary}
-          fontSize={fontSize}
+          lineHeight="normal"
+          fontSize={fontSizeH1}
         >
-          {`Current ${currentPairedGames.game2 ? 'pairs' : ''}: `}
+          {`Current: `}
         </Typography>
         {currentPairedGames?.game1 && (
-          <Typography variant="p1Medium" fontSize={fontSize}>
+          <Typography
+            variant="p1Medium"
+            fontSize={fontSizeH1}
+            lineHeight="normal"
+          >
             {getTeamName(currentPairedGames.game1.game.team1) || 'TBD'}
             <Typography
               variant="p1"
               style={{ textDecoration: 'none' }}
-              fontSize={fontSize - 20}
+              fontSize={fontSizeH2}
+              lineHeight="normal"
             >
               {' vs '}
             </Typography>
@@ -113,15 +120,23 @@ const ResultsWindowUpcomingGamesSection: React.FC<IProps> = ({
         )}
         {currentPairedGames?.game2 && (
           <>
-            <Typography padding="0px 4px" fontSize={fontSize - 20}>
+            <Typography
+              padding="0px 4px"
+              fontSize={fontSizeH2}
+              lineHeight="normal"
+            >
               {', '}
             </Typography>
-            <Typography variant="p1Medium" fontSize={fontSize}>
+            <Typography
+              variant="p1Medium"
+              fontSize={fontSizeH1}
+              lineHeight="normal"
+            >
               {currentPairedGames?.game2.game.team1.teamName || 'TBD'}
               <Typography
                 variant="p1"
                 style={{ textDecoration: 'none' }}
-                fontSize={fontSize - 20}
+                fontSize={fontSizeH2}
               >
                 {' vs '}
               </Typography>
@@ -130,54 +145,69 @@ const ResultsWindowUpcomingGamesSection: React.FC<IProps> = ({
           </>
         )}
       </div>
-      {upcomingGames.map((upcomingGamePairs, index) => {
-        const pairedGame1 = upcomingGamePairs[0];
-        const pairedGame2 = upcomingGamePairs[1];
-        return (
-          <div key={index}>
-            <Typography
-              variant="p1Bold"
-              marginRight="8px"
-              marginLeft="8px"
-              color={theme.palette.text.secondary}
-              fontSize={fontSize}
-            >
-              {index === 0
-                ? `Next ${pairedGame2 ? 'pair' : ''}: `
-                : `Upcoming ${pairedGame2 ? 'pair' : ''}: `}
-            </Typography>
-            <Typography variant="p1Medium" fontSize={fontSize}>
-              {getTeamName(pairedGame1.game.team1) || 'TBD'}
+      <div style={{ marginTop: '-20px' }}>
+        {upcomingGames.map((upcomingGamePairs, index) => {
+          const pairedGame1 = upcomingGamePairs[0];
+          const pairedGame2 = upcomingGamePairs[1];
+          return (
+            <div key={index}>
               <Typography
-                variant="p1"
-                style={{ textDecoration: 'none' }}
-                fontSize={fontSize - 20}
+                variant="p1Bold"
+                marginRight="8px"
+                marginLeft="8px"
+                color={theme.palette.text.secondary}
+                lineHeight="normal"
+                fontSize={fontSizeH1}
               >
-                {' vs '}
+                {index === 0 ? `Next: ` : `Upcoming: `}
               </Typography>
-              {getTeamName(pairedGame1.game.team2) || 'TBD'}
-            </Typography>
-            {pairedGame2 && (
-              <>
-                <Typography padding="0px 4px" fontSize={fontSize - 20}>
-                  {', '}
+              <Typography
+                variant="p1Medium"
+                fontSize={fontSizeH1}
+                lineHeight="normal"
+              >
+                {getTeamName(pairedGame1.game.team1) || 'TBD'}
+                <Typography
+                  variant="p1"
+                  style={{ textDecoration: 'none' }}
+                  lineHeight="normal"
+                  fontSize={fontSizeH2}
+                >
+                  {' vs '}
                 </Typography>
-                <Typography variant="p1Medium" fontSize={fontSize}>
-                  {pairedGame2.game.team1.teamName || 'TBD'}
+                {getTeamName(pairedGame1.game.team2) || 'TBD'}
+              </Typography>
+              {pairedGame2 && (
+                <>
                   <Typography
-                    variant="p1"
-                    style={{ textDecoration: 'none' }}
-                    fontSize={fontSize - 20}
+                    padding="0px 4px"
+                    fontSize={fontSizeH2}
+                    lineHeight="normal"
                   >
-                    {' vs '}
+                    {', '}
                   </Typography>
-                  {pairedGame2.game.team2.teamName || 'TBD'}
-                </Typography>
-              </>
-            )}
-          </div>
-        );
-      })}
+                  <Typography
+                    variant="p1Medium"
+                    fontSize={fontSizeH1}
+                    lineHeight="normal"
+                  >
+                    {pairedGame2.game.team1.teamName || 'TBD'}
+                    <Typography
+                      variant="p1"
+                      style={{ textDecoration: 'none' }}
+                      lineHeight="normal"
+                      fontSize={fontSizeH2}
+                    >
+                      {' vs '}
+                    </Typography>
+                    {pairedGame2.game.team2.teamName || 'TBD'}
+                  </Typography>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </StyledFlexContainer>
   );
 };

@@ -21,15 +21,15 @@ import TournamentButtonsTab from 'components/tournament/TournamentButtonsTab';
 import TournamentDetailsTab from 'components/tournament/TournamentDetailsTab';
 import TournamentGroupsTab from 'components/tournament/TournamentGroupsTab';
 import TournamentResultsTab from 'components/tournament/TournamentResultsTab';
-
 import TournamentScheduleTab from 'components/tournament/TournamentScheduleTab';
+
 import TournamentPageSelectLeagueView from 'components/tournament/tournament-page/TournamentPageSelectLeagueView';
 import TournamentPageSelectTournamentView from 'components/tournament/tournament-page/TournamentPageSelectTournamentView';
 import ScheduleUpcomingGames from 'components/tournament/visualizations/schedule/ScheduleUpcomingGames';
 import useLeagueFlows from 'hooks/league/useLeagueFlows';
 import useTournamentFlows from 'hooks/tournament/useTournamentFlows';
 import { useSnackbar } from 'notistack';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import { TournamentQueries } from 'services/queries/tournament/TournamentQueries';
@@ -63,7 +63,7 @@ enum TournamentTabs {
   brackets = 'brackets',
   groups = 'groups',
   schedule = 'schedule',
-  results = 'results',
+  leaderboard = 'leaderboard',
   activity = 'activity',
   buttons = 'buttons',
 }
@@ -73,12 +73,25 @@ enum TournamentTabsLabel {
   groups = 'Groups',
   schedule = 'Schedule',
   activity = 'Activity',
-  results = 'Results',
+  leaderboard = 'Leaderboard',
   buttons = 'Buttons',
 }
 
 const TournamentPage = () => {
-  const [activeTab, setActiveTab] = useState(TournamentTabs.tournamentDetails);
+  const [activeTab, setActiveTab] = useState(0);
+
+  const tabs = useMemo(
+    () => [
+      TournamentTabs.tournamentDetails,
+      TournamentTabs.brackets,
+      TournamentTabs.groups,
+      TournamentTabs.schedule,
+      TournamentTabs.leaderboard,
+      TournamentTabs.activity,
+      TournamentTabs.buttons,
+    ],
+    [],
+  );
 
   const [
     allowAutomaticTournamentAssignment,
@@ -114,7 +127,7 @@ const TournamentPage = () => {
   const setSelectedTournament = useCallback(
     async (tournament?: Tournament) => {
       await setSelectedLeagueTournament(tournament, activeLeague);
-      setActiveTab(TournamentTabs.tournamentDetails);
+      setActiveTab(0);
     },
     [activeLeague, setSelectedLeagueTournament],
   );
@@ -201,6 +214,33 @@ const TournamentPage = () => {
     setIsInitializeTournamentModalOpen(true);
   }, []);
 
+  const activeTabComponent = useMemo(() => {
+    switch (tabs[activeTab]) {
+      case TournamentTabs.brackets: {
+        return <TournamentBracketsTab />;
+      }
+      case TournamentTabs.groups: {
+        return <TournamentGroupsTab />;
+      }
+      case TournamentTabs.schedule: {
+        return <TournamentScheduleTab />;
+      }
+      case TournamentTabs.leaderboard: {
+        return <TournamentResultsTab />;
+      }
+      case TournamentTabs.activity: {
+        return <TournamentActivityTab />;
+      }
+      case TournamentTabs.buttons: {
+        return <TournamentButtonsTab />;
+      }
+      case TournamentTabs.tournamentDetails:
+      default: {
+        return <TournamentDetailsTab />;
+      }
+    }
+  }, [activeTab, tabs]);
+
   return (
     <PageContainer>
       {isFetchingActiveLeague && (
@@ -267,23 +307,35 @@ const TournamentPage = () => {
           style={{ maxHeight: 'calc(100% - 100px)' }}
         >
           <CustomTabs
-            items={Object.values(TournamentTabs).map((key) => ({
+            items={tabs.map((key, index) => ({
               label: TournamentTabsLabel[key],
-              value: key,
+              value: `${index}`,
             }))}
             onTabChanged={(newTab) => {
-              setActiveTab(TournamentTabs[newTab as TournamentTabs]);
+              setActiveTab(Number(newTab));
             }}
+            activeTab="0"
           />
-          {activeTab === TournamentTabs.tournamentDetails && (
+          {/* {tabs[activeTab] === TournamentTabs.tournamentDetails && (
             <TournamentDetailsTab />
           )}
-          {activeTab === TournamentTabs.groups && <TournamentGroupsTab />}
-          {activeTab === TournamentTabs.brackets && <TournamentBracketsTab />}
-          {activeTab === TournamentTabs.results && <TournamentResultsTab />}
-          {activeTab === TournamentTabs.activity && <TournamentActivityTab />}
-          {activeTab === TournamentTabs.schedule && <TournamentScheduleTab />}
-          {activeTab === TournamentTabs.buttons && <TournamentButtonsTab />}
+          {tabs[activeTab] === TournamentTabs.groups && <TournamentGroupsTab />}
+          {tabs[activeTab] === TournamentTabs.brackets && (
+            <TournamentBracketsTab />
+          )}
+          {tabs[activeTab] === TournamentTabs.results && (
+            <TournamentResultsTab />
+          )}
+          {tabs[activeTab] === TournamentTabs.activity && (
+            <TournamentActivityTab />
+          )}
+          {tabs[activeTab] === TournamentTabs.schedule && (
+            <TournamentScheduleTab />
+          )}
+          {tabs[activeTab] === TournamentTabs.buttons && (
+            <TournamentButtonsTab />
+          )} */}
+          {activeTabComponent}
         </FlexContainer>
       )}
       <ScheduleUpcomingGames />

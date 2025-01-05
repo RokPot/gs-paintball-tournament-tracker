@@ -12,7 +12,7 @@ const NoItemsCartIcon = (props: SVGProps<SVGSVGElement>) => (
     <path
       fill="#E4D0F1"
       fillRule="evenodd"
-      d="M63 134h91q.774-.002 1.5-.161.726.16 1.5.161h52a7 7 0 1 0 0-14h-6a7 7 0 1 1 0-14h19a7 7 0 1 0 0-14h-22a7 7 0 1 0 0-14h-64a7 7 0 1 0 0-14H79a7 7 0 1 0 0 14H39a7 7 0 1 0 0 14h25a7 7 0 1 1 0 14H24a7 7 0 1 0 0 14h39a7 7 0 1 0 0 14m163 0a7 7 0 1 0 0-14 7 7 0 0 0 0 14"
+      d="M63 134h91c.515 0 1.017-.056 1.5-.161.483.105.985.161 1.5.161h52a7 7 0 1 0 0-14h-6a7 7 0 1 1 0-14h19a7 7 0 1 0 0-14h-22a7 7 0 1 0 0-14h-64a7 7 0 1 0 0-14H79a7 7 0 1 0 0 14H39a7 7 0 1 0 0 14h25a7 7 0 1 1 0 14H24a7 7 0 1 0 0 14h39a7 7 0 1 0 0 14m163 0a7 7 0 1 0 0-14 7 7 0 0 0 0 14"
       clipRule="evenodd"
     />
     <path
@@ -20,19 +20,19 @@ const NoItemsCartIcon = (props: SVGProps<SVGSVGElement>) => (
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2.5}
-      d="M167 148h22.428M64 148h21.454zm-12.872 0H58zm143 0H197z"
+      d="M167 148h22.428M64 148h21.454zm-12.872 0H58h-6.872m143 0H197z"
     />
     <path
       stroke="#B86DE7"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2.5}
-      d="m98 43.303 11.1 12.453m41-12.453L139 55.756zM124 39v16.756z"
+      d="m98 43.303 11.1 12.453m41-12.453L139 55.756l11.1-12.453M124 39v16.756z"
     />
     <path
       fill="#F8ECFF"
       fillRule="evenodd"
-      d="M92.798 71h62.606l-5.606 8.41 7.475 5.606H90.929l8.41-5.606z"
+      d="M92.798 71h62.606l-5.606 8.41 7.475 5.606H90.929l8.41-5.606L92.798 71"
       clipRule="evenodd"
     />
     <rect width={71} height={75} x={89} y={83} fill="#fff" rx={2} />
@@ -64,7 +64,7 @@ const NoItemsCartIcon = (props: SVGProps<SVGSVGElement>) => (
       stroke="#8448A9"
       strokeLinecap="round"
       strokeWidth={2.5}
-      d="M139.519 103.705c0 8.257-6.694 14.951-14.951 14.951s-14.951-6.694-14.951-14.951M92.855 71.932l6.578 6.493a1 1 0 0 1-.218 1.587l-7.352 4.07M156.44 72l-6.295 6.42a1 1 0 0 0 .235 1.578l7.487 4.084"
+      d="M139.519 103.705c0 8.257-6.694 14.951-14.951 14.951-8.257 0-14.951-6.694-14.951-14.951M92.855 71.932l6.578 6.493a1 1 0 0 1-.218 1.587l-7.352 4.07M156.44 72l-6.295 6.42a1 1 0 0 0 .235 1.578l7.487 4.084"
     />
   </svg>
 );

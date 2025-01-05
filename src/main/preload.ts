@@ -13,7 +13,8 @@ export type Channels =
   | 'buttonsResponse'
   | 'serialPortError'
   | 'gameSwitched'
-  | 'gamesSwitched';
+  | 'gamesSwitched'
+  | 'tournamentSwitched';
 
 const electronHandler = {
   ipcRenderer: {
