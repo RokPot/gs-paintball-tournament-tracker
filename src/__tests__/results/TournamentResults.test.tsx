@@ -1579,6 +1579,10 @@ describe('TournamentResults', () => {
   });
 
   it('should calculate 4-way tiebreaker in 2 steps, #1: 0, -1, -1, 3 #2: 0, 1, 2 3', () => {
+    // T1 - T2 : T1 WINS 2 - 1 -2/3, -2/3, 3/-3
+    // T1 - T3 : T1 WINS 2 - 1 -3/3, -3/3, 3/-3 ,
+    // T1 - T4 : T1 WINS 2 - 1 -3/3, -3/3, 3/-3 ,
+    // T1 - T5 : T1 WINS 2 - 1 -3/3, -3/3, 3/-3 ,
     const threeWayTie = [
       // Team 2 Wins : 2 - 1, -3/3, -3/3, 3/-3
       TestUtils.generateGame({
@@ -1647,8 +1651,40 @@ describe('TournamentResults', () => {
       }),
       TestUtils.generateGame({
         index: 1,
-        team1: team2,
-        team2: team3,
+        team1,
+        team2: team4,
+        gameState: GameState.finished,
+        gameWinner: GameWinner.team2,
+        team1Wins: 1,
+        team2Wins: 2,
+        matches: [
+          TestUtils.generateMatch({
+            index: 0,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 2,
+            matchDurationInSeconds: 250000,
+          }),
+          TestUtils.generateMatch({
+            index: 1,
+            matchState: MatchState.team2Win,
+            team1Margin: -3,
+            team2Margin: 2,
+            matchDurationInSeconds: 0,
+          }),
+          TestUtils.generateMatch({
+            index: 1,
+            matchState: MatchState.team1Win,
+            team1Margin: 2,
+            team2Margin: -3,
+            matchDurationInSeconds: 0,
+          }),
+        ],
+      }),
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2: team5,
         gameState: GameState.finished,
         gameWinner: GameWinner.team2,
         team1Wins: 1,
@@ -1678,13 +1714,15 @@ describe('TournamentResults', () => {
         ],
       }),
     ];
-    // Team 1 - 1 Wins
-    // Team 2 - 1 Win
-    // Team 3 - 1 Win
+    // Team 1 - 4 Wins
+    // Team 2 - 0 Win
+    // Team 3 - 0 Win
+    // Team 4 - 0 Win
+    // Team 5 - 0 Win
     const newGroup = TestUtils.generateTournamentGroup(
       1,
       threeWayTie,
-      [team1, team2, team3],
+      [team1, team2, team3, team4, team5],
       TournamentType.roundRobin,
     );
     const leaderboard = calculateTournamentGroupLeaderboard(newGroup, {

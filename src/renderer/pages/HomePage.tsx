@@ -1,5 +1,6 @@
 import styled from '@emotion/styled';
 import {
+  faAdd,
   faInfoCircle,
   faNetworkWired,
   faPeopleGroup,
@@ -27,6 +28,19 @@ const StyledStackingContainer = styled('div')(
     width: 100%;
     flex-direction: row;
     gap: 15px;
+  `,
+);
+
+const StyledCardContainer = styled('div')(
+  () => css`
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    gap: 15px;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
   `,
 );
 const HomePage: React.FC = () => {
@@ -125,9 +139,29 @@ const HomePage: React.FC = () => {
                 />
               </Card>
             )}
+            {league?.tournaments.length && (
+              <Card>
+                <StyledCardContainer>
+                  <Avatar
+                    sx={{ bgcolor: theme.palette.secondary.light }}
+                    aria-label="recipe"
+                  >
+                    <FontAwesomeIcon icon={faAdd} />
+                  </Avatar>
+                  <Button
+                    variant="contained"
+                    onClick={() =>
+                      navigate(routes.getTournamentWithLeagueRoute(league.id))
+                    }
+                  >
+                    <Typography>Create Quick Tournament</Typography>
+                  </Button>
+                </StyledCardContainer>
+              </Card>
+            )}
             {league?.tournaments
               ?.reverse()
-              .slice(0, 4)
+              .slice(0, 3)
               .map((tournament, index) => (
                 <Card style={{ width: '300px' }} key={tournament.id}>
                   <CardHeader
