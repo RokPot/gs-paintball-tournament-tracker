@@ -60,7 +60,7 @@ const TournamentDetailsList = ({ tournament }: IProps) => {
         />
         <TournamentDetailsInfoRow
           title="Type"
-          value={TournamentTypeLabels[tournament?.settings.type]}
+          value={TournamentTypeLabels[tournament?.settings.firstStageType.type]}
         />
         <TournamentDetailsInfoRow
           title="Team size"
@@ -88,7 +88,10 @@ const TournamentDetailsList = ({ tournament }: IProps) => {
         />
         <TournamentDetailsInfoRow
           title="Required match wins"
-          value={tournament?.settings.numberOfWinsRequired}
+          value={
+            tournament?.settings.firstStageType.settings
+              ?.numberOfWinsRequired || 0
+          }
         />
       </FlexContainer>
       <FlexContainer
@@ -114,7 +117,7 @@ const TournamentDetailsList = ({ tournament }: IProps) => {
           value={
             tournament?.settings.secondStageType &&
             tournament?.settings.numberOfGroups > 1
-              ? TournamentTypeLabels[tournament?.settings.secondStageType]
+              ? TournamentTypeLabels[tournament?.settings.secondStageType.type]
               : '/'
           }
         />

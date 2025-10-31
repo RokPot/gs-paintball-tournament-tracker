@@ -8,7 +8,11 @@ import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
-import { TournamentType } from 'types/TournamentType';
+import {
+  TournamentType,
+  TournamentTypeEnum,
+  TournamentTypeSettings,
+} from 'types/TournamentType';
 
 export namespace TournamentFlow {
   export const MAX_STAGES = 2;
@@ -367,11 +371,11 @@ export namespace TournamentFlow {
     currentStageTournamentType: TournamentType,
     activeGame: TournamentScheduleGame,
   ): NextGameState => {
-    switch (currentStageTournamentType) {
-      case TournamentType.roundRobin: {
+    switch (currentStageTournamentType.type) {
+      case TournamentTypeEnum.roundRobin: {
         return switchToNextRoundRobinGame(schedule, settings, activeGame);
       }
-      case TournamentType.singleElimination: {
+      case TournamentTypeEnum.singleElimination: {
         return switchToNextSingleEliminationsGame(
           schedule,
           settings,
@@ -385,14 +389,38 @@ export namespace TournamentFlow {
     return FlowState.NoGamesAvailable;
   };
 
+  const getNumberOfWinsRequired = (
+    stageSettings: TournamentTypeSettings,
+    isFirstPlaceGame: boolean,
+    isThirdPlaceGame: boolean,
+  ) => {
+    if (isFirstPlaceGame) {
+      return stageSettings?.firstPlaceNumberOfWinsRequired;
+    }
+    if (isThirdPlaceGame) {
+      return stageSettings?.thirdPlaceNumberOfWinsRequired;
+    }
+    return stageSettings.numberOfWinsRequired;
+  };
+
   export const checkIfGameIsFinishedProcedure = (
     game: Game,
     timeLeft: number,
     tournamentSettings: TournamentSettings,
+    isFirstPlaceGame: boolean,
+    isThirdPlaceGame: boolean,
+    stageSettings: TournamentTypeSettings,
   ) => {
-    const { twoWinsDifference, numberOfWinsRequired } = tournamentSettings;
+    const { twoWinsDifference } = tournamentSettings;
+
     const team1Score = game.team1Wins;
     const team2Score = game.team2Wins;
+
+    const numberOfWinsRequired = getNumberOfWinsRequired(
+      stageSettings,
+      isFirstPlaceGame,
+      isThirdPlaceGame,
+    );
 
     if (timeLeft <= 0) {
       const team1HasMoreWinsThanTeam2 = team1Score > team2Score;
@@ -408,6 +436,15 @@ export namespace TournamentFlow {
       if (isGameADraw) {
         return { gameWinner: GameWinner.draw };
       }
+    }
+
+    if (
+      tournamentSettings.secondStageType &&
+      [TournamentTypeEnum.training, TournamentTypeEnum.renting].includes(
+        tournamentSettings.secondStageType.type,
+      )
+    ) {
+      return { gameWinner: GameWinner.notYet };
     }
 
     const addToTeamsForTwosDifference = twoWinsDifference ? 1 : 0;
@@ -449,8 +486,8 @@ export namespace TournamentFlow {
       };
     }
 
-    switch (currentStageTournamentType) {
-      case TournamentType.singleElimination: {
+    switch (currentStageTournamentType.type) {
+      case TournamentTypeEnum.singleElimination: {
         const currentGameBracketProperties = game.bracketProperties;
         const currentGroupGames = currentGroup.games;
         let nextRelatedBracketGameForWinningTeam: Game | undefined;
@@ -484,9 +521,9 @@ export namespace TournamentFlow {
           nextRoundGameLoser: nextRelatedBracketGameForLosingTeam,
         };
       }
-      case TournamentType.roundRobin:
-      case TournamentType.doubleElimination:
-      case TournamentType.training:
+      case TournamentTypeEnum.roundRobin:
+      case TournamentTypeEnum.training:
+      case TournamentTypeEnum.renting:
       default: {
         break;
       }
@@ -507,8 +544,8 @@ export namespace TournamentFlow {
       return undefined;
     }
 
-    switch (currentStageTournamentType) {
-      case TournamentType.singleElimination: {
+    switch (currentStageTournamentType.type) {
+      case TournamentTypeEnum.singleElimination: {
         const {
           nextRoundGameLoser: nextRelatedBracketGameForLosingTeam,
           nextRoundGameWinner: nextRelatedBracketGameForWinningTeam,
@@ -574,9 +611,9 @@ export namespace TournamentFlow {
           nextRoundGameLoser: nextRelatedBracketGameForLosingTeam,
         };
       }
-      case TournamentType.roundRobin:
-      case TournamentType.doubleElimination:
-      case TournamentType.training:
+      case TournamentTypeEnum.roundRobin:
+      case TournamentTypeEnum.renting:
+      case TournamentTypeEnum.training:
       default: {
         break;
       }
@@ -627,10 +664,19 @@ export namespace TournamentFlow {
     game: Game,
     timeLeft: number,
     tournamentSettings: TournamentSettings,
+    stageSettings: TournamentTypeSettings,
+    isFirstPlaceGame: boolean,
+    isThirdPlaceGame: boolean,
   ) => {
-    const { twoWinsDifference, numberOfWinsRequired } = tournamentSettings;
+    const { twoWinsDifference } = tournamentSettings;
     const team1Score = game.team1Wins;
     const team2Score = game.team2Wins;
+
+    const numberOfWinsRequired = getNumberOfWinsRequired(
+      stageSettings,
+      isFirstPlaceGame,
+      isThirdPlaceGame,
+    );
 
     if (timeLeft <= 0) {
       const team1HasMoreWinsThanTeam2 = team1Score > team2Score;
@@ -752,6 +798,9 @@ export namespace TournamentFlow {
       currentActiveScheduledGame.game,
       timeLeft,
       tournament.settings,
+      !!currentActiveScheduledGame.game.bracketProperties?.isFirstPlaceGame,
+      !!currentActiveScheduledGame.game.bracketProperties?.isThridPlaceGame,
+      tournament.currentStage!.stageGamesType.settings,
     );
 
     const groupOfCurrentGame = tournament.currentStageGroups.find(
@@ -760,13 +809,14 @@ export namespace TournamentFlow {
 
     const currentStageTournamentType =
       tournament.state.stage === 1
-        ? tournament.settings.type
+        ? tournament.settings.firstStageType
         : tournament.settings.secondStageType;
 
     if (gameWinner !== GameWinner.notYet) {
       if (
         gameWinner === GameWinner.draw &&
-        currentStageTournamentType === TournamentType.singleElimination
+        currentStageTournamentType?.type ===
+          TournamentTypeEnum.singleElimination
       ) {
         const extendedGame = TournamentFlow.addTwoMinutesToDrawGame(
           currentActiveScheduledGame.game,
@@ -776,7 +826,8 @@ export namespace TournamentFlow {
       if (
         gameWinner !== GameWinner.draw ||
         (gameWinner === GameWinner.draw &&
-          currentStageTournamentType !== TournamentType.singleElimination)
+          currentStageTournamentType?.type !==
+            TournamentTypeEnum.singleElimination)
       ) {
         const finishedAndRelatedGames =
           TournamentFlow.finishGameAndPrepareNextGames(

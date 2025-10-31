@@ -1,6 +1,8 @@
+import { Typography } from '@mui/material';
+import VersusIcon from 'components/shared/VersusIcon';
 import Team from 'types/Team';
 import TournamentGroup from 'types/TournamentGroup';
-import { TournamentType } from 'types/TournamentType';
+import { TournamentTypeEnum } from 'types/TournamentType';
 import BracketsPreview from './brackets/BracketsPreview';
 import RoundRobinPreview from './round-robin/RoundRobinPreview';
 
@@ -10,11 +12,11 @@ interface IProps {
 }
 
 const TournamentTypesPreview: React.FC<IProps> = ({ group }) => {
-  switch (group?.groupType) {
-    case TournamentType.roundRobin: {
+  switch (group?.groupType.type) {
+    case TournamentTypeEnum.roundRobin: {
       return group && <RoundRobinPreview group={group} />;
     }
-    case TournamentType.singleElimination: {
+    case TournamentTypeEnum.singleElimination: {
       return (
         <BracketsPreview
           games={group.games}
@@ -22,11 +24,29 @@ const TournamentTypesPreview: React.FC<IProps> = ({ group }) => {
         />
       );
     }
-    case TournamentType.doubleElimination: {
-      return <div>Double elimination brackets</div>;
+    case TournamentTypeEnum.renting: {
+      return (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            justifyContent: 'center',
+          }}
+        >
+          <Typography variant="p1Medium">
+            {group?.games[0].team1.teamName}
+          </Typography>
+          <VersusIcon size={40} />
+          <Typography variant="p1Medium">
+            {group?.games[0].team2.teamName}
+          </Typography>
+        </div>
+      );
     }
-    case TournamentType.training: {
-      return <div>This is training, what do you want</div>;
+
+    case TournamentTypeEnum.training: {
+      return <div>Training</div>;
     }
     default: {
       return null;

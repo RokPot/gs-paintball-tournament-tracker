@@ -1,33 +1,45 @@
 import { v4 } from 'uuid';
 
-enum TieBreakCheckings {
+export enum TieResolveCheck {
   HeadToHead = 'headToHead',
   NumberOfPoints = 'numberOfPoints',
-  NumberOfMatchesWon = 'numberOfMatchesWon',
+  NumberOfCleanGames = 'numberOfCleanGames',
+  NumberOfMatchesWonInTiedGames = 'numberOfMatchesWonInTiedGames',
   MatchMargin = 'matchMargin',
   GreatestTimeRemainingAmongAllWonGames = 'greatestTimeRemainingAmongAllWonGames',
   GreatestTimeRemainingAmongTiedWonGames = 'greatestTimeRemainingAmongTiedWonGames',
   LeastTimeRemainingAmongAllLostGames = 'leastTimeRemainingAmongAllLostGames',
   LeastTimeRemainingAmongTiedLostGames = 'leastTimeRemainingAmongTiedLostGames',
 }
+
 enum AvailableTieBreaks {
   TieBreakerGames = 'tieBreakerGames',
   Overtime = 'overtime',
 }
 
-interface TieBreakSequenceCheck {
-  priority: number;
-  tieBreakCheck: TieBreakCheckings;
-}
-
 export interface TournamentRules {
   id: string;
-  tiebreakChecksSequence: TieBreakSequenceCheck[];
+  tiebreakChecksSequence: TieResolveCheck[];
   tieBreakMode: AvailableTieBreaks;
+  gameWinPoints: number;
+  gameDrawPoints: number;
+  gameLossPoints: number;
 }
 
 export const DefaultTournamentRules: TournamentRules = {
   id: v4(),
-  tiebreakChecksSequence: [],
+  tiebreakChecksSequence: [
+    TieResolveCheck.HeadToHead,
+    TieResolveCheck.NumberOfMatchesWonInTiedGames,
+    TieResolveCheck.MatchMargin,
+    TieResolveCheck.NumberOfCleanGames,
+    TieResolveCheck.GreatestTimeRemainingAmongTiedWonGames,
+    TieResolveCheck.GreatestTimeRemainingAmongAllWonGames,
+    TieResolveCheck.LeastTimeRemainingAmongTiedLostGames,
+    TieResolveCheck.LeastTimeRemainingAmongAllLostGames,
+  ],
   tieBreakMode: AvailableTieBreaks.Overtime,
+  gameWinPoints: 5,
+  gameDrawPoints: 1,
+  gameLossPoints: 0,
 };

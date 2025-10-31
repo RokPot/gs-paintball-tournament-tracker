@@ -1,3 +1,4 @@
+import { TournamentType } from 'types/TournamentType';
 import { PouchDBDto } from './PouchDBDto';
 import { TournamentScheduleDto } from './TournamentScheduleDto';
 
@@ -5,6 +6,6 @@ export interface TournamentStageDto extends PouchDBDto {
   id: string;
   stage: number;
   groupIds: string[];
-
+  stageGamesType: TournamentType;
   schedule?: TournamentScheduleDto[];
 }

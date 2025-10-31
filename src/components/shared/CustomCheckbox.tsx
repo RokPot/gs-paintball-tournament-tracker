@@ -52,6 +52,9 @@ const CustomCheckbox: React.FC<IProps> = ({
         size="small"
         checked={checked}
         onChange={internalToggleCheckbox}
+        sx={{
+          padding: '4px',
+        }}
       />
       <Typography variant="body1">
         {label}

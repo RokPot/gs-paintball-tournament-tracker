@@ -140,7 +140,11 @@ export const RoundRobinTeamCell: React.FC<IRoundRobinTeamCellProps> = ({
           borderRadius: '0px',
         }}
       >
-        <Typography variant="p2Medium" style={{ textTransform: 'uppercase' }}>
+        <Typography
+          variant="p2Medium"
+          style={{ textTransform: 'uppercase' }}
+          textAlign="center"
+        >
           {team.teamName}
         </Typography>
       </Avatar>

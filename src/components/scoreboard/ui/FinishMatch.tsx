@@ -96,7 +96,10 @@ const FinishMatch: React.FC<IProps> = ({
     }
   }, [matchState]);
 
-  const areValuesValid = matchState && team1Margin && team2Margin;
+  const areValuesValid =
+    matchState &&
+    (!shouldInsertTeamsMargins ||
+      (shouldInsertTeamsMargins && team1Margin && team2Margin));
 
   if (!game) {
     return (

@@ -134,7 +134,7 @@ const useTournamentLogic = (activeLeague?: League | null) => {
       return undefined;
     }
     return tournament.state.stage === 1
-      ? tournamentSettings?.type
+      ? tournamentSettings?.firstStageType
       : tournamentSettings?.secondStageType;
   }, [tournament, tournamentSettings]);
 

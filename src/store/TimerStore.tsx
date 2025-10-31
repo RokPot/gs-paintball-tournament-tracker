@@ -1,3 +1,6 @@
+import useIPCRendererMessages, {
+  TimerData,
+} from 'hooks/main/useIPCRendererMessages';
 import { clearInterval, setInterval } from 'worker-timers';
 import { create } from 'zustand';
 
@@ -9,9 +12,11 @@ interface TimerStoreState {
   breakDuration: number;
   timingBreak: boolean;
   timingGame: boolean;
+  onTimerUpdate?: (timerData: TimerData) => void;
   setTimerRef: (timer: number) => void;
   setDuration: (duration: number) => void;
   setBreakDuration: (breakDuration: number) => void;
+  setOnTimerUpdate: (callback: (timerData: TimerData) => void) => void;
   getDuration: () => { duration: number; currentDuration: number };
   startTimer: (
     delayInMs: number,
@@ -28,12 +33,13 @@ interface TimerStoreState {
   resetTimer: () => void;
 }
 
-const useTimerStore = create<TimerStoreState>((set, get) => ({
+const useTimerStoreBase = create<TimerStoreState>((set, get) => ({
   duration: 0,
   currentDuration: 0,
   breakDuration: 0,
   timingBreak: false,
   timingGame: false,
+  onTimerUpdate: undefined,
   startTimer: (
     delayInMs,
     duration,
@@ -78,11 +84,7 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
         if (state.breakDuration === 30000) {
           on30Seconds?.();
         }
-        localStorage.setItem(
-          'gameDuration',
-          `${!state.timingBreak ? state.duration - delayInMs : state.duration}`,
-        );
-        return {
+        const newState = {
           duration: !state.timingBreak
             ? state.duration - delayInMs
             : state.duration,
@@ -93,6 +95,19 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
             ? state.breakDuration - delayInMs
             : state.breakDuration,
         };
+
+        // Send timer update via callback if provided
+        if (state.onTimerUpdate) {
+          state.onTimerUpdate({
+            duration: newState.duration,
+            currentDuration: newState.currentDuration,
+            breakDuration: newState.breakDuration,
+            timingBreak: state.timingBreak,
+            timingGame: state.timingGame,
+          });
+        }
+
+        return newState;
       });
     }, delayInMs);
     set(() => ({ timerRef: interval }));
@@ -119,6 +134,9 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
   setBreakDuration: (breakDuration) => {
     set(() => ({ breakDuration }));
   },
+  setOnTimerUpdate: (callback) => {
+    set(() => ({ onTimerUpdate: callback }));
+  },
   getDuration: () => {
     return { duration: get().duration, currentDuration: get().currentDuration };
   },
@@ -132,5 +150,16 @@ const useTimerStore = create<TimerStoreState>((set, get) => ({
     }));
   },
 }));
+
+// IPC-enabled hook that wraps the base store
+const useTimerStore = () => {
+  const store = useTimerStoreBase();
+  const { sendTimerUpdate } = useIPCRendererMessages();
+
+  // Set up the timer update callback
+  store.setOnTimerUpdate(sendTimerUpdate);
+
+  return store;
+};
 
 export default useTimerStore;

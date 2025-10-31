@@ -14,7 +14,11 @@ import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
-import { TournamentType, TournamentTypeLabels } from 'types/TournamentType';
+import {
+  TournamentType,
+  TournamentTypeEnum,
+  TournamentTypeLabels,
+} from 'types/TournamentType';
 import { shuffleArray } from 'utils/arrayUtils';
 import { generateNewStage } from 'utils/tournamentUtils';
 import TournamentGroupCard from './TournamentGroupCard';
@@ -58,7 +62,7 @@ const InitializeTournament: React.FC<IProps> = ({
         shuffledTeams,
         1,
         numberOfGroups,
-        newTournamentSettings.type,
+        newTournamentSettings.firstStageType,
         tournament,
       );
       newStages.push(newInitialStage);
@@ -86,8 +90,8 @@ const InitializeTournament: React.FC<IProps> = ({
         }
 
         if (
-          newTournamentSettings.secondStageType ===
-          TournamentType.singleElimination
+          newTournamentSettings.secondStageType?.type ===
+          TournamentTypeEnum.singleElimination
         ) {
           const [firstSeedTeams, lowerSeedTeams] = nextStageTeams.reduce(
             (teamArr: [Team[], Team[]], team: Team) => {
@@ -106,8 +110,14 @@ const InitializeTournament: React.FC<IProps> = ({
           nextStageTeams,
           2,
           1,
-          newTournamentSettings?.secondStageType ||
-            TournamentType.singleElimination,
+          newTournamentSettings?.secondStageType || {
+            type: TournamentTypeEnum.singleElimination,
+            settings: {
+              firstPlaceNumberOfWinsRequired: 2,
+              numberOfWinsRequired: 2,
+              thirdPlaceNumberOfWinsRequired: 2,
+            },
+          },
           tournament,
         );
         newStages.push(newSecondStage);
@@ -186,16 +196,19 @@ const InitializeTournament: React.FC<IProps> = ({
           <InputLabel>Stage 1 Tournament Type</InputLabel>
           <Select
             style={{ width: '250px' }}
-            value={tournamentSettings.type}
+            value={tournamentSettings.firstStageType.type}
             label="Stage 1 Tournament Type"
             onChange={(e) => {
               generateNewTournamentDraft({
                 ...tournamentSettings,
-                type: e.target.value as TournamentType,
+                firstStageType: {
+                  ...tournamentSettings.firstStageType,
+                  type: e.target.value as TournamentTypeEnum,
+                } satisfies TournamentType,
               });
             }}
           >
-            {Object.values(TournamentType).map((tournamentKey, index) => (
+            {Object.values(TournamentTypeEnum).map((tournamentKey, index) => (
               <MenuItem key={index} value={tournamentKey}>
                 {TournamentTypeLabels[tournamentKey]}
               </MenuItem>
@@ -207,16 +220,24 @@ const InitializeTournament: React.FC<IProps> = ({
             <InputLabel>Stage 2 Tournament Type</InputLabel>
             <Select
               style={{ width: '250px' }}
-              value={tournamentSettings.secondStageType}
+              value={tournamentSettings.secondStageType?.type}
               label="Stage 2 Tournament Type"
               onChange={(e) => {
                 generateNewTournamentDraft({
                   ...tournamentSettings,
-                  secondStageType: e.target.value as TournamentType,
+                  secondStageType: {
+                    ...tournamentSettings.secondStageType,
+                    type: e.target.value as TournamentTypeEnum,
+                    settings: tournamentSettings.secondStageType?.settings || {
+                      numberOfWinsRequired: 2,
+                      firstPlaceNumberOfWinsRequired: 3,
+                      thirdPlaceNumberOfWinsRequired: 2,
+                    },
+                  } satisfies TournamentType,
                 });
               }}
             >
-              {Object.values(TournamentType).map((tournamentKey, index) => (
+              {Object.values(TournamentTypeEnum).map((tournamentKey, index) => (
                 <MenuItem key={index} value={tournamentKey}>
                   {TournamentTypeLabels[tournamentKey]}
                 </MenuItem>

@@ -15,6 +15,9 @@ const TeamsShortList: React.FC<IProps> = ({
   showRemoveButton,
   onRemoveTeam,
 }) => {
+  if (!teams?.length) {
+    return null;
+  }
   return (
     <FlexContainer width="100%" flexDirection="column">
       {teams?.map((team: Team, index: number) => (

@@ -22,15 +22,27 @@ const useTeamService = () => {
 
   const addNewTeam = useCallback(
     async (team: Team) => {
-      const res = await database.upsert<TeamDto>(team._id, (doc: any) => {
-        if (!doc?.teamName) {
-          return omit(team.toDto(), ['_id']);
+      try {
+        // Try to get existing document
+        const existingDoc = await database.get<TeamDto>(team._id);
+        // If document exists, update it
+        const updatedDoc = {
+          ...existingDoc,
+          ...omit(team.toDto(), ['_id', '_rev']),
+        };
+        const res = await database.put(updatedDoc);
+        const newTeam = new Team(await database.get<TeamDto>(res.id));
+        return newTeam;
+      } catch (error: any) {
+        if (error.name === 'not_found') {
+          // Document doesn't exist, create new one
+          const newDoc = omit(team.toDto(), ['_id']);
+          const res = await database.post(newDoc);
+          const newTeam = new Team(await database.get<TeamDto>(res.id));
+          return newTeam;
         }
-        return doc;
-      });
-      const newTeam = new Team(await database.get<TeamDto>(res.id));
-
-      return newTeam;
+        throw error;
+      }
     },
     [database],
   );

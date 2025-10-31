@@ -1,5 +1,5 @@
-import { TournamentType } from 'types/TournamentType';
 import { TournamentGroupSettings } from 'types/TournamentGroupSettings';
+import { TournamentType } from 'types/TournamentType';
 import { PouchDBDto } from './PouchDBDto';
 
 export interface TournamentGroupDto extends PouchDBDto {

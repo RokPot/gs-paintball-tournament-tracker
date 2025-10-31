@@ -1,6 +1,16 @@
-import { Button, Card, Typography, alpha, styled } from '@mui/material';
+import {
+  Button,
+  Card,
+  MenuItem,
+  Select,
+  Typography,
+  alpha,
+  styled,
+} from '@mui/material';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
+import ScheduleUpcomingGames from 'components/tournament/visualizations/schedule/ScheduleUpcomingGames';
+import { PortInfo } from 'hooks/main/useIPCRendererMessages';
 import { memo } from 'react';
 import { Match } from 'types/Match';
 import Team from 'types/Team';
@@ -32,6 +42,10 @@ interface IProps {
   setShowFinishMatchModal: (showFinishPopup: boolean) => void;
   confirmNextTournamentStage: (nextStage: TournamentStage) => Promise<void>;
   onTeamPause: (team: Team, isRefereePause?: boolean) => void;
+  availablePorts?: PortInfo[];
+  selectReceiverPort?: (port: PortInfo) => void;
+  selectedPort: PortInfo | undefined;
+  refreshAvailablePorts?: () => void;
 }
 
 const DesktopScoreboard: React.FC<IProps> = ({
@@ -49,6 +63,10 @@ const DesktopScoreboard: React.FC<IProps> = ({
   confirmNextTournamentStage,
   onStartTournament,
   onTeamPause,
+  availablePorts,
+  selectReceiverPort,
+  selectedPort,
+  refreshAvailablePorts,
 }) => {
   const currentGame = activeScheduledGame?.game;
 
@@ -73,6 +91,16 @@ const DesktopScoreboard: React.FC<IProps> = ({
       padding="8px"
       gap={8}
     >
+      <ScheduleUpcomingGames
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          bottom: 'unset',
+          width: '100%',
+        }}
+        disableNewWindowOpen
+      />
       <FlexContainer
         flex={1}
         width="100%"
@@ -196,6 +224,34 @@ const DesktopScoreboard: React.FC<IProps> = ({
           </FlexContainer>
         </Card>
       </FlexContainer>
+      <Select
+        style={{
+          position: 'absolute',
+          bottom: 5,
+          left: 5,
+          maxWidth: '200px',
+        }}
+        onOpen={() => {
+          refreshAvailablePorts?.();
+        }}
+        value={selectedPort?.path}
+        label="Second stage type"
+        onChange={(e) => {
+          const newPort = availablePorts?.find(
+            (port) => port.path === e.target.value,
+          );
+
+          if (newPort) {
+            selectReceiverPort?.(newPort);
+          }
+        }}
+      >
+        {availablePorts?.map((availablePort) => (
+          <MenuItem key={availablePort.path} value={availablePort.path}>
+            {availablePort.path} - {availablePort.friendlyName}
+          </MenuItem>
+        ))}
+      </Select>
       <CustomModal
         isModalOpen={showFinishMatchModal}
         onClose={() => {

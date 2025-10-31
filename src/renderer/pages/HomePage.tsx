@@ -16,11 +16,17 @@ import {
   css,
   useTheme,
 } from '@mui/material';
+import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import PageContainer from 'components/shared/PageContainer';
+import QuickAddTournament from 'components/tournament/QuickAddTournament';
+import useTournamentFlows from 'hooks/tournament/useTournamentFlows';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import routes from 'renderer/main/Routes';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import League from 'types/League';
+import Tournament from 'types/Tournament';
 
 const StyledStackingContainer = styled('div')(
   () => css`
@@ -31,23 +37,28 @@ const StyledStackingContainer = styled('div')(
   `,
 );
 
-const StyledCardContainer = styled('div')(
-  () => css`
-    display: flex;
-    width: 100%;
-    flex-direction: row;
-    gap: 15px;
-    height: 100%;
-    justify-content: center;
-    align-items: center;
-    padding: 8px;
-  `,
-);
 const HomePage: React.FC = () => {
+  const [quickAddTournamentForLeague, setQuickAddTournamentForLeague] =
+    useState<League>();
+
   const theme = useTheme();
   const navigate = useNavigate();
   const { data: leaguesList, isLoading: isFetchingLeaguesList } =
     LeagueQueries.useLeaguesList();
+  const { addNewTournamentToLeague } = useTournamentFlows();
+  const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
+
+  const addNewTournamentInternal = useCallback(
+    async (tournament: Tournament, league?: League) => {
+      if (!league || !tournament) {
+        return;
+      }
+      await addNewTournamentToLeague(tournament, league);
+      await invalidateSelectedLeague();
+      setQuickAddTournamentForLeague(undefined);
+    },
+    [addNewTournamentToLeague, invalidateSelectedLeague],
+  );
 
   return (
     <PageContainer>
@@ -81,8 +92,17 @@ const HomePage: React.FC = () => {
         {leaguesList?.map((league) => (
           <StyledStackingContainer key={league.id}>
             <Card style={{ width: '400px' }}>
-              <CardHeader
-                action={
+              <FlexContainer
+                flexDirection="column"
+                alignItems="flex-start"
+                padding="16px"
+              >
+                <FlexContainer
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  width="100%"
+                >
+                  <Typography variant="h4">{league.name}</Typography>
                   <IconButton aria-label="info" style={{ width: '40px' }}>
                     <FontAwesomeIcon
                       icon={faInfoCircle}
@@ -91,9 +111,12 @@ const HomePage: React.FC = () => {
                       color={theme.palette.primary.light}
                     />
                   </IconButton>
-                }
-                title={league.name}
-                subheader={
+                </FlexContainer>
+                <FlexContainer
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  width="100%"
+                >
                   <Typography
                     variant="p1Medium"
                     color={theme.palette.text.secondary}
@@ -115,8 +138,16 @@ const HomePage: React.FC = () => {
                     />
                     {league.teams.length}
                   </Typography>
-                }
-              />
+                  <Button
+                    variant="text"
+                    onClick={() => setQuickAddTournamentForLeague(league)}
+                  >
+                    <Typography variant="p1">
+                      <FontAwesomeIcon icon={faAdd} /> Quick Tournament
+                    </Typography>
+                  </Button>
+                </FlexContainer>
+              </FlexContainer>
             </Card>
             {league?.tournaments?.length <= 0 && (
               <Card>
@@ -139,29 +170,10 @@ const HomePage: React.FC = () => {
                 />
               </Card>
             )}
-            {league?.tournaments.length && (
-              <Card>
-                <StyledCardContainer>
-                  <Avatar
-                    sx={{ bgcolor: theme.palette.secondary.light }}
-                    aria-label="recipe"
-                  >
-                    <FontAwesomeIcon icon={faAdd} />
-                  </Avatar>
-                  <Button
-                    variant="contained"
-                    onClick={() =>
-                      navigate(routes.getTournamentWithLeagueRoute(league.id))
-                    }
-                  >
-                    <Typography>Create Quick Tournament</Typography>
-                  </Button>
-                </StyledCardContainer>
-              </Card>
-            )}
+
             {league?.tournaments
               ?.reverse()
-              .slice(0, 3)
+              .slice(0, 4)
               .map((tournament, index) => (
                 <Card style={{ width: '300px' }} key={tournament.id}>
                   <CardHeader
@@ -192,6 +204,23 @@ const HomePage: React.FC = () => {
           </StyledStackingContainer>
         ))}
       </FlexContainer>
+      <CustomModal
+        isModalOpen={!!quickAddTournamentForLeague}
+        onClose={() => {
+          setQuickAddTournamentForLeague(undefined);
+        }}
+        width={700}
+      >
+        {!!quickAddTournamentForLeague && (
+          <QuickAddTournament
+            league={quickAddTournamentForLeague}
+            onAccept={(tournament) =>
+              addNewTournamentInternal(tournament, quickAddTournamentForLeague)
+            }
+            onCancel={() => setQuickAddTournamentForLeague(undefined)}
+          />
+        )}
+      </CustomModal>
     </PageContainer>
   );
 };

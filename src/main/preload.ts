@@ -14,7 +14,16 @@ export type Channels =
   | 'serialPortError'
   | 'gameSwitched'
   | 'gamesSwitched'
-  | 'tournamentSwitched';
+  | 'tournamentSwitched'
+  | 'timerUpdate';
+
+export interface TimerData {
+  duration: number;
+  currentDuration: number;
+  breakDuration: number;
+  timingBreak: boolean;
+  timingGame: boolean;
+}
 
 const electronHandler = {
   ipcRenderer: {

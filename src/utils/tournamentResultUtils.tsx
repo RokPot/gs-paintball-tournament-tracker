@@ -5,33 +5,15 @@ import MatchState from 'types/MatchState';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import TournamentGroup from 'types/TournamentGroup';
+import { TieResolveCheck } from 'types/TournamentRules';
 import { TournamentSettings } from 'types/TournamentSettings';
-import { TournamentType } from 'types/TournamentType';
+import {
+  TournamentTypeEnum,
+  TournamentTypeSettings,
+} from 'types/TournamentType';
 import { v4 } from 'uuid';
 
 const NotViableTiebreaker = 'notViableTieBreaker';
-
-enum TieResolveCheck {
-  HeadToHead = 'headToHead',
-  NumberOfPoints = 'numberOfPoints',
-  NumberOfCleanGames = 'numberOfCleanGames',
-  NumberOfMatchesWonInTiedGames = 'numberOfMatchesWonInTiedGames',
-  MatchMargin = 'matchMargin',
-  GreatestTimeRemainingAmongAllWonGames = 'greatestTimeRemainingAmongAllWonGames',
-  GreatestTimeRemainingAmongTiedWonGames = 'greatestTimeRemainingAmongTiedWonGames',
-  LeastTimeRemainingAmongAllLostGames = 'leastTimeRemainingAmongAllLostGames',
-  LeastTimeRemainingAmongTiedLostGames = 'leastTimeRemainingAmongTiedLostGames',
-}
-const tieBreakChecks: TieResolveCheck[] = [
-  TieResolveCheck.HeadToHead,
-  TieResolveCheck.NumberOfMatchesWonInTiedGames,
-  TieResolveCheck.MatchMargin,
-  TieResolveCheck.NumberOfCleanGames,
-  TieResolveCheck.GreatestTimeRemainingAmongTiedWonGames,
-  TieResolveCheck.GreatestTimeRemainingAmongAllWonGames,
-  TieResolveCheck.LeastTimeRemainingAmongTiedLostGames,
-  TieResolveCheck.LeastTimeRemainingAmongAllLostGames,
-];
 
 interface ResolvedTiedTeam {
   rank: number;
@@ -445,16 +427,29 @@ const resolveWithHighestNumberOfPointsCheck = (): ResolvedTieBreaks => {
 const resolveWithHighestNumberOfCleanGamesCheck = (
   leaderboardTeamsTied: LeaderboardTeam[],
   finishedGames: Game[],
-  tournamentSettings: TournamentSettings,
   startFromRank: number,
+  stageTypeSettings: TournamentTypeSettings,
 ): ResolvedTieBreaks => {
   const { leaderboardTeamGameWins, teamsTiedId } =
     prepareTiedTeamsForProcessing(leaderboardTeamsTied);
 
   finishedGames.forEach((finishedGame) => {
+    const firstPlaceNumberOfWinsRequired =
+      finishedGame.bracketProperties?.isFirstPlaceGame &&
+      stageTypeSettings.firstPlaceNumberOfWinsRequired;
+    const thirdPlaceNumberOfWinsRequired =
+      finishedGame.bracketProperties?.isThridPlaceGame &&
+      stageTypeSettings.thirdPlaceNumberOfWinsRequired;
+    const numberOfWinsRequired =
+      firstPlaceNumberOfWinsRequired ||
+      thirdPlaceNumberOfWinsRequired ||
+      stageTypeSettings.numberOfWinsRequired;
     if (finishedGame.gameWinner === GameWinner.team1) {
       if (teamsTiedId.includes(finishedGame.team1.id)) {
-        if (finishedGame.team1Wins >= tournamentSettings.numberOfWinsRequired) {
+        if (
+          finishedGame.team1Wins >= numberOfWinsRequired &&
+          finishedGame.team2Wins === 0
+        ) {
           const currentLeaderboardTeam = leaderboardTeamGameWins.find(
             (headToHeadTeam) => headToHeadTeam.teamId === finishedGame.team1.id,
           )!;
@@ -464,7 +459,10 @@ const resolveWithHighestNumberOfCleanGamesCheck = (
     }
     if (finishedGame.gameWinner === GameWinner.team2) {
       if (teamsTiedId.includes(finishedGame.team2.id)) {
-        if (finishedGame.team2Wins >= tournamentSettings.numberOfWinsRequired) {
+        if (
+          finishedGame.team2Wins >= numberOfWinsRequired &&
+          finishedGame.team1Wins === 0
+        ) {
           const currentLeaderboardTeam = leaderboardTeamGameWins.find(
             (headToHeadTeam) => headToHeadTeam.teamId === finishedGame.team2.id,
           )!;
@@ -569,6 +567,7 @@ const resolveTiedTeamsWithTieBreakCheck = (
   finishedGames: Game[],
   tournamentSettings: TournamentSettings,
   startFromRank: number,
+  stageTypeSettings: TournamentTypeSettings,
 ) => {
   switch (tieBreakCheck) {
     case TieResolveCheck.HeadToHead: {
@@ -585,8 +584,8 @@ const resolveTiedTeamsWithTieBreakCheck = (
       return resolveWithHighestNumberOfCleanGamesCheck(
         tiedTeams,
         finishedGames,
-        tournamentSettings,
         startFromRank,
+        stageTypeSettings,
       );
     }
     case TieResolveCheck.NumberOfMatchesWonInTiedGames: {
@@ -642,6 +641,7 @@ export const tryToResolveDraws = (
   tiedTeams: LeaderboardTeam[],
   finishedGames: Game[],
   tournamentSettings: TournamentSettings,
+  stageTypeSettings: TournamentTypeSettings,
 ) => {
   let sortingLeaderboardTeams: LeaderboardTeam[] = [];
   let resolvedTiedTeams: ResolvedTiedTeam[] = [
@@ -661,8 +661,12 @@ export const tryToResolveDraws = (
   ];
   let nextTiedPartialUnrakedTeams: TiedPartialUnrankedTeams[] = [];
 
-  for (let j = 0; j < tieBreakChecks.length; j += 1) {
-    const tieBreakCheck = tieBreakChecks[j];
+  for (
+    let j = 0;
+    j < tournamentSettings?.rules?.tiebreakChecksSequence?.length;
+    j += 1
+  ) {
+    const tieBreakCheck = tournamentSettings?.rules?.tiebreakChecksSequence[j];
     for (let i = 0; i < tiedPartialUnrakedTeams.length; i += 1) {
       const currentPartialUnrankedTeamsGroup = tiedPartialUnrakedTeams[i];
       const resolvedTieBreaks = resolveTiedTeamsWithTieBreakCheck(
@@ -671,6 +675,7 @@ export const tryToResolveDraws = (
         finishedGames,
         tournamentSettings,
         currentPartialUnrankedTeamsGroup.fromRank,
+        stageTypeSettings,
       );
 
       const {
@@ -697,7 +702,7 @@ export const tryToResolveDraws = (
     if (!tiedPartialUnrakedTeams?.length) {
       break;
     }
-    if (j === tieBreakChecks.length - 1) {
+    if (j === tournamentSettings.rules.tiebreakChecksSequence.length - 1) {
       // todo rokpot, maybe this not the best approach
       sortingLeaderboardTeams = [
         ...sortingLeaderboardTeams,
@@ -757,22 +762,24 @@ const calculateTournamentRoundRobinLeaderboardPoints = (
         leaderBoardTeam1.totalWins += 1;
         leaderBoardTeam2.totalLosses += 1;
 
-        leaderBoardTeam1.totalPoints += 3;
+        leaderBoardTeam1.totalPoints += tournamentSettings.rules.gameWinPoints;
+        leaderBoardTeam2.totalPoints += tournamentSettings.rules.gameLossPoints;
         break;
       }
       case GameWinner.team2: {
         leaderBoardTeam1.totalLosses += 1;
         leaderBoardTeam2.totalWins += 1;
 
-        leaderBoardTeam2.totalPoints += 3;
+        leaderBoardTeam1.totalPoints += tournamentSettings.rules.gameLossPoints;
+        leaderBoardTeam2.totalPoints += tournamentSettings.rules.gameWinPoints;
         break;
       }
       case GameWinner.draw: {
         leaderBoardTeam1.totalDraws += 1;
         leaderBoardTeam2.totalDraws += 1;
 
-        leaderBoardTeam1.totalPoints += 1;
-        leaderBoardTeam2.totalPoints += 1;
+        leaderBoardTeam1.totalPoints += tournamentSettings.rules.gameDrawPoints;
+        leaderBoardTeam2.totalPoints += tournamentSettings.rules.gameDrawPoints;
 
         break;
       }
@@ -922,6 +929,7 @@ const checkAndResolveLeaderboardDraws = (
   leaderboardTeams: LeaderboardTeam[],
   finishedGames: Game[],
   tournamentSettings: TournamentSettings,
+  stageTypeSettings: TournamentTypeSettings,
 ) => {
   const leaderboardTeamsSorted: LeaderboardTeam[] = [];
   for (let i = 0; i < leaderboardTeams.length; ) {
@@ -934,6 +942,7 @@ const checkAndResolveLeaderboardDraws = (
         tiedLeaderboardTeams,
         finishedGames,
         tournamentSettings,
+        stageTypeSettings,
       );
       leaderboardTeamsSorted.push(...resolvedDraws);
       i += tiedLeaderboardTeams.length;
@@ -960,6 +969,7 @@ const calculateTournamentRoundRobinLeaderboard = (
     leaderboardTeams,
     group.finishedGames,
     tournamentSettings,
+    group.groupType.settings,
   );
 
   // set proper rankings
@@ -980,14 +990,14 @@ export const calculateTournamentGroupLeaderboard = (
   group: TournamentGroup,
   tournamentSettings: TournamentSettings,
 ) => {
-  // Calculate team points for a group.
-  // WIN - 3 POINTS
-  // DRAW - 1 POINT
-  // LOSE - 0 POINTS
-  switch (group.groupType) {
-    case TournamentType.singleElimination:
+  // WIN - tournamentSettings.rules.gameWinPoints
+  // DRAW - tournamentSettings.rules.gameDrawPoints
+  // LOSE - tournamentSettings.rules.gameLossPoints
+
+  switch (group.groupType.type) {
+    case TournamentTypeEnum.singleElimination:
       return calculateTournamentSingleEliminationLeaderboard(group);
-    case TournamentType.roundRobin:
+    case TournamentTypeEnum.roundRobin:
     default: {
       return calculateTournamentRoundRobinLeaderboard(
         group,

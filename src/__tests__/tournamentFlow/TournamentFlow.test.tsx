@@ -20,7 +20,7 @@ import Tournament from 'types/Tournament';
 import { DefaultTournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
-import { TournamentType } from 'types/TournamentType';
+import { TournamentTypeEnum } from 'types/TournamentType';
 import { TournamentFlow } from 'utils/tournamentFlowUtils';
 import { generateTournamentSchedule } from 'utils/tournamentUtils';
 
@@ -75,7 +75,14 @@ describe('TournamentFlow', () => {
       1,
       games,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     const stage1ScheduledGames = generateTournamentSchedule(
@@ -86,7 +93,14 @@ describe('TournamentFlow', () => {
         switchGroups: true,
         switchGames: true,
       },
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const previousStage = new TournamentStage({
       _id: 'stage1',
@@ -94,6 +108,14 @@ describe('TournamentFlow', () => {
       groups: [newGroup1],
       schedule: stage1ScheduledGames,
       stage: 1,
+      stageGamesType: {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     });
 
     const stage1Tournament = new Tournament({
@@ -177,7 +199,14 @@ describe('TournamentFlow', () => {
       1,
       games,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     const stage1ScheduledGames = generateTournamentSchedule(
@@ -188,7 +217,14 @@ describe('TournamentFlow', () => {
         switchGroups: true,
         switchGames: true,
       },
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const previousStage = new TournamentStage({
       _id: 'stage1',
@@ -196,6 +232,14 @@ describe('TournamentFlow', () => {
       groups: [newGroup1],
       schedule: stage1ScheduledGames,
       stage: 1,
+      stageGamesType: {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     });
 
     const stage1Tournament = new Tournament({
@@ -1638,7 +1682,14 @@ describe('TournamentFlow', () => {
         numberOfGroups: 2,
         switchGroups: true,
         switchGames: true,
-        secondStageType: TournamentType.singleElimination,
+        secondStageType: {
+          type: TournamentTypeEnum.singleElimination,
+          settings: {
+            numberOfWinsRequired: 2,
+            firstPlaceNumberOfWinsRequired: 2,
+            thirdPlaceNumberOfWinsRequired: 2,
+          },
+        },
       },
     });
     expect(stage1Tournament).toBeDefined();
@@ -1855,7 +1906,14 @@ describe('TournamentFlow', () => {
         numberOfGroups: 2,
         switchGroups: true,
         switchGames: true,
-        secondStageType: TournamentType.singleElimination,
+        secondStageType: {
+          type: TournamentTypeEnum.singleElimination,
+          settings: {
+            numberOfWinsRequired: 2,
+            firstPlaceNumberOfWinsRequired: 2,
+            thirdPlaceNumberOfWinsRequired: 2,
+          },
+        },
       },
     });
     expect(stage1Tournament).toBeDefined();

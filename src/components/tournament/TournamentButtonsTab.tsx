@@ -222,6 +222,7 @@ const TournamentButtonsTab: React.FC<IProps> = () => {
     }
     onPortSelected(preselectedButton);
   }, [availablePorts, onPortSelected, selectedPort]);
+
   const steps = [
     'Select Button Reciever Port',
     'Confirm Buttons',

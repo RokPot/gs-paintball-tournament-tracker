@@ -72,7 +72,7 @@ const useGameFlows = () => {
           (group) => group.id === scheduledGame?.group?.id,
         ),
         tournament.state.stage === 1
-          ? tournament.settings?.type
+          ? tournament.settings?.firstStageType
           : tournament.settings?.secondStageType,
         true,
       );

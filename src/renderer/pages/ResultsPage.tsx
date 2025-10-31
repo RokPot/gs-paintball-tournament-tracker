@@ -4,16 +4,22 @@ import LeaderboardView from 'components/results-window/LeaderboardView';
 import ResultsWindowUpcomingGamesSection from 'components/results-window/ResultsWindowUpcomingGamesSection';
 import ResultsScheduleView from 'components/results-window/schedule/ResultsScheduleView';
 import FlexContainer from 'components/shared/FlexContainer';
+import TournamentTypesPreview from 'components/tournament/visualizations/TournamentTypesPreview';
 import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import useScrollTo from 'hooks/ui/useScrollTo';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import { TournamentTypeEnum } from 'types/TournamentType';
 import { setTimeout } from 'worker-timers';
 
 interface IProps {}
 
 const ResultsPage: React.FC<IProps> = () => {
   const { data: activeLeague, refetch } = LeagueQueries.useActiveLeague();
+
+  const currentStage = useMemo(() => {
+    return activeLeague?.activeTournament?.currentStage;
+  }, [activeLeague]);
 
   const theme = useTheme();
 
@@ -88,36 +94,46 @@ const ResultsPage: React.FC<IProps> = () => {
         <CurrentGameView activeLeague={activeLeague} />
       </div>
 
-      <FlexContainer
-        flexDirection="row"
-        height="100%"
-        width="100%"
-        style={{ flex: 1, minHeight: 0 }}
-      >
-        <div
-          style={{
-            height: '100%',
-            maxHeight: '100%',
-            width: '100%',
-            overflowY: 'hidden',
-          }}
-          ref={scrollRef}
-        >
-          <ResultsScheduleView activeLeague={activeLeague} />
+      {currentStage?.stageGamesType.type ===
+        TournamentTypeEnum.singleElimination && (
+        <div>
+          <TournamentTypesPreview
+            group={activeLeague?.activeTournament?.currentStageGroups?.[0]}
+          />
         </div>
-        <div
-          style={{
-            height: '100%',
-            maxHeight: '100%',
-            width: '1200px',
-            overflowY: 'hidden',
-            borderLeft: `1px solid ${theme.palette.divider}`,
-          }}
-          ref={leaderboardScrollRef}
+      )}
+      {currentStage?.stageGamesType.type === TournamentTypeEnum.roundRobin && (
+        <FlexContainer
+          flexDirection="row"
+          height="100%"
+          width="100%"
+          style={{ flex: 1, minHeight: 0 }}
         >
-          <LeaderboardView activeLeague={activeLeague} />
-        </div>
-      </FlexContainer>
+          <div
+            style={{
+              height: '100%',
+              maxHeight: '100%',
+              width: '100%',
+              overflowY: 'hidden',
+            }}
+            ref={scrollRef}
+          >
+            <ResultsScheduleView activeLeague={activeLeague} />
+          </div>
+          <div
+            style={{
+              height: '100%',
+              maxHeight: '100%',
+              width: '1200px',
+              overflowY: 'hidden',
+              borderLeft: `1px solid ${theme.palette.divider}`,
+            }}
+            ref={leaderboardScrollRef}
+          >
+            <LeaderboardView activeLeague={activeLeague} />
+          </div>
+        </FlexContainer>
+      )}
 
       <div style={{ flex: '0 0 auto', width: '100%' }}>
         <ResultsWindowUpcomingGamesSection activeLeague={activeLeague} />

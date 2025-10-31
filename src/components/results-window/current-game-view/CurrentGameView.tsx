@@ -1,9 +1,11 @@
 import { Typography, lighten, useTheme } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
+import useIPCRendererMessages, {
+  TimerData,
+} from 'hooks/main/useIPCRendererMessages';
 import { useEffect, useMemo, useState } from 'react';
 import League from 'types/League';
 import { millisecondsToTime } from 'utils/dateUtils';
-import { clearInterval, setInterval } from 'worker-timers';
 import ScoreDisplay from './ScoreDisplay';
 import TeamDisplay from './TeamDisplay';
 
@@ -14,6 +16,7 @@ interface IProps {
 const CurrentGameView: React.FC<IProps> = ({ activeLeague }) => {
   const theme = useTheme();
   const [gameDuration, setGameDuration] = useState<number>();
+  const { listenToTimerUpdate } = useIPCRendererMessages();
   const fontSize = 1;
   const fontSizeH1 = `${fontSize * 8}em`;
   const fontSizeH2 = `${fontSize * 10}em`;
@@ -31,16 +34,11 @@ const CurrentGameView: React.FC<IProps> = ({ activeLeague }) => {
   }, [activeLeague]);
 
   useEffect(() => {
-    const getFreshGameDuration = async () => {
-      const freshGameDuration = Number(localStorage.getItem('gameDuration'));
-      setGameDuration(freshGameDuration);
-    };
-    const gameInterval = setInterval(() => {
-      getFreshGameDuration();
-    }, 1000);
-
-    return () => clearInterval(gameInterval);
-  }, []);
+    listenToTimerUpdate((timerData: TimerData) => {
+      // Use the duration from timer data instead of localStorage
+      setGameDuration(timerData.duration);
+    });
+  }, [listenToTimerUpdate]);
 
   const formattedDuration = millisecondsToTime(gameDuration || 0);
 

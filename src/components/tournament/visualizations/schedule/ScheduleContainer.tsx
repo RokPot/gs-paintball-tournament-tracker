@@ -156,7 +156,7 @@ const ScheduleContainer = ({ activeTournament }: IProps) => {
                 (group) => group.id === scheduleRow.scheduledGame?.group?.id,
               ),
               activeTournament.state.stage === 1
-                ? activeTournament?.settings?.type
+                ? activeTournament?.settings?.firstStageType
                 : activeTournament?.settings?.secondStageType,
             )}
           />

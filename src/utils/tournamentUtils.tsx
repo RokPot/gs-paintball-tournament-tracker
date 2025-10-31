@@ -8,7 +8,11 @@ import TournamentGroup from 'types/TournamentGroup';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
-import { TournamentType } from 'types/TournamentType';
+import {
+  TournamentType,
+  TournamentTypeEnum,
+  TournamentTypeSettings,
+} from 'types/TournamentType';
 import { v4 } from 'uuid';
 import { shuffleArray } from './arrayUtils';
 import { generateGamesForRoundRobin } from './tournament/roundRobinUtils';
@@ -287,6 +291,44 @@ export const getGamePairs = (games: Game[]) => {
     pairedGames.push(newPair);
   }
   return pairedGames;
+};
+
+export const generateGamesForRenting = (
+  teams: Team[],
+  gameSettings: GameSettings,
+) => {
+  const newId1 = v4();
+
+  const game1: Game = new Game({
+    gameState: GameState.created,
+    id: newId1,
+    _id: newId1,
+    matches: [],
+    team1: teams[0],
+    team1Wins: 0,
+    team2: teams[1],
+    team2Wins: 0,
+    bracketProperties: null,
+    gameTime: gameSettings.gameTimeInSeconds,
+  });
+  return {
+    games: [game1],
+    totalNumberOfRounds: 1,
+  };
+};
+
+export const generateRentingSchedule = (groups: TournamentGroup[]) => {
+  const scheduledGames: TournamentScheduleGame[] = [];
+  scheduledGames.push({
+    game: groups[0].games[0],
+    gameNumber: 1,
+    group: groups[0],
+    id: v4(),
+    index: 0,
+    pairedGameId: 'NoPairedGameId',
+  });
+
+  return scheduledGames;
 };
 
 export const generateGamesForEliminationBrackets = (
@@ -719,14 +761,14 @@ export const generateTournamentSchedule = (
   if (!groups?.length || !settings || !type) {
     return [];
   }
-  switch (type) {
-    case TournamentType.roundRobin:
+  switch (type.type) {
+    case TournamentTypeEnum.roundRobin:
       return generateRoundRobinSchedule(groups, settings);
-    case TournamentType.singleElimination:
+    case TournamentTypeEnum.singleElimination:
       return generateSingleEliminationSchedule(groups, settings);
-    case TournamentType.doubleElimination:
-      return [];
-    case TournamentType.training:
+    case TournamentTypeEnum.renting:
+      return generateRentingSchedule(groups);
+    case TournamentTypeEnum.training:
       return [];
     default:
       return [];
@@ -736,9 +778,10 @@ export const generateTournamentSchedule = (
 const getLeaderboardForPreviousStageGroups = (
   previousStageGroups?: TournamentGroup[],
   settings?: TournamentSettings,
+  previousStageTypeSettings?: TournamentTypeSettings,
   numberOfTopTeamsToProceedToNextStage: number = 2,
 ) => {
-  if (!previousStageGroups || !settings) {
+  if (!previousStageGroups || !settings || !previousStageTypeSettings) {
     return undefined;
   }
   const previousStageGroupWinners: { groupIndex: number; teams: Team[] }[] = [];
@@ -771,17 +814,14 @@ export const generateNewGames = (
       totalNumberOfRounds: 0,
     };
   }
-  switch (type) {
-    case TournamentType.roundRobin:
+  switch (type.type) {
+    case TournamentTypeEnum.roundRobin:
       return generateGamesForRoundRobin(teams, gameSettings);
-    case TournamentType.singleElimination:
+    case TournamentTypeEnum.singleElimination:
       return generateGamesForEliminationBrackets(teams, gameSettings);
-    case TournamentType.doubleElimination:
-      return {
-        games: [],
-        totalNumberOfRounds: 0,
-      };
-    case TournamentType.training:
+    case TournamentTypeEnum.renting:
+      return generateGamesForRenting(teams, gameSettings);
+    case TournamentTypeEnum.training:
       return {
         games: [],
         totalNumberOfRounds: 0,
@@ -838,6 +878,13 @@ export const generateNewStage = (
     };
   }
 
+  console.log(
+    newStageGroups[0].games.map((game) => ({
+      nextGame: game.bracketProperties?.winnerNextRoundGameNumber,
+      losernextgame: game.bracketProperties?.loserNextRoundGameNumber,
+    })),
+  );
+
   // 4. Generate Schedule for groups
   const newStageSchedule = generateTournamentSchedule(
     newStageGroups,
@@ -852,6 +899,7 @@ export const generateNewStage = (
     groups: newStageGroups,
     stage: stageNumber,
     schedule: newStageSchedule,
+    stageGamesType: tournamentType,
   });
   return newStage;
 };
@@ -867,7 +915,7 @@ export const generateNextTournamentStage = (
   const previousStageGroupWinners = getLeaderboardForPreviousStageGroups(
     tournament?.previousStage?.groups,
     tournament.settings,
-    numberOfTopTeamsToProceedToNextStage,
+    tournament?.previousStage?.stageGamesType.settings,
   );
 
   if (!previousStageGroupWinners) {
@@ -880,12 +928,12 @@ export const generateNextTournamentStage = (
     nextStageTeams.push(...previousStageGroupWinners[i].teams);
   }
 
-  switch (tournament.settings.secondStageType) {
-    case TournamentType.roundRobin: {
+  switch (tournament.settings.secondStageType?.type) {
+    case TournamentTypeEnum.roundRobin: {
       nextStageTeams = shuffleArray(nextStageTeams);
       break;
     }
-    case TournamentType.singleElimination: {
+    case TournamentTypeEnum.singleElimination: {
       const seededTeamsGrouped: Team[][] = [];
       for (let i = 0; i < numberOfTopTeamsToProceedToNextStage; i += 1) {
         const seedTeams: Team[] = [];

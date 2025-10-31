@@ -17,21 +17,29 @@ const useCountdownSound = () => {
     countdownAudioPlayer.play();
   }, [countdownAudioPlayer]);
 
-  const stopCountdown = useCallback(() => {
+  const stopCountdown = useCallback(async () => {
     if (!countdownAudioPlayer) {
       return;
     }
-    countdownAudioPlayer.load();
-    countdownAudioPlayer.pause();
+    try {
+      await countdownAudioPlayer.pause();
+      await countdownAudioPlayer.load();
+    } catch (error) {
+      console.log('error', error);
+    }
   }, [countdownAudioPlayer]);
 
-  const playMatchPoint = useCallback(() => {
+  const playMatchPoint = useCallback(async () => {
     if (!matchPointAudioPlayer) {
       return;
     }
-    matchPointAudioPlayer.pause();
-    matchPointAudioPlayer.load();
-    matchPointAudioPlayer.play();
+    try {
+      await matchPointAudioPlayer.pause();
+      await matchPointAudioPlayer.load();
+      await matchPointAudioPlayer.play();
+    } catch (error) {
+      console.log('error', error);
+    }
   }, [matchPointAudioPlayer]);
 
   const stopMatchPoint = useCallback(() => {

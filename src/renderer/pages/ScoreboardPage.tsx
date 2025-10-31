@@ -3,8 +3,10 @@ import DesktopScoreboard from 'components/scoreboard/ui/DesktopScoreboard';
 import MobileScoreboard from 'components/scoreboard/ui/MobileScoreboard';
 import LoadingIndicator from 'components/shared/LoadingIndicator';
 import PageContainer from 'components/shared/PageContainer';
+import { PortInfo } from 'hooks/main/useIPCRendererMessages';
 import { useIsResponsive } from 'hooks/ui/useIsResponsive';
 import { memo, useCallback, useContext } from 'react';
+import { ButtonsContext } from 'store/ButtonsContext';
 import { TournamentContext } from 'store/TournamentContext';
 import { Match } from 'types/Match';
 
@@ -48,6 +50,21 @@ const ScoreboardPage: React.FC<IProps> = () => {
     isFetchingActiveLeague,
   } = useContext(TournamentContext);
 
+  const {
+    selectedPort,
+    setSelectedPort,
+    availablePorts,
+    refreshAvailablePorts,
+    selectReceiverPort,
+  } = useContext(ButtonsContext);
+
+  const onPortSelected = useCallback(
+    (selectedUSBPort: PortInfo) => {
+      selectReceiverPort?.(selectedUSBPort);
+      setSelectedPort?.(selectedUSBPort);
+    },
+    [selectReceiverPort, setSelectedPort],
+  );
   const tournament = activeLeague?.activeTournament;
 
   const finishMatchInternal = useCallback(
@@ -89,6 +106,10 @@ const ScoreboardPage: React.FC<IProps> = () => {
         onTeamPause={onTeamPause!}
         isFetchingActiveLeague={isFetchingActiveLeague}
         tournament={tournament}
+        availablePorts={availablePorts}
+        selectReceiverPort={onPortSelected}
+        selectedPort={selectedPort}
+        refreshAvailablePorts={refreshAvailablePorts}
       />
     </PageContainer>
   );

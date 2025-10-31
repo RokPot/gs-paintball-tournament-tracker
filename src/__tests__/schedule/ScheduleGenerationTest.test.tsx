@@ -17,7 +17,7 @@ import Tournament from 'types/Tournament';
 import { DefaultTournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
-import { TournamentType } from 'types/TournamentType';
+import { TournamentTypeEnum } from 'types/TournamentType';
 import {
   generateNextTournamentStage,
   generateTournamentSchedule,
@@ -74,13 +74,27 @@ describe('ScheduleGeneration', () => {
       1,
       games,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     const scheduledGames = generateTournamentSchedule(
       [newGroup],
       DefaultTournamentSettings,
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     expect(scheduledGames.length).toBe(6);
@@ -142,13 +156,27 @@ describe('ScheduleGeneration', () => {
       1,
       games,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     const scheduledGames = generateTournamentSchedule(
       [newGroup],
       { ...DefaultTournamentSettings, switchGames: true },
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     expect(scheduledGames.length).toBe(6);
@@ -223,13 +251,27 @@ describe('ScheduleGeneration', () => {
       1,
       games,
       [team1, team2, team3, team4, team5, team6],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     const scheduledGames = generateTournamentSchedule(
       [newGroup],
       { ...DefaultTournamentSettings, switchGames: true },
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     expect(scheduledGames.length).toBe(7);
@@ -299,13 +341,27 @@ describe('ScheduleGeneration', () => {
       1,
       games,
       [team1, team2, team3, team4],
-      TournamentType.singleElimination,
+      {
+        type: TournamentTypeEnum.singleElimination,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     const scheduledGames = generateTournamentSchedule(
       [newGroup],
       DefaultTournamentSettings,
-      TournamentType.singleElimination,
+      {
+        type: TournamentTypeEnum.singleElimination,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     expect(scheduledGames.length).toBe(6);
@@ -368,18 +424,39 @@ describe('ScheduleGeneration', () => {
       1,
       gamesForGroup1,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const newGroup2 = TestUtils.generateTournamentGroup(
       2,
       gamesForGroup2,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const scheduledGames = generateTournamentSchedule(
       [newGroup1, newGroup2],
       { ...DefaultTournamentSettings, numberOfGroups: 2 },
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     expect(scheduledGames.length).toBe(6);
@@ -466,24 +543,52 @@ describe('ScheduleGeneration', () => {
       1,
       gamesForGroup1,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const newGroup2 = TestUtils.generateTournamentGroup(
       2,
       gamesForGroup2,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const newGroup3 = TestUtils.generateTournamentGroup(
       3,
       gamesForGroup3,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const scheduledGames = generateTournamentSchedule(
       [newGroup1, newGroup2, newGroup3],
       { ...DefaultTournamentSettings, numberOfGroups: 3 },
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     expect(scheduledGames.length).toBe(9);
@@ -553,19 +658,40 @@ describe('ScheduleGeneration', () => {
       1,
       gamesForGroup1,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const newGroup2 = TestUtils.generateTournamentGroup(
       2,
       gamesForGroup2,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     const scheduledGames = generateTournamentSchedule(
       [newGroup1, newGroup2],
       { ...DefaultTournamentSettings, numberOfGroups: 2, switchGroups: true },
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     expect(scheduledGames.length).toBe(6);
@@ -637,13 +763,27 @@ describe('ScheduleGeneration', () => {
       1,
       gamesForGroup1,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const newGroup2 = TestUtils.generateTournamentGroup(
       2,
       gamesForGroup2,
       [team1, team2, team3, team4],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     const scheduledGames = generateTournamentSchedule(
@@ -654,7 +794,14 @@ describe('ScheduleGeneration', () => {
         switchGroups: true,
         switchGames: true,
       },
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     expect(scheduledGames.length).toBe(6);
@@ -726,13 +873,27 @@ describe('ScheduleGeneration', () => {
       1,
       gamesForGroup1,
       [team1, team2, team3],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const newGroup2 = TestUtils.generateTournamentGroup(
       2,
       gamesForGroup2,
       [team4, team5, team6],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     const stage1ScheduledGames = generateTournamentSchedule(
@@ -743,7 +904,14 @@ describe('ScheduleGeneration', () => {
         switchGroups: true,
         switchGames: true,
       },
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const previousStage = new TournamentStage({
       _id: 'stage1',
@@ -751,6 +919,14 @@ describe('ScheduleGeneration', () => {
       groups: [newGroup1, newGroup2],
       schedule: stage1ScheduledGames,
       stage: 1,
+      stageGamesType: {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     });
     const stage1FinishedTournament = new Tournament({
       id: 'T1',
@@ -773,10 +949,14 @@ describe('ScheduleGeneration', () => {
       },
       teams: [team1, team2, team3, team4, team5, team6],
     });
-    const nextStage = generateNextTournamentStage(
-      stage1FinishedTournament,
-      TournamentType.singleElimination,
-    );
+    const nextStage = generateNextTournamentStage(stage1FinishedTournament, {
+      type: TournamentTypeEnum.singleElimination,
+      settings: {
+        numberOfWinsRequired: 2,
+        firstPlaceNumberOfWinsRequired: 2,
+        thirdPlaceNumberOfWinsRequired: 2,
+      },
+    });
     expect(nextStage).toBeDefined();
     expect(stage1FinishedTournament.stages).toBeDefined();
     stage1FinishedTournament!.stages!.push(nextStage!);
@@ -889,19 +1069,40 @@ describe('ScheduleGeneration', () => {
       1,
       gamesForGroup1,
       [team1, team2, team3],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const newGroup2 = TestUtils.generateTournamentGroup(
       2,
       gamesForGroup2,
       [team4, team5, team6],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const newGroup3 = TestUtils.generateTournamentGroup(
       3,
       gamesForGroup3,
       [team7, team8, team9],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     const stage1ScheduledGames = generateTournamentSchedule(
@@ -912,7 +1113,14 @@ describe('ScheduleGeneration', () => {
         switchGroups: true,
         switchGames: true,
       },
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const previousStage = new TournamentStage({
       _id: 'stage1',
@@ -920,6 +1128,14 @@ describe('ScheduleGeneration', () => {
       groups: [newGroup1, newGroup2, newGroup3],
       schedule: stage1ScheduledGames,
       stage: 1,
+      stageGamesType: {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     });
     const stage1FinishedTournament = new Tournament({
       id: 'T1',
@@ -942,10 +1158,14 @@ describe('ScheduleGeneration', () => {
       },
       teams: [team1, team2, team3, team4, team5, team6, team7, team8, team9],
     });
-    const nextStage = generateNextTournamentStage(
-      stage1FinishedTournament,
-      TournamentType.singleElimination,
-    );
+    const nextStage = generateNextTournamentStage(stage1FinishedTournament, {
+      type: TournamentTypeEnum.singleElimination,
+      settings: {
+        numberOfWinsRequired: 2,
+        firstPlaceNumberOfWinsRequired: 2,
+        thirdPlaceNumberOfWinsRequired: 2,
+      },
+    });
     expect(nextStage).toBeDefined();
     expect(stage1FinishedTournament.stages).toBeDefined();
 
@@ -1057,13 +1277,27 @@ describe('ScheduleGeneration', () => {
       1,
       gamesForGroup1,
       [team1, team2, team3],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const newGroup2 = TestUtils.generateTournamentGroup(
       2,
       gamesForGroup2,
       [team4, team5, team6],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     const stage1ScheduledGames = generateTournamentSchedule(
@@ -1074,7 +1308,14 @@ describe('ScheduleGeneration', () => {
         switchGroups: true,
         switchGames: true,
       },
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const previousStage = new TournamentStage({
       _id: 'stage1',
@@ -1082,6 +1323,14 @@ describe('ScheduleGeneration', () => {
       groups: [newGroup1, newGroup2],
       schedule: stage1ScheduledGames,
       stage: 1,
+      stageGamesType: {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     });
     const stage1FinishedTournament = new Tournament({
       id: 'T1',
@@ -1104,10 +1353,14 @@ describe('ScheduleGeneration', () => {
       },
       teams: [team1, team2, team3, team4, team5, team6],
     });
-    const nextStage = generateNextTournamentStage(
-      stage1FinishedTournament,
-      TournamentType.roundRobin,
-    );
+    const nextStage = generateNextTournamentStage(stage1FinishedTournament, {
+      type: TournamentTypeEnum.roundRobin,
+      settings: {
+        numberOfWinsRequired: 2,
+        firstPlaceNumberOfWinsRequired: 2,
+        thirdPlaceNumberOfWinsRequired: 2,
+      },
+    });
     expect(nextStage).toBeDefined();
     expect(stage1FinishedTournament.stages).toBeDefined();
     stage1FinishedTournament!.stages!.push(nextStage!);
@@ -1222,19 +1475,40 @@ describe('ScheduleGeneration', () => {
       1,
       gamesForGroup1,
       [team1, team2, team3],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const newGroup2 = TestUtils.generateTournamentGroup(
       2,
       gamesForGroup2,
       [team4, team5, team6],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const newGroup3 = TestUtils.generateTournamentGroup(
       3,
       gamesForGroup3,
       [team7, team8, team9],
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
 
     const stage1ScheduledGames = generateTournamentSchedule(
@@ -1245,7 +1519,14 @@ describe('ScheduleGeneration', () => {
         switchGroups: true,
         switchGames: true,
       },
-      TournamentType.roundRobin,
+      {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     );
     const previousStage = new TournamentStage({
       _id: 'stage1',
@@ -1253,6 +1534,14 @@ describe('ScheduleGeneration', () => {
       groups: [newGroup1, newGroup2, newGroup3],
       schedule: stage1ScheduledGames,
       stage: 1,
+      stageGamesType: {
+        type: TournamentTypeEnum.roundRobin,
+        settings: {
+          numberOfWinsRequired: 2,
+          firstPlaceNumberOfWinsRequired: 2,
+          thirdPlaceNumberOfWinsRequired: 2,
+        },
+      },
     });
     const stage1FinishedTournament = new Tournament({
       id: 'T1',
@@ -1275,10 +1564,14 @@ describe('ScheduleGeneration', () => {
       },
       teams: [team1, team2, team3, team4, team5, team6, team7, team8, team9],
     });
-    const nextStage = generateNextTournamentStage(
-      stage1FinishedTournament,
-      TournamentType.roundRobin,
-    );
+    const nextStage = generateNextTournamentStage(stage1FinishedTournament, {
+      type: TournamentTypeEnum.roundRobin,
+      settings: {
+        numberOfWinsRequired: 2,
+        firstPlaceNumberOfWinsRequired: 2,
+        thirdPlaceNumberOfWinsRequired: 2,
+      },
+    });
     expect(nextStage).toBeDefined();
     expect(stage1FinishedTournament.stages).toBeDefined();
 

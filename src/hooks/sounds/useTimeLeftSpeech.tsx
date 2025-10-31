@@ -10,7 +10,7 @@ const useTimeLeftSpeech = () => {
       voices?.[3]?.voiceURI || 'Microsoft George - English (United Kingdom)',
     pitch: 0.7,
     rate: 0.8,
-    volume: 100,
+    volume: 150,
   });
 
   const { start: start30SecondsSpeech, stop: stop30SecondsSpeech } = useSpeech({

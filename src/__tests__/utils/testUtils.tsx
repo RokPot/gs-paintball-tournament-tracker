@@ -14,7 +14,7 @@ import {
 } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
-import { TournamentType } from 'types/TournamentType';
+import { TournamentType, TournamentTypeEnum } from 'types/TournamentType';
 import { generateTournamentSchedule } from 'utils/tournamentUtils';
 
 interface GenerateStage1Tournament {
@@ -90,14 +90,21 @@ export namespace TestUtils {
       team1Margin,
       team2Margin,
       matchDurationInSeconds,
-    } as Match;
+    } satisfies Match;
   };
 
   export const generateTournamentGroup = (
     index: number,
     games: Game[],
     teams: Team[],
-    tournamentType: TournamentType = TournamentType.roundRobin,
+    tournamentType: TournamentType = {
+      type: TournamentTypeEnum.roundRobin,
+      settings: {
+        numberOfWinsRequired: 2,
+        firstPlaceNumberOfWinsRequired: 2,
+        thirdPlaceNumberOfWinsRequired: 2,
+      },
+    },
   ) => {
     return new TournamentGroup({
       _id: `TG${index}`,
@@ -127,6 +134,7 @@ export namespace TestUtils {
     groups: TournamentGroup[],
     schedule: TournamentScheduleGame[],
     stage: number,
+    stageType: TournamentType,
   ) => {
     return new TournamentStage({
       _id: `stage${index}`,
@@ -134,6 +142,7 @@ export namespace TestUtils {
       groups,
       schedule,
       stage,
+      stageGamesType: stageType,
     });
   };
 
@@ -175,20 +184,21 @@ export namespace TestUtils {
           i + 1,
           games[i],
           teams[i],
-          tournamentSettings.type,
+          tournamentSettings.firstStageType,
         ),
       );
     }
     const stage1ScheduledGames = generateTournamentSchedule(
       groups,
       tournamentSettings,
-      tournamentSettings.type,
+      tournamentSettings.firstStageType,
     );
     const firstStage = TestUtils.generateTournamentStage(
       1,
       groups,
       stage1ScheduledGames,
       1,
+      tournamentSettings.firstStageType,
     );
     return TestUtils.generateTournament(
       1,
@@ -212,20 +222,21 @@ export namespace TestUtils {
           i + 1,
           games[i],
           teams[i],
-          tournamentSettings.type,
+          tournamentSettings.secondStageType,
         ),
       );
     }
     const stage1ScheduledGames = generateTournamentSchedule(
       groups,
       tournamentSettings,
-      tournamentSettings.type,
+      tournamentSettings.firstStageType,
     );
     const secondStage = TestUtils.generateTournamentStage(
       1,
       groups,
       stage1ScheduledGames,
       2,
+      tournamentSettings.secondStageType!,
     );
     if (tournament) {
       tournament.stages?.push(secondStage);

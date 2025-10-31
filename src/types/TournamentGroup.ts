@@ -1,11 +1,11 @@
+import { TournamentGroupDto } from './dto/TournamentGroupDto';
 import Game from './Game';
-import Team from './Team';
-import { TournamentType } from './TournamentType';
+import { GameState } from './GameState';
 import { DocType, IPouchDB } from './interfaces/IPouchDB';
 import { ITournamentGroup } from './interfaces/ITournamentGroup';
-import { TournamentGroupDto } from './dto/TournamentGroupDto';
-import { GameState } from './GameState';
+import Team from './Team';
 import { TournamentGroupSettings } from './TournamentGroupSettings';
+import { TournamentType } from './TournamentType';
 
 export default class TournamentGroup extends IPouchDB {
   id: string;

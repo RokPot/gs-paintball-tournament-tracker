@@ -103,7 +103,6 @@ const TournamentPage = () => {
 
   const [isInitializeTournamentModalOpen, setIsInitializeTournamentModalOpen] =
     useState(false);
-
   const { setSelectedLeague, setSelectedLeagueTournament } = useLeagueFlows();
 
   const { data: activeLeague, isLoading: isFetchingActiveLeague } =
@@ -123,6 +122,7 @@ const TournamentPage = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const selectedTournament = activeLeague?.activeTournament;
+  console.log(selectedTournament);
 
   const setSelectedTournament = useCallback(
     async (tournament?: Tournament) => {

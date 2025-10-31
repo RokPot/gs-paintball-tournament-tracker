@@ -10,6 +10,7 @@ enum IPCChannels {
   serialPortError = 'serialPortError',
   gameSwitched = 'gameSwitched',
   tournamentSwitched = 'tournamentSwitched',
+  timerUpdate = 'timerUpdate',
 }
 
 export type Channels =
@@ -21,7 +22,16 @@ export type Channels =
   | 'getPortsListResponse'
   | 'selectSerialPort'
   | 'buttonsResponse'
-  | 'serialPortError';
+  | 'serialPortError'
+  | 'timerUpdate';
+
+export interface TimerData {
+  duration: number;
+  currentDuration: number;
+  breakDuration: number;
+  timingBreak: boolean;
+  timingGame: boolean;
+}
 
 enum ChannelsEnum {
   openNewWindow = 'openNewWindow',
@@ -78,10 +88,9 @@ const useIPCRendererMessages = () => {
   );
 
   const sendReceiversSelectedSerialPort = useCallback((portInfo: PortInfo) => {
-    window.electron.ipcRenderer.sendMessage(
-      IPCChannels.selectSerialPort,
+    window.electron.ipcRenderer.sendMessage(IPCChannels.selectSerialPort, {
       portInfo,
-    );
+    });
   }, []);
 
   const listenToSerialPortErrors = useCallback(
@@ -119,6 +128,22 @@ const useIPCRendererMessages = () => {
     [],
   );
 
+  const sendTimerUpdate = useCallback((timerData: TimerData) => {
+    window.electron.ipcRenderer.sendMessage(IPCChannels.timerUpdate, timerData);
+  }, []);
+
+  const listenToTimerUpdate = useCallback(
+    (callback: (timerData: TimerData) => void) => {
+      window.electron.ipcRenderer.on(
+        IPCChannels.timerUpdate,
+        (timerData: unknown) => {
+          callback(timerData as TimerData);
+        },
+      );
+    },
+    [],
+  );
+
   return useMemo(
     () => ({
       openNewResultsWindow,
@@ -131,6 +156,8 @@ const useIPCRendererMessages = () => {
       listenToGameSwitched,
       listenToTournamentSwitched,
       sendTournamentSwitched,
+      sendTimerUpdate,
+      listenToTimerUpdate,
     }),
     [
       listenToButtonsResponse,
@@ -143,6 +170,8 @@ const useIPCRendererMessages = () => {
       sendReceiversSelectedSerialPort,
       listenToTournamentSwitched,
       sendTournamentSwitched,
+      sendTimerUpdate,
+      listenToTimerUpdate,
     ],
   );
 };

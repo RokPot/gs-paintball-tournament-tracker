@@ -34,7 +34,7 @@ const serialPortListener = (mainWindow: BrowserWindow) => {
     const ports = await SerialPort.list();
     event.reply('getPortsListResponse', ports);
   });
-  ipcMain.on('selectSerialPort', async (event) => {
+  ipcMain.on('selectSerialPort', async (event, portData) => {
     try {
       if (serialPort) {
         serialPort.removeAllListeners();
@@ -46,7 +46,7 @@ const serialPortListener = (mainWindow: BrowserWindow) => {
       serialPort = new SerialPort(
         {
           baudRate: 115200,
-          path: 'COM3',
+          path: portData.path || 'COM4',
         },
         (e) => {
           event.reply('serialPortError', e);

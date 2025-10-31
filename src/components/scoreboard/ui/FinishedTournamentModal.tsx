@@ -49,7 +49,7 @@ const FinishedTournamentModal: React.FC<IProps> = ({ tournament }) => {
     if (!tournament.currentStage) {
       return;
     }
-    calculateLeaderboard(tournament.currentStage?.groups[0]);
+    calculateLeaderboard(tournament.currentStage.groups[0]);
   }, [
     calculateLeaderboard,
     tournament?.currentStage,
@@ -82,11 +82,13 @@ const FinishedTournamentModal: React.FC<IProps> = ({ tournament }) => {
                 })) || []
               }
               onTabChanged={(newTabGroupId) => {
-                calculateLeaderboard(
-                  tournament?.currentStage?.groups?.find(
-                    (group) => group.id === newTabGroupId,
-                  )!,
+                const selectedGroup = tournament?.currentStage?.groups?.find(
+                  (group) => group.id === newTabGroupId,
                 );
+                if (!selectedGroup || !tournament?.currentStage) {
+                  return;
+                }
+                calculateLeaderboard(selectedGroup);
               }}
             />
           )}

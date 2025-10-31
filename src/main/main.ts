@@ -8,13 +8,13 @@
  * When running `npm run build` or `npm run build:main`, this file is compiled to
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
 
 import log from 'electron-log/main';
 import MenuBuilder from './menu';
-import { resolveHtmlPath } from './util';
 import serialPortListener from './serialPortListener/serialPortListener';
+import { resolveHtmlPath } from './util';
 
 export type Channels =
   | 'ipc-example'
@@ -27,7 +27,8 @@ export type Channels =
   | 'buttonsResponse'
   | 'serialPortError'
   | 'gameSwitched'
-  | 'gamesSwitched';
+  | 'gamesSwitched'
+  | 'timerUpdate';
 
 let mainWindow: BrowserWindow | null = null;
 const resultsWindows: BrowserWindow[] = [];
@@ -162,5 +163,19 @@ ipcMain.on('gameSwitched', async (event) => {
     );
   } catch (e) {
     console.error(e);
+  }
+});
+
+ipcMain.on('timerUpdate', async (event, timerData) => {
+  try {
+    // Broadcast timer update to all windows
+    if (mainWindow) {
+      mainWindow.webContents.send('timerUpdate', timerData);
+    }
+    resultsWindows.forEach((resultsWindow) =>
+      resultsWindow.webContents.send('timerUpdate', timerData),
+    );
+  } catch (e) {
+    console.error('Error broadcasting timer update:', e);
   }
 });
