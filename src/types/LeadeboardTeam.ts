@@ -48,6 +48,8 @@ export default class LeaderboardTeam extends IPouchDB {
       rank: this.rank,
       previousRank: this.previousRank,
       teamId: this.team._id,
+      // Optionally include full team DTO if needed (for deserialization)
+      team: this.team.toDto(),
     };
   };
 }

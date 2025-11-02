@@ -1,8 +1,8 @@
+import ActivityChangeType from './ActivityChangeType';
+import { TournamentActivityDto } from './dto/TournamentActivityDto';
 import Game from './Game';
 import { DocType, IPouchDB } from './interfaces/IPouchDB';
-import ActivityChangeType from './ActivityChangeType';
 import { ITournamentActivity } from './interfaces/ITournamentActivity';
-import { TournamentActivityDto } from './dto/TournamentActivityDto';
 import { Match } from './Match';
 
 export default class TournamentActivity extends IPouchDB {
@@ -52,7 +52,7 @@ export default class TournamentActivity extends IPouchDB {
       _rev: this._rev,
       docType: this.docType,
       id: this.id,
-      updatedAt: this.updatedAt,
+      updatedAt: this.updatedAt.toISOString() || new Date().toISOString(),
       gameId: this.game._id,
       changeType: this.changeType,
       previousTeam1Wins: this.previousTeam1Wins,

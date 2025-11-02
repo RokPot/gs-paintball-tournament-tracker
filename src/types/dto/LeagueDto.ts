@@ -1,18 +1,18 @@
+import { LeaderboardTeamDto } from './LeaderboardTeamDto';
 import { PouchDBDto } from './PouchDBDto';
-import LeaderboardTeam from 'types/LeadeboardTeam';
-import Team from 'types/Team';
-import Tournament from 'types/Tournament';
+import { TeamDto } from './TeamDto';
+import { TournamentDto } from './TournamentDto';
 
 export interface LeagueDto extends PouchDBDto {
   id: string;
 
   name: string;
 
-  teams?: Team[];
+  teams?: TeamDto[];
 
-  tournaments?: Tournament[];
+  tournaments?: TournamentDto[];
 
-  leaderboard?: LeaderboardTeam[];
+  leaderboard?: LeaderboardTeamDto[];
 
   teamIds: string[];
 

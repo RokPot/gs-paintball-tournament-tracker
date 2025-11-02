@@ -1,14 +1,13 @@
-import League from 'types/League';
-import { useCallback } from 'react';
-import Tournament from 'types/Tournament';
 import { useSnackbar } from 'notistack';
+import { useCallback } from 'react';
+import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import League from 'types/League';
+import Tournament from 'types/Tournament';
+import { processError } from 'utils/requestsUtils';
 import {
   snackbarErrorOptions,
   snackbarSuccessOptions,
 } from 'utils/snackbarUtils';
-import { processError } from 'utils/requestsUtils';
-import { LeagueQueries } from 'services/queries/league/LeagueQueries';
-import { TeamQueries } from 'services/queries/team/TeamQueries';
 
 const useLeagueFlows = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -19,8 +18,6 @@ const useLeagueFlows = () => {
   const { mutateAsync: addLeagueMutate } = LeagueQueries.useAddLeague();
   const { mutateAsync: deleteExistingLeagueMutate } =
     LeagueQueries.useDeleteLeague();
-  const { mutateAsync: addNewLeaderBoardTeams } =
-    TeamQueries.useAddLeaderboardTeams();
 
   const setSelectedLeagueTournament = useCallback(
     async (tournament?: Tournament, selectedLeague?: League | null) => {
@@ -84,12 +81,8 @@ const useLeagueFlows = () => {
   ) => {
     try {
       if (shouldUpdateExistingLeague) {
-        await addNewLeaderBoardTeams(
-          league.leaderboard.filter((leaderboardTeam) => !leaderboardTeam._rev),
-        );
         await updateExistingLeagueMutate(league);
       } else {
-        await addNewLeaderBoardTeams(league.leaderboard);
         await addLeagueMutate(league);
       }
       enqueueSnackbar(

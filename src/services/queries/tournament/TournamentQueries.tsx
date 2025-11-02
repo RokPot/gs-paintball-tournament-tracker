@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import useTournamentService from 'services/TournamentService';
+import useTournamentServiceRxDB from 'services/TournamentServiceRxDB';
 import Tournament from 'types/Tournament';
 import TournamentActivity from 'types/TournamentActivity';
 
@@ -12,7 +12,7 @@ export namespace TournamentQueries {
   };
 
   export const useAddTournament = () => {
-    const { addNewTournament } = useTournamentService();
+    const { addNewTournament } = useTournamentServiceRxDB();
 
     return useMutation({
       mutationFn: (tournament: Tournament) => {
@@ -22,7 +22,17 @@ export namespace TournamentQueries {
   };
 
   export const useDeleteTournament = () => {
-    const { updateTournament } = useTournamentService();
+    const { deleteTournament } = useTournamentServiceRxDB();
+
+    return useMutation({
+      mutationFn: (tournament: Tournament) => {
+        return deleteTournament(tournament.toDto());
+      },
+    });
+  };
+
+  export const useUpdateTournament = () => {
+    const { updateTournament } = useTournamentServiceRxDB();
 
     return useMutation({
       mutationFn: (tournament: Tournament) => {
@@ -31,19 +41,8 @@ export namespace TournamentQueries {
     });
   };
 
-  export const useUpdateTournament = () => {
-    const { updateTournament: updateExistingTournament } =
-      useTournamentService();
-
-    return useMutation({
-      mutationFn: (tournament: Tournament) => {
-        return updateExistingTournament(tournament.toDto());
-      },
-    });
-  };
-
   export const useTournamentActivityList = (tournamentId: string) => {
-    const { getTournamentActivity } = useTournamentService();
+    const { getTournamentActivity } = useTournamentServiceRxDB();
 
     return useQuery({
       queryKey: TournamentQueries.keys.activityList(),
@@ -52,7 +51,7 @@ export namespace TournamentQueries {
   };
 
   export const useAddActivityToTournament = () => {
-    const { addNewTournamentActivity } = useTournamentService();
+    const { addNewTournamentActivity } = useTournamentServiceRxDB();
 
     return useMutation({
       mutationFn: (activity: TournamentActivity) => {

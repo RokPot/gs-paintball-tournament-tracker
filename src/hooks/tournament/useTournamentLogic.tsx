@@ -30,6 +30,7 @@ import useTournamentFlows from './useTournamentFlows';
 const useTournamentLogic = (activeLeague?: League | null) => {
   const { mutateAsync: updateTournament } =
     TournamentQueries.useUpdateTournament();
+  const { sendTimerUpdate } = useIPCRendererMessages();
 
   const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
 
@@ -477,6 +478,7 @@ const useTournamentLogic = (activeLeague?: League | null) => {
       onStartCountDown,
       onTimer10SecondsLeft,
       onTimer30SecondsLeft,
+      sendTimerUpdate,
     );
   }, [
     activeScheduledGame,
@@ -487,6 +489,7 @@ const useTournamentLogic = (activeLeague?: League | null) => {
     onTimer10SecondsLeft,
     onTimer30SecondsLeft,
     onTimerFinished,
+    sendTimerUpdate,
     setCurrentActiveGame,
     setHasGameTimeRanOut,
     setIsMatchInProgress,

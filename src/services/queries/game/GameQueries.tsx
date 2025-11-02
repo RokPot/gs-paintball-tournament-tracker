@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import useGameService from 'services/GameService';
 import Game from 'types/Game';
+import useGameServiceRxDB from 'services/GameServiceRxDB';
 
 export namespace GameQueries {
   export const keys = {
@@ -8,7 +8,7 @@ export namespace GameQueries {
   };
 
   export const useAddGame = () => {
-    const { addNewGame } = useGameService();
+    const { addNewGame } = useGameServiceRxDB();
 
     return useMutation({
       mutationFn: (game: Game) => {
@@ -18,7 +18,7 @@ export namespace GameQueries {
   };
 
   export const useAddGames = () => {
-    const { addNewGameBatch } = useGameService();
+    const { addNewGameBatch } = useGameServiceRxDB();
 
     return useMutation({
       mutationFn: (games: Game[]) => {
@@ -28,7 +28,7 @@ export namespace GameQueries {
   };
 
   export const useDeleteGame = () => {
-    const { deleteGame } = useGameService();
+    const { deleteGame } = useGameServiceRxDB();
 
     return useMutation({
       mutationFn: (game: Game) => {
@@ -38,7 +38,7 @@ export namespace GameQueries {
   };
 
   export const useUpdateGame = () => {
-    const { updateGame: updateExistingGame } = useGameService();
+    const { updateGame: updateExistingGame } = useGameServiceRxDB();
 
     return useMutation({
       mutationFn: (game: Game) => {

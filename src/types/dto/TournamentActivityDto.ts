@@ -5,7 +5,7 @@ import { PouchDBDto } from './PouchDBDto';
 export interface TournamentActivityDto extends PouchDBDto {
   id: string;
 
-  updatedAt: Date;
+  updatedAt: string;
 
   gameTime?: number;
 

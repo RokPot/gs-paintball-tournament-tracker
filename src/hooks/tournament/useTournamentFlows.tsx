@@ -1,9 +1,7 @@
 import { useSnackbar } from 'notistack';
 import { useCallback } from 'react';
 import { GameQueries } from 'services/queries/game/GameQueries';
-import { GroupQueries } from 'services/queries/group/GroupQueries';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
-import { StageQueries } from 'services/queries/stage/StageQueries';
 import { TournamentQueries } from 'services/queries/tournament/TournamentQueries';
 import Game from 'types/Game';
 import League from 'types/League';
@@ -27,8 +25,6 @@ const useTournamentFlows = () => {
     TournamentQueries.useAddActivityToTournament();
   const { enqueueSnackbar } = useSnackbar();
   const { mutateAsync: addGames } = GameQueries.useAddGames();
-  const { mutateAsync: addGroups } = GroupQueries.useAddGroups();
-  const { mutateAsync: addStage } = StageQueries.useAddStage();
 
   const addNewTournamentToLeague = useCallback(
     async (
@@ -73,8 +69,6 @@ const useTournamentFlows = () => {
           return prev;
         }, []),
       );
-      await addGroups(newStage.groups);
-      await addStage(newStage);
       if (!tournament?.stages?.length) {
         tournament.stages = [newStage];
       } else {
@@ -85,7 +79,7 @@ const useTournamentFlows = () => {
       await invalidateSelectedLeague();
       return tournament;
     },
-    [addGames, addGroups, addStage, invalidateSelectedLeague, updateTournament],
+    [addGames, invalidateSelectedLeague, updateTournament],
   );
 
   const initializeTournament = useCallback(

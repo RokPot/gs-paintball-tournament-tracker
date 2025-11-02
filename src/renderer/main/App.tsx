@@ -15,6 +15,7 @@ import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import ButtonsProvider from 'store/ButtonsContext';
 import PouchDBProvider from 'store/PouchDBContext';
+import RxDBProvider from 'store/RxDBContext';
 import TournamentProvider from 'store/TournamentContext';
 import ConfirmationModal from '../../components/shared/ConfirmationModal';
 import { theme } from '../../theme/theme';
@@ -84,41 +85,44 @@ const App = () => {
 
       <ErrorBoundary fallbackRender={Fallback}>
         <PouchDBProvider>
-          <SnackbarProvider
-            maxSnack={5}
-            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-            autoHideDuration={}
-          >
-            <ButtonsProvider>
-              <QueryClientProvider client={queryClient}>
-                <MemoryRouter>
-                  <TournamentProvider>
-                    <Routes>
-                      <Route path={routes.HOME} element={<Layout />}>
-                        <Route path={routes.HOME} element={<HomePage />} />
+          {/* POC: Both providers running in parallel for testing */}
+          <RxDBProvider>
+            <SnackbarProvider
+              maxSnack={5}
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+              autoHideDuration={}
+            >
+              <ButtonsProvider>
+                <QueryClientProvider client={queryClient}>
+                  <MemoryRouter>
+                    <TournamentProvider>
+                      <Routes>
+                        <Route path={routes.HOME} element={<Layout />}>
+                          <Route path={routes.HOME} element={<HomePage />} />
 
-                        <Route
-                          path={routes.LEAGUES}
-                          element={<LeaguesPage />}
-                        />
-                        <Route path={routes.TEAMS} element={<TeamsPage />} />
-                        <Route
-                          path={routes.TOURNAMENT}
-                          element={<TournamentPage />}
-                        />
-                        <Route
-                          path={routes.SCOREBOARD}
-                          element={<ScoreboardPage />}
-                        />
-                      </Route>
-                    </Routes>
-                  </TournamentProvider>
-                </MemoryRouter>
+                          <Route
+                            path={routes.LEAGUES}
+                            element={<LeaguesPage />}
+                          />
+                          <Route path={routes.TEAMS} element={<TeamsPage />} />
+                          <Route
+                            path={routes.TOURNAMENT}
+                            element={<TournamentPage />}
+                          />
+                          <Route
+                            path={routes.SCOREBOARD}
+                            element={<ScoreboardPage />}
+                          />
+                        </Route>
+                      </Routes>
+                    </TournamentProvider>
+                  </MemoryRouter>
 
-                <ConfirmationModal />
-              </QueryClientProvider>
-            </ButtonsProvider>
-          </SnackbarProvider>
+                  <ConfirmationModal />
+                </QueryClientProvider>
+              </ButtonsProvider>
+            </SnackbarProvider>
+          </RxDBProvider>
         </PouchDBProvider>
       </ErrorBoundary>
     </ThemeProvider>

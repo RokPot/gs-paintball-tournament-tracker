@@ -31,7 +31,6 @@ import { TournamentQueries } from 'services/queries/tournament/TournamentQueries
 import League from 'types/League';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
-import { createNewLeaderboardTeam } from 'utils/teamUtils';
 
 const StyledHeaderContainer = styled('div')(
   () => css`
@@ -82,8 +81,7 @@ const LeaguesPage = () => {
   const [selectedRowLeague, setSelectedRowLeague] = useState<League>();
   const [editRowLeague, setEditRowLeague] = useState<League>();
   const { mutateAsync: addNewTeam } = TeamQueries.useAddTeam();
-  const { mutateAsync: addNewLeaderBoardTeam } =
-    TeamQueries.useAddLeaderboardTeam();
+
   const theme = useTheme();
 
   const { addOrEditLeague, deleteExistingLeague, setSelectedLeague } =
@@ -129,17 +127,12 @@ const LeaguesPage = () => {
       return;
     }
     const newTeam = await addNewTeam(team);
-    const newLeaderboardTeam = await addNewLeaderBoardTeam(
-      createNewLeaderboardTeam(team),
-    );
-    if (!newTeam || !newLeaderboardTeam) {
+
+    if (!newTeam) {
       return;
     }
     selectedRowLeague.teams = [...selectedRowLeague.teams, newTeam];
-    selectedRowLeague.leaderboard = [
-      ...selectedRowLeague.leaderboard,
-      newLeaderboardTeam,
-    ];
+    selectedRowLeague.leaderboard = [];
     await addOrEditLeague(selectedRowLeague, true);
 
     setIsTeamAddModalOpen(false);

@@ -3,6 +3,7 @@ import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentState from 'types/TournamentState';
 import { PouchDBDto } from './PouchDBDto';
 import { TournamentScheduleDto } from './TournamentScheduleDto';
+import { TournamentStageDto } from './TournamentStageDto';
 
 export interface TournamentDto extends PouchDBDto {
   id: string;
@@ -25,5 +26,7 @@ export interface TournamentDto extends PouchDBDto {
 
   schedule?: TournamentScheduleDto[];
 
-  stageIds: string[];
+  stageIds: string[]; // Keep for backward compatibility / references
+
+  stages?: TournamentStageDto[]; // Embedded stages array (RxDB)
 }

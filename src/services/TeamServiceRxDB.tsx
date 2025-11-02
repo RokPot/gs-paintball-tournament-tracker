@@ -1,0 +1,191 @@
+import { useCallback } from 'react';
+import { useRxDB } from 'store/RxDBContext';
+import Team from 'types/Team';
+import { TeamDto } from 'types/dto/TeamDto';
+
+/**
+ * TeamService using RxDB
+ *
+ * This is a parallel implementation to the PouchDB TeamService.
+ *
+ * Usage:
+ * const { addNewTeam, getTeam } = useTeamServiceRxDB();
+ */
+const useTeamServiceRxDB = () => {
+  const { database } = useRxDB();
+
+  const addNewTeam = useCallback(
+    async (team: TeamDto) => {
+      if (!database) {
+        throw new Error('RxDB database not initialized');
+      }
+
+      // Validate required fields
+      if (!team.id || !team.teamName || !team.teamTag) {
+        throw new Error(
+          'Missing required team fields: id, teamName, or teamTag',
+        );
+      }
+
+      try {
+        // Insert team into RxDB (insert returns the document)
+        const insertedDoc = await database.collections.teams.insert(team);
+        const teamData = insertedDoc.toMutableJSON();
+
+        // Return as Team instance
+        return new Team({
+          ...teamData,
+        } as any);
+      } catch (error: any) {
+        if (error.name === 'RxError' && error.code === 'VD2') {
+          // Validation error
+          throw new Error(`Team validation failed: ${error.message}`);
+        }
+        throw new Error(`Failed to create team: ${error.message}`);
+      }
+    },
+    [database],
+  );
+
+  const updateTeam = useCallback(
+    async (team: TeamDto) => {
+      if (!database) {
+        throw new Error('RxDB database not initialized');
+      }
+
+      if (!team._id) {
+        throw new Error('Team _id is required for update');
+      }
+
+      try {
+        // Get existing team document
+        const existing = await database.collections.teams
+          .findOne({ selector: { _id: team._id } })
+          .exec();
+
+        if (!existing) {
+          throw new Error(`Team with id ${team._id} not found`);
+        }
+
+        // Update the team using incrementalModify
+        await existing.incrementalModify((oldData) => ({
+          ...oldData,
+          ...team,
+        }));
+
+        const teamData = existing.toMutableJSON();
+
+        return new Team({
+          ...teamData,
+        } as any);
+      } catch (error: any) {
+        if (error.message.includes('not found')) {
+          throw error; // Re-throw not found errors as-is
+        }
+        throw new Error(`Failed to update team: ${error.message}`);
+      }
+    },
+    [database],
+  );
+
+  const deleteTeam = useCallback(
+    async (team: TeamDto) => {
+      if (!database) {
+        throw new Error('RxDB database not initialized');
+      }
+
+      if (!team._id) {
+        throw new Error('Team _id is required for deletion');
+      }
+
+      try {
+        const teamDoc = await database.collections.teams
+          .findOne({ selector: { _id: team._id } })
+          .exec();
+
+        if (!teamDoc) {
+          throw new Error(`Team with id ${team._id} not found`);
+        }
+
+        // Remove the team
+        await teamDoc.remove();
+
+        return true;
+      } catch (error: any) {
+        if (error.message.includes('not found')) {
+          throw error; // Re-throw not found errors as-is
+        }
+        throw new Error(`Failed to delete team: ${error.message}`);
+      }
+    },
+    [database],
+  );
+
+  const getTeam = useCallback(
+    async (teamId: string) => {
+      if (!database) {
+        throw new Error('RxDB database not initialized');
+      }
+
+      if (!teamId) {
+        throw new Error('Team ID is required');
+      }
+
+      try {
+        // Get team - Much simpler than PouchDB!
+        const teamDoc = await database.collections.teams
+          .findOne({ selector: { _id: teamId } })
+          .exec();
+
+        if (!teamDoc) {
+          return null;
+        }
+
+        const teamData = teamDoc.toMutableJSON();
+
+        // Return as Team instance
+        return new Team({
+          ...teamData,
+        } as any);
+      } catch (error: any) {
+        throw new Error(`Failed to get team: ${error.message}`);
+      }
+    },
+    [database],
+  );
+
+  const getTeams = useCallback(async () => {
+    if (!database) {
+      throw new Error('RxDB database not initialized');
+    }
+
+    try {
+      // Get all teams - Much simpler than PouchDB map/reduce!
+      // No need to filter by docType - collection already contains only teams!
+      const teamDocs = await database.collections.teams.find().exec();
+
+      // Convert to Team instances
+      const teams = teamDocs.map((doc) => {
+        const teamData = doc.toMutableJSON();
+
+        return new Team({
+          ...teamData,
+        } as any);
+      });
+
+      return teams;
+    } catch (error: any) {
+      throw new Error(`Failed to get teams: ${error.message}`);
+    }
+  }, [database]);
+
+  return {
+    addNewTeam,
+    updateTeam,
+    deleteTeam,
+    getTeam,
+    getTeams,
+  };
+};
+
+export default useTeamServiceRxDB;

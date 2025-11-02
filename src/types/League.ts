@@ -1,7 +1,10 @@
 import LeaderboardTeam from './LeadeboardTeam';
 import Team from './Team';
 import Tournament from './Tournament';
+import { LeaderboardTeamDto } from './dto/LeaderboardTeamDto';
 import { LeagueDto } from './dto/LeagueDto';
+import { TeamDto } from './dto/TeamDto';
+import { TournamentDto } from './dto/TournamentDto';
 import { ILeague } from './interfaces/ILeague';
 import { DocType, IPouchDB } from './interfaces/IPouchDB';
 
@@ -28,6 +31,7 @@ export default class League extends IPouchDB {
     this.tournaments = props.tournaments || [];
     this.leaderboard = props.leaderboard || [];
     this.isLeagueSelected = props.isLeagueSelected;
+    this.activeTournament = props.activeTournament;
   }
 
   public addLeaderboardTeam = (leaderboardTeam: LeaderboardTeam) => {
@@ -47,9 +51,13 @@ export default class League extends IPouchDB {
       name: this.name,
       teamIds: this.teams.map((team) => team._id),
       tournamentIds: this.tournaments.map((tournament) => tournament._id),
-      leaderboardTeamIds: this.leaderboard.map((tournament) => tournament._id),
+      leaderboardTeamIds: this.leaderboard.map((team) => team._id),
       isLeagueSelected: this.isLeagueSelected,
       activeTournamentId: this.activeTournament?._id,
+      // Optionally include full DTOs if needed (for deserialization)
+      teams: this.teams.map((team) => team.toDto()),
+      tournaments: this.tournaments.map((tournament) => tournament.toDto()),
+      leaderboard: this.leaderboard.map((team) => team.toDto()),
     };
   };
 }

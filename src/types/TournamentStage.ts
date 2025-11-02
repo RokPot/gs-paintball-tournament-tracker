@@ -47,6 +47,8 @@ export default class TournamentStage extends IPouchDB {
               pairedGameId: sched.pairedGameId,
             }) as TournamentScheduleDto,
         ) || [],
+      // Embedded groups array (RxDB) - groups are now part of stage document
+      groups: this.groups?.map((group) => group.toDto()) || [],
     };
   };
 }

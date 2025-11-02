@@ -27,6 +27,11 @@ import routes from 'renderer/main/Routes';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import League from 'types/League';
 import Tournament from 'types/Tournament';
+// Only import test panel in development
+const RxDBTestPanel =
+  process.env.NODE_ENV === 'development'
+    ? require('components/rxdb-test/RxDBTestPanel').default
+    : null;
 
 const StyledStackingContainer = styled('div')(
   () => css`
@@ -204,6 +209,8 @@ const HomePage: React.FC = () => {
           </StyledStackingContainer>
         ))}
       </FlexContainer>
+      {/* RxDB Test Panel - Only shown in development */}
+      {RxDBTestPanel && <RxDBTestPanel />}
       <CustomModal
         isModalOpen={!!quickAddTournamentForLeague}
         onClose={() => {

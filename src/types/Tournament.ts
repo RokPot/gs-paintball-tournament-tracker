@@ -1,18 +1,18 @@
 import dayjs, { Dayjs } from 'dayjs';
+import { TournamentDto } from './dto/TournamentDto';
 import { DefaultGameSettings, GameSettings } from './GameSettings';
+import { DocType, IPouchDB } from './interfaces/IPouchDB';
+import { ITournament } from './interfaces/ITournament';
 import LeaderboardTeam from './LeadeboardTeam';
 import Team from './Team';
+import TournamentGroup from './TournamentGroup';
+import TournamentScheduleGame from './TournamentScheduleGame';
 import {
   DefaultTournamentSettings,
   TournamentSettings,
 } from './TournamentSettings';
-import { TournamentDto } from './dto/TournamentDto';
-import { DocType, IPouchDB } from './interfaces/IPouchDB';
-import { ITournament } from './interfaces/ITournament';
-import TournamentState from './TournamentState';
 import TournamentStage from './TournamentStage';
-import TournamentScheduleGame from './TournamentScheduleGame';
-import TournamentGroup from './TournamentGroup';
+import TournamentState from './TournamentState';
 
 export default class Tournament extends IPouchDB {
   id: string;
@@ -64,6 +64,8 @@ export default class Tournament extends IPouchDB {
       startDate: this.startDate?.toISOString(),
       leaderboardTeamIds: this.leaderboard?.map((team) => team._id) || [],
       stageIds: this.stages?.map((stage) => stage._id) || [],
+      // Embedded stages array (RxDB) - stages are now part of tournament document
+      stages: this.stages?.map((stage) => stage.toDto()) || [],
     };
   };
 
