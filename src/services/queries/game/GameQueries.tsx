@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import Game from 'types/Game';
 import useGameServiceRxDB from 'services/GameServiceRxDB';
+import Game from 'types/Game';
 
 export namespace GameQueries {
   export const keys = {
@@ -44,6 +44,10 @@ export namespace GameQueries {
       mutationFn: (game: Game) => {
         return updateExistingGame(game.toDto());
       },
+      // NOTE: No manual invalidation needed!
+      // When a game is updated, RxDB observables (useTournamentObservable, etc.)
+      // automatically detect the change and update subscribed components.
+      // This means tournament data stays in sync without manual cache invalidation.
     });
   };
 }

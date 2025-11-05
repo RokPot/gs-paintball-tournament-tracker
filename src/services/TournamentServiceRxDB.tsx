@@ -3,11 +3,15 @@ import { useRxDB } from 'store/RxDBContext';
 import { TournamentActivityDto } from 'types/dto/TournamentActivityDto';
 import { TournamentDto } from 'types/dto/TournamentDto';
 import Game from 'types/Game';
+import { IGame } from 'types/interfaces/IGame';
+import { ITournament } from 'types/interfaces/ITournament';
+import { ITournamentActivity } from 'types/interfaces/ITournamentActivity';
+import { ITournamentStage } from 'types/interfaces/ITournamentStage';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import TournamentActivity from 'types/TournamentActivity';
-import TournamentGroup from 'types/TournamentGroup';
 import TournamentStage from 'types/TournamentStage';
+import { populateTournament } from 'utils/tournamentPopulationUtils';
 import useGameServiceRxDB from './GameServiceRxDB';
 import useTeamServiceRxDB from './TeamServiceRxDB';
 
@@ -46,18 +50,18 @@ const useTournamentServiceRxDB = () => {
         const tournamentData = insertedDoc.toMutableJSON();
 
         const stages =
-          tournamentData.stages?.map((stageDto: any) => {
+          tournamentData.stages?.map((stageDto) => {
             return new TournamentStage({
               ...stageDto,
               groups: [],
               schedule: [],
-            } as any);
+            } as ITournamentStage);
           }) || [];
 
         return new Tournament({
           ...tournamentData,
           stages,
-        } as any);
+        } as ITournament);
       } catch (error: any) {
         if (error.name === 'RxError' && error.code === 'VD2') {
           // Validation error
@@ -96,18 +100,18 @@ const useTournamentServiceRxDB = () => {
         const tournamentData = existing.toMutableJSON();
 
         const stages =
-          tournamentData.stages?.map((stageDto: any) => {
+          tournamentData.stages?.map((stageDto) => {
             return new TournamentStage({
               ...stageDto,
               groups: [],
               schedule: [],
-            } as any);
+            } as ITournamentStage);
           }) || [];
 
         return new Tournament({
           ...tournamentData,
           stages,
-        } as any);
+        } as ITournament);
       } catch (error: any) {
         if (error.message.includes('not found')) {
           throw error; // Re-throw not found errors as-is
@@ -172,154 +176,8 @@ const useTournamentServiceRxDB = () => {
 
         const tournamentData = tournamentDoc.toMutableJSON();
 
-        let teams: Team[] = [];
-        if (tournamentData.teamIds?.length > 0 && database) {
-          try {
-            const teamDocs = await database.collections.teams
-              .find({
-                selector: {
-                  _id: { $in: tournamentData.teamIds },
-                },
-              })
-              .exec();
-            teams = teamDocs.map((doc) => {
-              const teamData = doc.toMutableJSON();
-              return new Team(teamData as any);
-            });
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.warn(
-              `Failed to populate teams for tournament ${tournamentId}:`,
-              error,
-            );
-          }
-        }
-
-        let stages: TournamentStage[] = [];
-        if (tournamentData.stages && tournamentData.stages.length > 0) {
-          try {
-            const allGameIds: string[] = [];
-            const allTeamIds: string[] = [];
-            tournamentData.stages.forEach((stageDto: any) => {
-              if (stageDto.groups && stageDto.groups.length > 0) {
-                stageDto.groups.forEach((groupDto: any) => {
-                  if (groupDto.gameIds && groupDto.gameIds.length > 0) {
-                    allGameIds.push(...groupDto.gameIds);
-                  }
-                  if (groupDto.teamIds && groupDto.teamIds.length > 0) {
-                    allTeamIds.push(...groupDto.teamIds);
-                  }
-                });
-              }
-            });
-
-            let allGames: Game[] = [];
-            if (allGameIds.length > 0) {
-              try {
-                allGames = await getGames(allGameIds);
-              } catch (error) {
-                // eslint-disable-next-line no-console
-                console.warn(
-                  `Failed to populate games for tournament ${tournamentId}:`,
-                  error,
-                );
-              }
-            }
-
-            let allTeams: Team[] = [];
-            if (allTeamIds.length > 0) {
-              try {
-                allTeams = await getTeams(allTeamIds);
-              } catch (error) {
-                // eslint-disable-next-line no-console
-                console.warn(
-                  `Failed to populate teams for tournament ${tournamentId}:`,
-                  error,
-                );
-              }
-            }
-
-            const gamesMap = new Map<string, Game>();
-            allGames.forEach((game) => {
-              gamesMap.set(game._id, game);
-            });
-
-            const teamsMap = new Map<string, Team>();
-            allTeams.forEach((team) => {
-              teamsMap.set(team._id, team);
-            });
-
-            stages = tournamentData.stages.map((stageDto: any) => {
-              let groups: TournamentGroup[] = [];
-              if (stageDto.groups && stageDto.groups.length > 0) {
-                groups = stageDto.groups.map((groupDto: any) => {
-                  const groupGames: Game[] = [];
-                  if (groupDto.gameIds && groupDto.gameIds.length > 0) {
-                    groupDto.gameIds.forEach((gameId: string) => {
-                      const game = gamesMap.get(gameId);
-                      if (game) {
-                        groupGames.push(game);
-                      }
-                    });
-                  }
-
-                  const groupTeams: Team[] = [];
-                  if (groupDto.teamIds && groupDto.teamIds.length > 0) {
-                    groupDto.teamIds.forEach((teamId: string) => {
-                      const team = teamsMap.get(teamId);
-                      if (team) {
-                        groupTeams.push(team);
-                      }
-                    });
-                  }
-
-                  return new TournamentGroup({
-                    ...groupDto,
-                    teams: groupTeams,
-                    games: groupGames,
-                  } as any);
-                });
-              }
-
-              const schedule: any[] = [];
-              if (stageDto.schedule && stageDto.schedule.length > 0) {
-                stageDto.schedule.forEach((scheduledGame: any) => {
-                  const scheduledGameGroup = groups?.find(
-                    (group) => group.id === scheduledGame.groupId,
-                  );
-                  const scheduledActiveGame = scheduledGameGroup?.games.find(
-                    (game) => game.id === scheduledGame.gameId,
-                  );
-                  if (scheduledGameGroup && scheduledActiveGame) {
-                    schedule.push({
-                      ...scheduledGame,
-                      group: scheduledGameGroup,
-                      game: scheduledActiveGame,
-                    });
-                  }
-                });
-              }
-
-              return new TournamentStage({
-                ...stageDto,
-                schedule,
-                groups,
-              } as any);
-            });
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.warn(
-              `Failed to populate stages for tournament ${tournamentId}:`,
-              error,
-            );
-          }
-        }
-
-        return new Tournament({
-          ...tournamentData,
-          teams,
-          stages,
-        } as any);
+        // Use shared utility function to populate tournament
+        return await populateTournament(tournamentData, database, getGames);
       } catch (error: any) {
         throw new Error(`Failed to get tournament: ${error.message}`);
       }
@@ -351,133 +209,22 @@ const useTournamentServiceRxDB = () => {
           tournamentIds.length > 0 &&
           tournamentDocs.length === 0
         ) {
-          const selectorById: any = { _id: { $in: tournamentIds } };
+          const selectorById = { _id: { $in: tournamentIds } };
           tournamentDocs = await database.collections.tournaments
             .find({ selector: selectorById })
             .exec();
         }
 
+        // Use shared utility function to populate all tournaments
         const tournaments = await Promise.all(
           tournamentDocs.map(async (doc) => {
             const tournamentData = doc.toMutableJSON();
-
-            let teams: Team[] = [];
-            if (tournamentData.teamIds?.length > 0) {
-              try {
-                const teamDocs = await database.collections.teams
-                  .find({
-                    selector: {
-                      _id: { $in: tournamentData.teamIds },
-                    },
-                  })
-                  .exec();
-                teams = teamDocs.map((teamDoc) => {
-                  const teamData = teamDoc.toMutableJSON();
-                  return new Team(teamData as any);
-                });
-              } catch (error) {
-                // eslint-disable-next-line no-console
-                console.warn(
-                  `Failed to populate teams for tournament ${tournamentData.id}:`,
-                  error,
-                );
-              }
-            }
-
-            let stages: TournamentStage[] = [];
-            if (tournamentData.stages && tournamentData.stages.length > 0) {
-              try {
-                const allGameIds: string[] = [];
-                tournamentData.stages.forEach((stageDto: any) => {
-                  if (stageDto.groups && stageDto.groups.length > 0) {
-                    stageDto.groups.forEach((groupDto: any) => {
-                      if (groupDto.gameIds && groupDto.gameIds.length > 0) {
-                        allGameIds.push(...groupDto.gameIds);
-                      }
-                    });
-                  }
-                });
-
-                let allGames: Game[] = [];
-                if (allGameIds.length > 0) {
-                  try {
-                    allGames = await getGames(allGameIds);
-                  } catch (error) {
-                    // eslint-disable-next-line no-console
-                    console.warn(
-                      `Failed to populate games for tournament ${tournamentData.id}:`,
-                      error,
-                    );
-                  }
-                }
-
-                const gamesMap = new Map<string, Game>();
-                allGames.forEach((game) => {
-                  gamesMap.set(game._id, game);
-                });
-
-                stages = tournamentData.stages.map((stageDto: any) => {
-                  let groups: TournamentGroup[] = [];
-                  if (stageDto.groups && stageDto.groups.length > 0) {
-                    groups = stageDto.groups.map((groupDto: any) => {
-                      const groupGames: Game[] = [];
-                      if (groupDto.gameIds && groupDto.gameIds.length > 0) {
-                        groupDto.gameIds.forEach((gameId: string) => {
-                          const game = gamesMap.get(gameId);
-                          if (game) {
-                            groupGames.push(game);
-                          }
-                        });
-                      }
-
-                      return new TournamentGroup({
-                        ...groupDto,
-                        teams: [],
-                        games: groupGames,
-                      } as any);
-                    });
-                  }
-
-                  const schedule: any[] = [];
-                  if (stageDto.schedule && stageDto.schedule.length > 0) {
-                    stageDto.schedule.forEach((scheduledGame: any) => {
-                      const scheduledGameGroup = groups?.find(
-                        (group) => group.id === scheduledGame.groupId,
-                      );
-                      const scheduledActiveGame =
-                        scheduledGameGroup?.games.find(
-                          (game) => game.id === scheduledGame.gameId,
-                        );
-                      if (scheduledGameGroup && scheduledActiveGame) {
-                        schedule.push({
-                          ...scheduledGame,
-                          group: scheduledGameGroup,
-                          game: scheduledActiveGame,
-                        });
-                      }
-                    });
-                  }
-
-                  return new TournamentStage({
-                    ...stageDto,
-                    schedule,
-                    groups,
-                  } as any);
-                });
-              } catch (error) {
-                // eslint-disable-next-line no-console
-                console.warn(
-                  `Failed to populate stages for tournament ${tournamentData.id}:`,
-                  error,
-                );
-              }
-            }
-
-            return new Tournament({
-              ...tournamentData,
-              teams,
-              stages,
-            } as any);
+            const populatedTournament = await populateTournament(
+              tournamentData,
+              database,
+              getGames,
+            );
+            return populatedTournament;
           }),
         );
 
@@ -551,7 +298,7 @@ const useTournamentServiceRxDB = () => {
           });
 
         const activities = await Promise.all(
-          sortedActivities.map(async (activityData: any) => {
+          sortedActivities.map(async (activityData) => {
             let game: Game | null = null;
             if (activityData.gameId) {
               try {
@@ -561,7 +308,7 @@ const useTournamentServiceRxDB = () => {
                     ...game,
                     team1: new Team({} as any),
                     team2: new Team({} as any),
-                  } as any);
+                  } as IGame);
                 }
               } catch (error) {
                 // eslint-disable-next-line no-console
@@ -575,8 +322,8 @@ const useTournamentServiceRxDB = () => {
             return new TournamentActivity({
               ...activityData,
               updatedAt: new Date(activityData.updatedAt),
-              game: game || ({} as any),
-            } as any);
+              game: game || ({} as ITournamentActivity),
+            } as ITournamentActivity);
           }),
         );
 

@@ -6,6 +6,8 @@ import { LeagueDto } from 'types/dto/LeagueDto';
 import { TeamDto } from 'types/dto/TeamDto';
 import { TournamentActivityDto } from 'types/dto/TournamentActivityDto';
 import { TournamentDto } from 'types/dto/TournamentDto';
+import { IActiveState } from 'types/interfaces/IActiveState';
+import { activeStateSchema } from './schemas/activeStateSchema';
 import { gameSchema } from './schemas/gameSchema';
 import { leagueSchema } from './schemas/leagueSchema';
 import { teamSchema } from './schemas/teamSchema';
@@ -24,6 +26,7 @@ export type DatabaseCollections = {
   games: RxCollection<GameDto>;
   leagues: RxCollection<LeagueDto>;
   tournamentActivities: RxCollection<TournamentActivityDto>;
+  activeState: RxCollection<IActiveState>;
 };
 
 export type RxDatabaseType = RxDatabase<DatabaseCollections>;
@@ -62,6 +65,9 @@ export const getDatabase = async (): Promise<RxDatabaseType> => {
         },
         tournamentActivities: {
           schema: tournamentActivitySchema,
+        },
+        activeState: {
+          schema: activeStateSchema,
         },
       });
 
