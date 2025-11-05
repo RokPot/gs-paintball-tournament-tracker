@@ -1,7 +1,7 @@
 import dayjs, { Dayjs } from 'dayjs';
 import { TournamentDto } from './dto/TournamentDto';
 import { DefaultGameSettings, GameSettings } from './GameSettings';
-import { DocType, IPouchDB } from './interfaces/IPouchDB';
+import { IRxDB } from './interfaces/IRxDB';
 import { ITournament } from './interfaces/ITournament';
 import LeaderboardTeam from './LeadeboardTeam';
 import Team from './Team';
@@ -14,7 +14,7 @@ import {
 import TournamentStage from './TournamentStage';
 import TournamentState from './TournamentState';
 
-export default class Tournament extends IPouchDB {
+export default class Tournament extends IRxDB {
   id: string;
 
   teams: Team[];
@@ -36,7 +36,7 @@ export default class Tournament extends IPouchDB {
   leaderboard?: LeaderboardTeam[];
 
   constructor(props: ITournament) {
-    super(props._id, props._rev, props.docType || DocType.Tournament);
+    super(props._id);
     this.id = props.id;
     this.teams = props.teams || [];
     this.state = props.state;
@@ -52,8 +52,6 @@ export default class Tournament extends IPouchDB {
   public toDto = (): TournamentDto => {
     return {
       _id: this._id,
-      _rev: this._rev,
-      docType: this.docType,
       id: this.id,
       gameSettings: this.gameSettings,
       name: this.name,

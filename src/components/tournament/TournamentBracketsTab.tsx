@@ -33,7 +33,7 @@ const TournamentBracketsTab: React.FC = () => {
       </FlexContainer>
     );
   }
-
+  console.log(activeTournament, activeTournament.currentStage);
   return (
     <FlexContainer
       flexDirection="column"

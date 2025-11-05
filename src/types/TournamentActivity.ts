@@ -1,11 +1,11 @@
 import ActivityChangeType from './ActivityChangeType';
 import { TournamentActivityDto } from './dto/TournamentActivityDto';
 import Game from './Game';
-import { DocType, IPouchDB } from './interfaces/IPouchDB';
+import { IRxDB } from './interfaces/IRxDB';
 import { ITournamentActivity } from './interfaces/ITournamentActivity';
 import { Match } from './Match';
 
-export default class TournamentActivity extends IPouchDB {
+export default class TournamentActivity extends IRxDB {
   id: string;
 
   updatedAt: Date;
@@ -31,7 +31,7 @@ export default class TournamentActivity extends IPouchDB {
   tournamentId: string;
 
   constructor(props: ITournamentActivity) {
-    super(props._id, props._rev, props.docType || DocType.TournamentActivity);
+    super(props._id);
     this.id = props.id;
     this.updatedAt = new Date(props.updatedAt);
     this.game = props.game;
@@ -49,8 +49,6 @@ export default class TournamentActivity extends IPouchDB {
   public toDto = (): TournamentActivityDto => {
     return {
       _id: this._id,
-      _rev: this._rev,
-      docType: this.docType,
       id: this.id,
       updatedAt: this.updatedAt.toISOString() || new Date().toISOString(),
       gameId: this.game._id,

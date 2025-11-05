@@ -1,3 +1,4 @@
+import LoadingIndicator from 'components/shared/LoadingIndicator';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { RxDatabaseType, getDatabase } from 'services/rxdb/database';
 
@@ -15,7 +16,6 @@ export const RxDBContext = createContext<RxDBContextProps>({
  * RxDB Provider Component
  *
  * Provides RxDB database instance to all child components.
- * Similar to PouchDBProvider but for RxDB.
  *
  * Usage:
  * <RxDBProvider>
@@ -61,6 +61,10 @@ const RxDBProvider: React.FC<{ children: React.ReactNode }> = ({
     }),
     [database, isLoading],
   );
+
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
 
   return (
     <RxDBContext.Provider value={contextValue}>{children}</RxDBContext.Provider>

@@ -1,11 +1,11 @@
 import { GameSettings } from 'types/GameSettings';
 import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentState from 'types/TournamentState';
-import { PouchDBDto } from './PouchDBDto';
+import { RxDBDto } from './RxDBDto';
 import { TournamentScheduleDto } from './TournamentScheduleDto';
 import { TournamentStageDto } from './TournamentStageDto';
 
-export interface TournamentDto extends PouchDBDto {
+export interface TournamentDto extends RxDBDto {
   id: string;
 
   teamIds: string[];

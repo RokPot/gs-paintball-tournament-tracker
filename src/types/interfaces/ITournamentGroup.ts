@@ -2,9 +2,9 @@ import Game from 'types/Game';
 import Team from 'types/Team';
 import { TournamentGroupSettings } from 'types/TournamentGroupSettings';
 import { TournamentType } from 'types/TournamentType';
-import { PouchDBDto } from 'types/dto/PouchDBDto';
+import { RxDBDto } from 'types/dto/RxDBDto';
 
-export interface ITournamentGroup extends PouchDBDto {
+export interface ITournamentGroup extends RxDBDto {
   id: string;
 
   groupIndex: number;

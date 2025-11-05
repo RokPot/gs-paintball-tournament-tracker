@@ -3,10 +3,10 @@ import TournamentScheduleGame from './TournamentScheduleGame';
 import { TournamentType } from './TournamentType';
 import { TournamentScheduleDto } from './dto/TournamentScheduleDto';
 import { TournamentStageDto } from './dto/TournamentStageDto';
-import { DocType, IPouchDB } from './interfaces/IPouchDB';
+import { IRxDB } from './interfaces/IRxDB';
 import { ITournamentStage } from './interfaces/ITournamentStage';
 
-export default class TournamentStage extends IPouchDB {
+export default class TournamentStage extends IRxDB {
   id: string;
 
   stage: number;
@@ -18,7 +18,7 @@ export default class TournamentStage extends IPouchDB {
   stageGamesType: TournamentType;
 
   constructor(props: ITournamentStage) {
-    super(props._id, props._rev, props.docType || DocType.TournamentStage);
+    super(props._id);
     this.id = props.id;
     this.stage = props.stage;
     this.groups = props.groups;
@@ -29,8 +29,6 @@ export default class TournamentStage extends IPouchDB {
   public toDto = (): TournamentStageDto => {
     return {
       _id: this._id,
-      _rev: this._rev,
-      docType: this.docType,
       id: this.id,
       groupIds: this.groups?.map((group) => group._id),
       stage: this.stage,

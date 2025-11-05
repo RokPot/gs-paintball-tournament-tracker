@@ -6,7 +6,6 @@
  *
  * See: https://rxdb.info/rx-schema.html
  */
-// Note: Schema omits _rev and docType (PouchDB fields) - RxDB doesn't need them
 export const gameSchema = {
   title: 'game schema',
   description: 'Game document schema for RxDB',

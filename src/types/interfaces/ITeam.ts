@@ -1,8 +1,8 @@
 import { Dayjs } from 'dayjs';
 import { TeamMember } from 'types/TeamMember';
-import { PouchDBDto } from 'types/dto/PouchDBDto';
+import { RxDBDto } from 'types/dto/RxDBDto';
 
-export interface ITeam extends PouchDBDto {
+export interface ITeam extends RxDBDto {
   id: string;
   teamName: string;
   teamTag: string;

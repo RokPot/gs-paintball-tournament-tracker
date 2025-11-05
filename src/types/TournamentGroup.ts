@@ -1,13 +1,13 @@
 import { TournamentGroupDto } from './dto/TournamentGroupDto';
 import Game from './Game';
 import { GameState } from './GameState';
-import { DocType, IPouchDB } from './interfaces/IPouchDB';
+import { IRxDB } from './interfaces/IRxDB';
 import { ITournamentGroup } from './interfaces/ITournamentGroup';
 import Team from './Team';
 import { TournamentGroupSettings } from './TournamentGroupSettings';
 import { TournamentType } from './TournamentType';
 
-export default class TournamentGroup extends IPouchDB {
+export default class TournamentGroup extends IRxDB {
   id: string;
 
   groupIndex: number;
@@ -23,7 +23,7 @@ export default class TournamentGroup extends IPouchDB {
   stage: number;
 
   constructor(props: ITournamentGroup) {
-    super(props._id, props._rev, props.docType || DocType.Group);
+    super(props._id);
     this.id = props.id;
     this.teams = props.teams || [];
     this.groupIndex = props.groupIndex;
@@ -40,8 +40,6 @@ export default class TournamentGroup extends IPouchDB {
   public toDto = (): TournamentGroupDto => {
     return {
       _id: this._id,
-      _rev: this._rev,
-      docType: this.docType,
       id: this.id,
       teamIds: this.teams?.map((team) => team._id),
       groupIndex: this.groupIndex,

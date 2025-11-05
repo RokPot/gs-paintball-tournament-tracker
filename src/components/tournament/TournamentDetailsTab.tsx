@@ -13,7 +13,7 @@ const TournamentDetailsTab = () => {
   const { activeTournament, activeLeague } = useContext(TournamentContext);
   const { exportTournamentRules } = usePdfExporter();
   const theme = useTheme();
-
+  console.log('activeTournament', activeTournament, activeLeague);
   const tournamentLeaderboard = useMemo(() => {
     return calculateTournamentLeaderboard(activeTournament);
   }, [activeTournament]);

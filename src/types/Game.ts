@@ -4,9 +4,9 @@ import { Match } from './Match';
 import Team from './Team';
 import { GameDto } from './dto/GameDto';
 import { IGame } from './interfaces/IGame';
-import { DocType, IPouchDB } from './interfaces/IPouchDB';
+import { IRxDB } from './interfaces/IRxDB';
 
-export default class Game extends IPouchDB {
+export default class Game extends IRxDB {
   id: string;
 
   team1: Team;
@@ -28,7 +28,7 @@ export default class Game extends IPouchDB {
   gameTime: number;
 
   constructor(props: IGame) {
-    super(props._id, props._rev, props.docType || DocType.Game);
+    super(props._id);
 
     this.id = props.id;
     this.team1 = props.team1;
@@ -45,8 +45,7 @@ export default class Game extends IPouchDB {
   public toDto = (): GameDto => {
     return {
       _id: this._id,
-      _rev: this._rev,
-      docType: this.docType,
+
       id: this.id,
       team1Id: this.team1._id,
       team2Id: this.team2._id,

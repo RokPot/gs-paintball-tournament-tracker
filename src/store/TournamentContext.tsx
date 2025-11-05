@@ -38,7 +38,7 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const { data: activeLeague, isLoading: isFetchingActiveLeague } =
     LeagueQueries.useActiveLeague();
-
+  console.log('activeLeague', activeLeague);
   const {
     finishMatch,
     beginTournament,

@@ -1,7 +1,7 @@
-import { PouchDBDto } from './PouchDBDto';
+import { RxDBDto } from './RxDBDto';
 import { TeamDto } from './TeamDto';
 
-export interface LeaderboardTeamDto extends PouchDBDto {
+export interface LeaderboardTeamDto extends RxDBDto {
   id: string;
   totalWins: number;
   totalLosses: number;

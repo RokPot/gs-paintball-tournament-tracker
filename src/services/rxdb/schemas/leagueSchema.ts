@@ -8,7 +8,6 @@
  *
  * See: https://rxdb.info/rx-schema.html
  */
-// Note: Schema omits _rev and docType (PouchDB fields) - RxDB doesn't need them
 export const leagueSchema = {
   title: 'league schema',
   description: 'League document schema for RxDB',

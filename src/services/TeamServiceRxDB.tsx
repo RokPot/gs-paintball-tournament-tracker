@@ -6,8 +6,6 @@ import { TeamDto } from 'types/dto/TeamDto';
 /**
  * TeamService using RxDB
  *
- * This is a parallel implementation to the PouchDB TeamService.
- *
  * Usage:
  * const { addNewTeam, getTeam } = useTeamServiceRxDB();
  */
@@ -132,7 +130,6 @@ const useTeamServiceRxDB = () => {
       }
 
       try {
-        // Get team - Much simpler than PouchDB!
         const teamDoc = await database.collections.teams
           .findOne({ selector: { _id: teamId } })
           .exec();
@@ -154,30 +151,41 @@ const useTeamServiceRxDB = () => {
     [database],
   );
 
-  const getTeams = useCallback(async () => {
-    if (!database) {
-      throw new Error('RxDB database not initialized');
-    }
+  const getTeams = useCallback(
+    async (teamIds?: string[]) => {
+      if (!database) {
+        throw new Error('RxDB database not initialized');
+      }
 
-    try {
-      // Get all teams - Much simpler than PouchDB map/reduce!
-      // No need to filter by docType - collection already contains only teams!
-      const teamDocs = await database.collections.teams.find().exec();
+      try {
+        // Build selector - if teamIds provided, filter by them
+        // Query by id (indexed field) since teamIds arrays typically contain id values
+        const selector: any = {};
+        if (teamIds && teamIds.length > 0) {
+          selector.id = { $in: teamIds };
+        }
 
-      // Convert to Team instances
-      const teams = teamDocs.map((doc) => {
-        const teamData = doc.toMutableJSON();
+        // No need to filter by docType - collection already contains only teams!
+        const teamDocs = await database.collections.teams
+          .find({ selector })
+          .exec();
 
-        return new Team({
-          ...teamData,
-        } as any);
-      });
+        // Convert to Team instances
+        const teams = teamDocs.map((doc) => {
+          const teamData = doc.toMutableJSON();
 
-      return teams;
-    } catch (error: any) {
-      throw new Error(`Failed to get teams: ${error.message}`);
-    }
-  }, [database]);
+          return new Team({
+            ...teamData,
+          } as any);
+        });
+
+        return teams;
+      } catch (error: any) {
+        throw new Error(`Failed to get teams: ${error.message}`);
+      }
+    },
+    [database],
+  );
 
   return {
     addNewTeam,

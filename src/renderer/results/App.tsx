@@ -5,7 +5,7 @@ import ResultsPage from '../pages/ResultsPage';
 
 /**
  * This window is display-only: it receives its data over IPC, so it
- * deliberately mounts neither PouchDB nor React Query. A second renderer
+ * deliberately mounts neither PouchDB/RxDB nor React Query. A second renderer
  * opening the same IndexedDB is what caused "the database connection is
  * closing".
  */

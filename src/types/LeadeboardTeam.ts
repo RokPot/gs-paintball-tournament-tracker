@@ -1,9 +1,9 @@
 import Team from './Team';
 import { LeaderboardTeamDto } from './dto/LeaderboardTeamDto';
 import { ILeaderboardTeam } from './interfaces/ILeaderboardTeam';
-import { DocType, IPouchDB } from './interfaces/IPouchDB';
+import { IRxDB } from './interfaces/IRxDB';
 
-export default class LeaderboardTeam extends IPouchDB {
+export default class LeaderboardTeam extends IRxDB {
   id: string;
 
   totalWins: number;
@@ -23,7 +23,7 @@ export default class LeaderboardTeam extends IPouchDB {
   team: Team;
 
   constructor(props: ILeaderboardTeam) {
-    super(props._id, props._rev, props.docType || DocType.LeaderboardTeam);
+    super(props._id);
     this.id = props.id;
     this.team = props.team;
     this.totalWins = props.totalWins;
@@ -38,8 +38,6 @@ export default class LeaderboardTeam extends IPouchDB {
   public toDto = (): LeaderboardTeamDto => {
     return {
       _id: this._id,
-      _rev: this._rev,
-      docType: this.docType,
       id: this.id,
       totalWins: this.totalWins,
       totalLosses: this.totalLosses,

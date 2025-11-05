@@ -1,7 +1,7 @@
 import Team from 'types/Team';
-import { PouchDBDto } from 'types/dto/PouchDBDto';
+import { RxDBDto } from 'types/dto/RxDBDto';
 
-export interface ILeaderboardTeam extends PouchDBDto {
+export interface ILeaderboardTeam extends RxDBDto {
   id: string;
   totalWins: number;
   totalLosses: number;

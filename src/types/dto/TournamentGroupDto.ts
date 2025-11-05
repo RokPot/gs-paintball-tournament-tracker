@@ -1,8 +1,8 @@
 import { TournamentGroupSettings } from 'types/TournamentGroupSettings';
 import { TournamentType } from 'types/TournamentType';
-import { PouchDBDto } from './PouchDBDto';
+import { RxDBDto } from './RxDBDto';
 
-export interface TournamentGroupDto extends PouchDBDto {
+export interface TournamentGroupDto extends RxDBDto {
   id: string;
 
   groupIndex: number;

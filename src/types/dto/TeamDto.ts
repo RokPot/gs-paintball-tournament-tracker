@@ -1,7 +1,7 @@
-import { PouchDBDto } from './PouchDBDto';
 import { TeamMember } from 'types/TeamMember';
+import { RxDBDto } from './RxDBDto';
 
-export interface TeamDto extends PouchDBDto {
+export interface TeamDto extends RxDBDto {
   id: string;
   teamName: string;
   teamTag: string;

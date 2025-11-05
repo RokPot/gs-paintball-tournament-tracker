@@ -8,11 +8,10 @@
  *
  * See: https://rxdb.info/rx-schema.html
  */
-// Note: Schema omits _rev and docType (PouchDB fields) - RxDB doesn't need them
 export const tournamentSchema = {
   title: 'tournament schema',
   description: 'Tournament document schema for RxDB',
-  version: 0, // Bumped from 0 to 1: Added embedded stages array, removed PouchDB-specific fields
+  version: 0,
   type: 'object',
   primaryKey: '_id',
   properties: {

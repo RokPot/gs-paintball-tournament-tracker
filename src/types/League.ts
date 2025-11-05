@@ -1,14 +1,11 @@
 import LeaderboardTeam from './LeadeboardTeam';
 import Team from './Team';
 import Tournament from './Tournament';
-import { LeaderboardTeamDto } from './dto/LeaderboardTeamDto';
 import { LeagueDto } from './dto/LeagueDto';
-import { TeamDto } from './dto/TeamDto';
-import { TournamentDto } from './dto/TournamentDto';
 import { ILeague } from './interfaces/ILeague';
-import { DocType, IPouchDB } from './interfaces/IPouchDB';
+import { IRxDB } from './interfaces/IRxDB';
 
-export default class League extends IPouchDB {
+export default class League extends IRxDB {
   id: string;
 
   name: string;
@@ -24,7 +21,7 @@ export default class League extends IPouchDB {
   activeTournament?: Tournament;
 
   constructor(props: ILeague) {
-    super(props._id, props._rev, props.docType || DocType.League);
+    super(props._id);
     this.id = props.id;
     this.name = props.name;
     this.teams = props.teams || [];
@@ -45,8 +42,6 @@ export default class League extends IPouchDB {
   public toDto = (): LeagueDto => {
     return {
       _id: this._id,
-      _rev: this._rev,
-      docType: this.docType,
       id: this.id,
       name: this.name,
       teamIds: this.teams.map((team) => team._id),

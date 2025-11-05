@@ -1,9 +1,9 @@
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
-import { PouchDBDto } from 'types/dto/PouchDBDto';
+import { RxDBDto } from 'types/dto/RxDBDto';
 
-export interface ILeague extends PouchDBDto {
+export interface ILeague extends RxDBDto {
   id: string;
 
   name: string;

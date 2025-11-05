@@ -9,11 +9,11 @@ import TournamentActivity from 'types/TournamentActivity';
 import TournamentGroup from 'types/TournamentGroup';
 import TournamentStage from 'types/TournamentStage';
 import useGameServiceRxDB from './GameServiceRxDB';
+import useTeamServiceRxDB from './TeamServiceRxDB';
 
 /**
  * TournamentService using RxDB
  *
- * This is a parallel implementation to the PouchDB TournamentService.
  *
  * Usage:
  * const { addNewTournament, getTournament } = useTournamentServiceRxDB();
@@ -23,6 +23,9 @@ const useTournamentServiceRxDB = () => {
 
   // Use RxDB GameService for populating games in groups and activities
   const { getGames, getGame } = useGameServiceRxDB();
+
+  // Use RxDB TeamService for populating teams in groups
+  const { getTeams } = useTeamServiceRxDB();
 
   const addNewTournament = useCallback(
     async (tournament: TournamentDto) => {
@@ -196,11 +199,15 @@ const useTournamentServiceRxDB = () => {
         if (tournamentData.stages && tournamentData.stages.length > 0) {
           try {
             const allGameIds: string[] = [];
+            const allTeamIds: string[] = [];
             tournamentData.stages.forEach((stageDto: any) => {
               if (stageDto.groups && stageDto.groups.length > 0) {
                 stageDto.groups.forEach((groupDto: any) => {
                   if (groupDto.gameIds && groupDto.gameIds.length > 0) {
                     allGameIds.push(...groupDto.gameIds);
+                  }
+                  if (groupDto.teamIds && groupDto.teamIds.length > 0) {
+                    allTeamIds.push(...groupDto.teamIds);
                   }
                 });
               }
@@ -219,9 +226,27 @@ const useTournamentServiceRxDB = () => {
               }
             }
 
+            let allTeams: Team[] = [];
+            if (allTeamIds.length > 0) {
+              try {
+                allTeams = await getTeams(allTeamIds);
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.warn(
+                  `Failed to populate teams for tournament ${tournamentId}:`,
+                  error,
+                );
+              }
+            }
+
             const gamesMap = new Map<string, Game>();
             allGames.forEach((game) => {
               gamesMap.set(game._id, game);
+            });
+
+            const teamsMap = new Map<string, Team>();
+            allTeams.forEach((team) => {
+              teamsMap.set(team._id, team);
             });
 
             stages = tournamentData.stages.map((stageDto: any) => {
@@ -238,9 +263,19 @@ const useTournamentServiceRxDB = () => {
                     });
                   }
 
+                  const groupTeams: Team[] = [];
+                  if (groupDto.teamIds && groupDto.teamIds.length > 0) {
+                    groupDto.teamIds.forEach((teamId: string) => {
+                      const team = teamsMap.get(teamId);
+                      if (team) {
+                        groupTeams.push(team);
+                      }
+                    });
+                  }
+
                   return new TournamentGroup({
                     ...groupDto,
-                    teams: [],
+                    teams: groupTeams,
                     games: groupGames,
                   } as any);
                 });
@@ -289,7 +324,7 @@ const useTournamentServiceRxDB = () => {
         throw new Error(`Failed to get tournament: ${error.message}`);
       }
     },
-    [database, getGames],
+    [database, getGames, getTeams],
   );
 
   const getTournaments = useCallback(
@@ -306,7 +341,6 @@ const useTournamentServiceRxDB = () => {
           selector.id = { $in: tournamentIds };
         }
 
-        // Get tournaments - Much simpler than PouchDB map/reduce!
         let tournamentDocs = await database.collections.tournaments
           .find({ selector })
           .exec();

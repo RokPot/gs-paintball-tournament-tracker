@@ -8,7 +8,6 @@ import Tournament from 'types/Tournament';
 import useTournamentServiceRxDB from './TournamentServiceRxDB';
 /* LeagueService using RxDB
  *
- * This is a parallel implementation to the PouchDB LeagueService.
  *
  * Usage:
  * const { addNewLeague, getLeague } = useLeagueServiceRxDB();
@@ -143,7 +142,6 @@ const useLeagueServiceRxDB = () => {
       }
 
       try {
-        // Get league - Much simpler than PouchDB!
         const leagueDoc = await database.collections.leagues
           .findOne({ selector: { _id: leagueId } })
           .exec();
@@ -241,7 +239,6 @@ const useLeagueServiceRxDB = () => {
     }
 
     try {
-      // Get all leagues - Much simpler than PouchDB map/reduce!
       const leagueDocs = await database.collections.leagues.find().exec();
 
       // Convert to League instances and populate related entities

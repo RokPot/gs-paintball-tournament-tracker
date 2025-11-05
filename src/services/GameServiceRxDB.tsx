@@ -8,7 +8,6 @@ import useTeamServiceRxDB from './TeamServiceRxDB';
 /**
  * GameService using RxDB
  *
- * This is a parallel implementation to the PouchDB GameService.
  *
  * Usage:
  * const { addNewGame, getGame } = useGameServiceRxDB();
@@ -226,7 +225,6 @@ const useGameServiceRxDB = () => {
       }
 
       try {
-        // Get game - Much simpler than PouchDB!
         const gameDoc = await database.collections.games
           .findOne({ selector: { _id: gameId } })
           .exec();
@@ -284,7 +282,6 @@ const useGameServiceRxDB = () => {
           selector.id = { $in: gameIds };
         }
 
-        // Get games - Much simpler than PouchDB map/reduce!
         let gameDocs = await database.collections.games
           .find({ selector })
           .exec();

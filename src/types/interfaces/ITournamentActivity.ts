@@ -1,9 +1,9 @@
 import ActivityChangeType from 'types/ActivityChangeType';
 import Game from 'types/Game';
 import { Match } from 'types/Match';
-import { PouchDBDto } from 'types/dto/PouchDBDto';
+import { RxDBDto } from 'types/dto/RxDBDto';
 
-export interface ITournamentActivity extends PouchDBDto {
+export interface ITournamentActivity extends RxDBDto {
   id: string;
 
   updatedAt: Date;
