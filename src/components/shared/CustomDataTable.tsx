@@ -13,6 +13,8 @@ interface IProps {
   loading?: boolean;
   pageSize?: number;
   automaticScrolling?: boolean;
+  rowHeight?: number;
+  columnHeaderHeight?: number;
 }
 
 const CustomDataTable: React.FC<IProps> = ({
@@ -24,6 +26,8 @@ const CustomDataTable: React.FC<IProps> = ({
   loading,
   pageSize = 5,
   automaticScrolling,
+  rowHeight,
+  columnHeaderHeight,
 }) => {
   const apiRef = useGridApiRef();
   const { scrollDataGridToBottom } = useScrollTo(true);
@@ -65,6 +69,8 @@ const CustomDataTable: React.FC<IProps> = ({
         disableColumnSelector
         disableDensitySelector
         loading={loading}
+        rowHeight={rowHeight}
+        columnHeaderHeight={columnHeaderHeight}
       />
     </div>
   );

@@ -2,18 +2,34 @@ import { Typography } from '@mui/material';
 import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import FlexContainer from 'components/shared/FlexContainer';
 import useGetScheduleRows from 'hooks/ui/useGetScheduleRows';
+import { useCallback } from 'react';
+import { GameState } from 'types/GameState';
 import Tournament from 'types/Tournament';
-import ScheduleRowGame from './ScheduleRowGame';
+import TournamentScheduleGame from 'types/TournamentScheduleGame';
+import ResultsScheduleRowGame from './ScheduleRowGame';
 import ScheduleRowGroup, { StyledDivider } from './ScheduleRowGroup';
 
 interface IProps {
   activeTournament?: Tournament;
+  hideFinishedGames?: boolean;
+  activeGameId?: string;
 }
 
-const ResultsScheduleContainer = ({ activeTournament }: IProps) => {
+const ResultsScheduleContainer = ({
+  activeTournament,
+  hideFinishedGames,
+  activeGameId,
+}: IProps) => {
+  const filterScheduledGame = useCallback(
+    (scheduledGame: TournamentScheduleGame) =>
+      scheduledGame.game.gameState !== GameState.finished,
+    [],
+  );
+
   const { scheduleRows } = useGetScheduleRows(
     activeTournament?.currentStage,
     activeTournament?.settings,
+    hideFinishedGames ? filterScheduledGame : undefined,
   );
 
   if (!activeTournament) {
@@ -39,7 +55,9 @@ const ResultsScheduleContainer = ({ activeTournament }: IProps) => {
       >
         <EmptyInboxIcon />
 
-        <Typography variant="h3">No schedule.</Typography>
+        <Typography variant="h3">
+          {hideFinishedGames ? 'No games left to play.' : 'No schedule.'}
+        </Typography>
       </FlexContainer>
     );
   }
@@ -70,10 +88,11 @@ const ResultsScheduleContainer = ({ activeTournament }: IProps) => {
         }
 
         return (
-          <ScheduleRowGame
+          <ResultsScheduleRowGame
             key={`${index}1`}
             game={scheduleRow.scheduledGame?.game!}
             gameNumber={scheduleRow?.scheduledGame?.gameNumber || index}
+            isActive={scheduleRow.scheduledGame?.id === activeGameId}
           />
         );
       })}

@@ -7,10 +7,12 @@ import {
   alpha,
   styled,
 } from '@mui/material';
+import ButtonReceiverStatus from 'components/serial-button/ButtonReceiverStatus';
 import CustomModal from 'components/shared/CustomModal';
 import FlexContainer from 'components/shared/FlexContainer';
 import ScheduleUpcomingGames from 'components/tournament/visualizations/schedule/ScheduleUpcomingGames';
 import { PortInfo } from 'hooks/main/useIPCRendererMessages';
+import { SerialPortStatus } from 'main/serialPortListener/buttonReceiverConfig';
 import { memo } from 'react';
 import { Match } from 'types/Match';
 import Team from 'types/Team';
@@ -46,6 +48,8 @@ interface IProps {
   selectReceiverPort?: (port: PortInfo) => void;
   selectedPort: PortInfo | undefined;
   refreshAvailablePorts?: () => void;
+  connectionStatus?: SerialPortStatus;
+  reconnectReceiver?: () => void;
 }
 
 const DesktopScoreboard: React.FC<IProps> = ({
@@ -67,6 +71,8 @@ const DesktopScoreboard: React.FC<IProps> = ({
   selectReceiverPort,
   selectedPort,
   refreshAvailablePorts,
+  connectionStatus,
+  reconnectReceiver,
 }) => {
   const currentGame = activeScheduledGame?.game;
 
@@ -224,34 +230,51 @@ const DesktopScoreboard: React.FC<IProps> = ({
           </FlexContainer>
         </Card>
       </FlexContainer>
-      <Select
+      <FlexContainer
         style={{
           position: 'absolute',
           bottom: 5,
           left: 5,
-          maxWidth: '200px',
         }}
-        onOpen={() => {
-          refreshAvailablePorts?.();
-        }}
-        value={selectedPort?.path}
-        label="Second stage type"
-        onChange={(e) => {
-          const newPort = availablePorts?.find(
-            (port) => port.path === e.target.value,
-          );
-
-          if (newPort) {
-            selectReceiverPort?.(newPort);
-          }
-        }}
+        gap={8}
+        alignItems="center"
+        flexWrap="wrap"
+        maxWidth="300px"
       >
-        {availablePorts?.map((availablePort) => (
-          <MenuItem key={availablePort.path} value={availablePort.path}>
-            {availablePort.path} - {availablePort.friendlyName}
+        <ButtonReceiverStatus
+          compact
+          connectionStatus={connectionStatus}
+          onReconnect={reconnectReceiver}
+        />
+        <Select
+          style={{
+            maxWidth: '200px',
+          }}
+          displayEmpty
+          onOpen={() => {
+            refreshAvailablePorts?.();
+          }}
+          value={selectedPort?.path || ''}
+          onChange={(e) => {
+            const newPort = availablePorts?.find(
+              (port) => port.path === e.target.value,
+            );
+
+            if (newPort) {
+              selectReceiverPort?.(newPort);
+            }
+          }}
+        >
+          <MenuItem value="">
+            <em>Other port</em>
           </MenuItem>
-        ))}
-      </Select>
+          {availablePorts?.map((availablePort) => (
+            <MenuItem key={availablePort.path} value={availablePort.path}>
+              {availablePort.path} - {availablePort.friendlyName}
+            </MenuItem>
+          ))}
+        </Select>
+      </FlexContainer>
       <CustomModal
         isModalOpen={showFinishMatchModal}
         onClose={() => {

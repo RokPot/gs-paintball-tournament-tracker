@@ -17,6 +17,7 @@ import { DefaultGameSettings } from 'types/GameSettings';
 import { GameState, GameWinner } from 'types/GameState';
 import MatchState from 'types/MatchState';
 import Tournament from 'types/Tournament';
+import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { DefaultTournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
 import { TournamentStatus } from 'types/TournamentStatus';
@@ -374,6 +375,130 @@ describe('TournamentFlow', () => {
     expect(currentPairedGame1?.game.matches?.length).toBe(1);
     expect(currentPairedGame1?.game.matches?.[0].team1Margin).toBe(2);
     expect(currentPairedGame1?.game.matches?.[0].team2Margin).toBe(0);
+  });
+
+  it('should keep leftover time on the finished game when switchGames swaps to the pair', () => {
+    const games = [
+      TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+        gameTime: DefaultGameSettings.gameTimeInSeconds,
+      }),
+      TestUtils.generateGame({
+        index: 2,
+        team1,
+        team2: team3,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+        gameTime: DefaultGameSettings.gameTimeInSeconds,
+      }),
+      TestUtils.generateGame({
+        index: 3,
+        team1,
+        team2: team4,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+        gameTime: DefaultGameSettings.gameTimeInSeconds,
+      }),
+    ];
+    const leftoverTournament = TestUtils.generateStage1Tournament({
+      teams: [[team1, team2, team3, team4]],
+      games: [games],
+      numberOfGroups: 1,
+      tournamentSettings: {
+        ...DefaultTournamentSettings,
+        numberOfGroups: 1,
+        switchGames: true,
+      },
+    });
+
+    const game1 = leftoverTournament.currentStageSchedule?.[0];
+    const game2 = leftoverTournament.currentStageSchedule?.[1];
+    const leftoverMs = 290 * 1000;
+
+    TournamentFlowTestUtils.FinishScheduledGameMatch(
+      TestUtils.generateMatch({
+        index: 1,
+        matchDurationInSeconds: 10 * 1000,
+        matchState: MatchState.team1Win,
+        team1Margin: 2,
+        team2Margin: 0,
+      }),
+      game1!,
+      { currentDuration: 10 * 1000, timeLeft: leftoverMs },
+      leftoverTournament,
+    );
+
+    const activeGame = leftoverTournament.currentStageSchedule?.find(
+      (schedGame) => schedGame.id === leftoverTournament.state.activeGameId,
+    );
+
+    expect(game1?.game.id).not.toBe(game2?.game.id);
+    expect(game1?.game.gameTime).toBe(290);
+    expect(game2?.game.gameTime).toBe(DefaultGameSettings.gameTimeInSeconds);
+    expect(activeGame?.id).toBe(game2?.id);
+    expect(
+      TournamentFlow.getRemainingGameTimeInSeconds(
+        game1!.game,
+        DefaultGameSettings.gameTimeInSeconds,
+      ),
+    ).toBe(290);
+    expect(
+      TournamentFlow.getRemainingGameTimeInSeconds(
+        game2!.game,
+        DefaultGameSettings.gameTimeInSeconds,
+      ),
+    ).toBe(DefaultGameSettings.gameTimeInSeconds);
+  });
+
+  it('keeps a finished paired game finished when activating the pair', () => {
+    const group = TestUtils.generateTournamentGroup(
+      1,
+      [],
+      [team1, team2, team3],
+    );
+    const finishedGame = TestUtils.generateGame({
+      index: 1,
+      team1,
+      team2,
+      gameState: GameState.finished,
+      gameWinner: GameWinner.team1,
+    });
+    const nextGame = TestUtils.generateGame({
+      index: 2,
+      team1,
+      team2: team3,
+      gameState: GameState.created,
+      gameWinner: GameWinner.notYet,
+    });
+    const pairedGame1: TournamentScheduleGame = {
+      id: 's1',
+      gameNumber: 1,
+      game: finishedGame,
+      group,
+      index: 0,
+      pairedGameId: 's2',
+    };
+    const pairedGame2: TournamentScheduleGame = {
+      id: 's2',
+      gameNumber: 2,
+      game: nextGame,
+      group,
+      index: 1,
+      pairedGameId: 's1',
+    };
+
+    TournamentFlow.applyActivePairGameStates(
+      pairedGame2,
+      pairedGame1,
+      pairedGame2,
+    );
+
+    expect(pairedGame1.game.gameState).toBe(GameState.finished);
+    expect(pairedGame2.game.gameState).toBe(GameState.playing);
   });
 
   it('should finish a game due to no time left', () => {

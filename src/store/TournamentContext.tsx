@@ -1,3 +1,4 @@
+import useBroadcastResultsSnapshot from 'hooks/results/useBroadcastResultsSnapshot';
 import useTournamentLogic from 'hooks/tournament/useTournamentLogic';
 import React, { useMemo } from 'react';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
@@ -53,6 +54,8 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
     onTeamPause,
     forceRefreshTournament,
   } = useTournamentLogic(activeLeague);
+
+  useBroadcastResultsSnapshot(activeLeague);
 
   const contextValue = useMemo(
     () => ({

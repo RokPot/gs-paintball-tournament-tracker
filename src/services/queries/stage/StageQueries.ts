@@ -12,4 +12,14 @@ export namespace StageQueries {
       },
     });
   };
+
+  export const useUpdateStage = () => {
+    const { updateStage } = useStageService();
+
+    return useMutation({
+      mutationFn: (stage: TournamentStage) => {
+        return updateStage(stage.toDto());
+      },
+    });
+  };
 }

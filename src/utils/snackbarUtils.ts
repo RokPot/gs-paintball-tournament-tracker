@@ -8,5 +8,4 @@ export const snackbarSuccessOptions: OptionsObject = {
 export const snackbarErrorOptions: OptionsObject = {
   autoHideDuration: 2500,
   variant: 'error',
-  persist: true,
 };

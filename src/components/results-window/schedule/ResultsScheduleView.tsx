@@ -4,9 +4,15 @@ import ResultsScheduleContainer from './ResultsScheduleContainer';
 
 interface IProps {
   activeLeague: League | undefined | null;
+  hideFinishedGames?: boolean;
+  activeGameId?: string;
 }
 
-const ResultsScheduleView: React.FC<IProps> = ({ activeLeague }) => {
+const ResultsScheduleView: React.FC<IProps> = ({
+  activeLeague,
+  hideFinishedGames,
+  activeGameId,
+}) => {
   if (!activeLeague) {
     return null;
   }
@@ -19,6 +25,8 @@ const ResultsScheduleView: React.FC<IProps> = ({ activeLeague }) => {
     >
       <ResultsScheduleContainer
         activeTournament={activeLeague?.activeTournament}
+        hideFinishedGames={hideFinishedGames}
+        activeGameId={activeGameId}
       />
     </FlexContainer>
   );

@@ -31,7 +31,7 @@ const StyledTeamScoreContainer = styled('div')(
 );
 
 interface IProps {
-  team: Team;
+  team?: Team;
   teamScore: number;
 }
 
@@ -43,7 +43,7 @@ const BracketsTeamRow: React.FC<IProps> = ({ team, teamScore }) => {
           variant="p1"
           color={(theme) => theme.palette.primary.contrastText}
         >
-          {team.teamName || 'TBD'}
+          {team?.teamName || 'TBD'}
         </Typography>
       </StyledTeamNameContainer>
       <StyledTeamScoreContainer>

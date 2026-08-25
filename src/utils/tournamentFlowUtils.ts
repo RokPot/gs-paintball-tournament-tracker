@@ -1,4 +1,5 @@
 import { compact } from 'lodash';
+import { isByePlaceholderGame } from 'types/BracketProperties';
 import Game from 'types/Game';
 import { MATCH_POINTS_CONSTANTS } from 'types/GamePointsConstants';
 import { GameState, GameWinner } from 'types/GameState';
@@ -104,16 +105,17 @@ export namespace TournamentFlow {
     game1Available?: boolean;
     game2Available?: boolean;
   } => {
-    if (
-      (pairedGame1.gameState === GameState.finished &&
-        pairedGame2?.gameState === GameState.finished) ||
-      (!pairedGame2 && pairedGame1.gameState === GameState.finished)
-    ) {
+    const isGamePlayable = (game?: Game) =>
+      !!game &&
+      !isByePlaceholderGame(game) &&
+      game.gameState !== GameState.finished;
+
+    if (!isGamePlayable(pairedGame1) && !isGamePlayable(pairedGame2)) {
       return { shouldSwitchToNewPair: true };
     }
     return {
-      game1Available: pairedGame1?.gameState !== GameState.finished,
-      game2Available: pairedGame2?.gameState !== GameState.finished,
+      game1Available: isGamePlayable(pairedGame1),
+      game2Available: isGamePlayable(pairedGame2),
     };
   };
 
@@ -150,10 +152,9 @@ export namespace TournamentFlow {
     }
 
     return {
-      game1:
-        schedule.length > currentScheduleGameIndex
-          ? schedule[currentScheduleGameIndex]
-          : undefined,
+      game1: schedule
+        .slice(currentScheduleGameIndex)
+        .find((scheduledGame) => !isByePlaceholderGame(scheduledGame.game)),
     };
   };
 
@@ -167,15 +168,38 @@ export namespace TournamentFlow {
         game2: undefined,
       };
     }
-    const game1 =
-      schedule.length > currentScheduleGameIndex
-        ? schedule[currentScheduleGameIndex]
-        : undefined;
-    let game2 =
-      schedule.length > currentScheduleGameIndex + 1
-        ? schedule[currentScheduleGameIndex + 1]
-        : undefined;
-    if (game1?.group.id !== game2?.group.id) {
+    const playableGames = schedule
+      .slice(currentScheduleGameIndex)
+      .filter((scheduledGame) => !isByePlaceholderGame(scheduledGame.game));
+    const game1 = playableGames[0];
+    if (!game1) {
+      return {
+        game1: undefined,
+        game2: undefined,
+      };
+    }
+
+    const isUnpaired =
+      !game1.pairedGameId ||
+      game1.pairedGameId === 'NoPairedGameId' ||
+      game1.pairedGameId === 'NoPairedGame';
+    const storedPair = isUnpaired
+      ? undefined
+      : playableGames.find(
+          (scheduledGame) =>
+            scheduledGame.id === game1.pairedGameId &&
+            scheduledGame.id !== game1.id &&
+            scheduledGame.game.gameState !== GameState.finished,
+        );
+    if (storedPair) {
+      return {
+        game1,
+        game2: storedPair,
+      };
+    }
+
+    let game2: TournamentScheduleGame | undefined = playableGames[1];
+    if (game1.group.id !== game2?.group.id) {
       game2 = undefined;
     }
     return {
@@ -184,11 +208,72 @@ export namespace TournamentFlow {
     };
   };
 
+  const MAX_UPCOMING_GROUPS = 2;
+
+  export const getUpcomingScheduleGameGroups = (
+    schedule?: TournamentScheduleGame[],
+  ): TournamentScheduleGame[][] => {
+    if (!schedule?.length) {
+      return [];
+    }
+
+    const createdPlayableGames = schedule.filter(
+      (scheduledGame) =>
+        scheduledGame.game.gameState === GameState.created &&
+        !isByePlaceholderGame(scheduledGame.game),
+    );
+
+    const groupedUpcomingGames: TournamentScheduleGame[][] = [];
+    for (let i = 0; i < createdPlayableGames.length; ) {
+      if (groupedUpcomingGames.length >= MAX_UPCOMING_GROUPS) {
+        break;
+      }
+      const firstGamePair = createdPlayableGames[i];
+      const secondGamePair = createdPlayableGames[i + 1];
+      if (firstGamePair?.pairedGameId === secondGamePair?.id) {
+        groupedUpcomingGames.push([firstGamePair, secondGamePair]);
+        i += 2;
+      } else {
+        groupedUpcomingGames.push([firstGamePair]);
+        i += 1;
+      }
+    }
+    return groupedUpcomingGames;
+  };
+
+  const isLockedGameState = (gameState: GameState) =>
+    gameState === GameState.finished || gameState === GameState.postponed;
+
+  export const applyActivePairGameStates = (
+    activeGame: TournamentScheduleGame,
+    pairedGame1: TournamentScheduleGame,
+    pairedGame2?: TournamentScheduleGame,
+  ) => {
+    if (!isLockedGameState(activeGame.game.gameState)) {
+      activeGame.game.gameState = GameState.playing;
+    }
+    if (
+      pairedGame1.id !== activeGame.id &&
+      !isLockedGameState(pairedGame1.game.gameState)
+    ) {
+      pairedGame1.game.gameState = GameState.waiting;
+    }
+    if (
+      pairedGame2 &&
+      pairedGame2.id !== activeGame.id &&
+      !isLockedGameState(pairedGame2.game.gameState)
+    ) {
+      pairedGame2.game.gameState = GameState.waiting;
+    }
+  };
+
   const switchToNewActiveGame = (
     pairedGame1: TournamentScheduleGame,
     pairedGame2?: TournamentScheduleGame,
   ) => {
-    return pairedGame2 && pairedGame2.game.gameState !== GameState.finished
+    return pairedGame2 &&
+      pairedGame2.game.gameState !== GameState.finished &&
+      !isByePlaceholderGame(pairedGame2.game)
       ? pairedGame2
       : pairedGame1;
   };
@@ -281,6 +366,7 @@ export namespace TournamentFlow {
     let availableScheduledGames = schedule?.filter(
       (scheduledGame) =>
         scheduledGame.game.gameState !== GameState.finished &&
+        !isByePlaceholderGame(scheduledGame.game) &&
         scheduledGame.game?.bracketProperties?.round === currentBracketsRound,
     );
 
@@ -288,6 +374,7 @@ export namespace TournamentFlow {
       availableScheduledGames = schedule?.filter(
         (scheduledGame) =>
           scheduledGame.game.gameState !== GameState.finished &&
+          !isByePlaceholderGame(scheduledGame.game) &&
           scheduledGame.game?.bracketProperties?.round ===
             currentBracketsRound + 1,
       );
@@ -301,6 +388,7 @@ export namespace TournamentFlow {
       availableScheduledGames = schedule?.filter(
         (scheduledGame) =>
           scheduledGame.game.gameState !== GameState.finished &&
+          !isByePlaceholderGame(scheduledGame.game) &&
           scheduledGame.game?.bracketProperties?.round ===
             currentBracketsRound + 1,
       );
@@ -326,7 +414,7 @@ export namespace TournamentFlow {
     if (game1Available || game2Available) {
       if (settings.switchGames) {
         return {
-          newActiveGame: newPairedGame2 ?? newPairedGame1,
+          newActiveGame: switchToNewActiveGame(newPairedGame1, newPairedGame2),
           newPairedGame1,
           newPairedGame2,
         };
@@ -627,6 +715,21 @@ export namespace TournamentFlow {
     return game;
   };
 
+  /**
+   * Remaining clock for the next match of this game. A game that has not
+   * played a match yet always starts from the configured length, so switching
+   * to the paired game does not inherit the previous game's leftover.
+   */
+  export const getRemainingGameTimeInSeconds = (
+    game: Game,
+    defaultGameTimeInSeconds: number,
+  ) => {
+    if (!game.matches?.length) {
+      return defaultGameTimeInSeconds;
+    }
+    return game.gameTime;
+  };
+
   export const addMatchDataToGame = (
     scheduledGame: TournamentScheduleGame,
     match: Match,
@@ -727,11 +830,18 @@ export namespace TournamentFlow {
       return undefined;
     }
 
-    const newPairedGame1 = schedule[0];
+    const playableGames = schedule.filter(
+      (scheduledGame) => !isByePlaceholderGame(scheduledGame.game),
+    );
+    const newPairedGame1 = playableGames[0];
     const newPairedGame2 =
-      schedule.length > 1 && tournament.settings.switchGames
-        ? schedule[1]
+      playableGames.length > 1 && tournament.settings.switchGames
+        ? playableGames[1]
         : undefined;
+
+    if (!newPairedGame1) {
+      return undefined;
+    }
 
     newPairedGame1.game.gameState = GameState.playing;
     if (newPairedGame2) {

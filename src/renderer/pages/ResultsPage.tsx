@@ -1,143 +1,109 @@
-import { useTheme } from '@mui/material';
 import CurrentGameView from 'components/results-window/current-game-view/CurrentGameView';
 import LeaderboardView from 'components/results-window/LeaderboardView';
-import ResultsWindowUpcomingGamesSection from 'components/results-window/ResultsWindowUpcomingGamesSection';
+import OnDeckBar from 'components/results-window/OnDeckBar';
+import RotatingPanel from 'components/results-window/RotatingPanel';
 import ResultsScheduleView from 'components/results-window/schedule/ResultsScheduleView';
 import FlexContainer from 'components/shared/FlexContainer';
 import TournamentTypesPreview from 'components/tournament/visualizations/TournamentTypesPreview';
-import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
-import useScrollTo from 'hooks/ui/useScrollTo';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import useResultsSnapshot from 'hooks/results/useResultsSnapshot';
+import useResultsWindowGames from 'hooks/results/useResultsWindowGames';
+import { RotatingPanelItem } from 'hooks/ui/useRotatingPanel';
+import { useMemo } from 'react';
 import { TournamentTypeEnum } from 'types/TournamentType';
-import { setTimeout } from 'worker-timers';
 
-interface IProps {}
+const SCHEDULE_PANEL_DURATION_IN_MS = 1000 * 30;
+const SCHEDULE_SCROLL_DELAY_IN_MS = 1000 * 6;
+const LEADERBOARD_PANEL_DURATION_IN_MS = 1000 * 15;
+const BRACKET_PANEL_DURATION_IN_MS = 1000 * 20;
 
-const ResultsPage: React.FC<IProps> = () => {
-  const { data: activeLeague, refetch } = LeagueQueries.useActiveLeague();
+const ResultsPage: React.FC = () => {
+  const activeLeague = useResultsSnapshot();
 
-  const currentStage = useMemo(() => {
-    return activeLeague?.activeTournament?.currentStage;
-  }, [activeLeague]);
+  const currentStage = useMemo(
+    () => activeLeague?.activeTournament?.currentStage,
+    [activeLeague],
+  );
 
-  const theme = useTheme();
+  const { activeGame, onDeckGames, upcomingGames } =
+    useResultsWindowGames(activeLeague);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const leaderboardScrollRef = useRef<HTMLDivElement>(null);
-  const { scrollDivToBottom: scrollScheduleDiv } = useScrollTo(true);
-  const { scrollDivToBottom: scrollLeaderboardDiv } = useScrollTo(true);
+  const isSingleElimination =
+    currentStage?.stageGamesType.type === TournamentTypeEnum.singleElimination;
 
-  const { listenToGameSwitched } = useIPCRendererMessages();
-  useEffect(() => {
-    listenToGameSwitched(async () => {
-      try {
-        await refetch();
-      } catch (e) {
-        console.error(e);
-      }
-    });
-  }, []);
+  const hasLeaderboard =
+    !!activeLeague?.activeTournament?.currentStageGroups?.length &&
+    !isSingleElimination;
 
-  const SECONDS_BEFORE_SCHEDULE_SCROLL_DELAY = 1000 * 2;
-  const SECONDS_FOR_SCHEDULE_SCROLLER = 1000 * 20;
-
-  const SECONDS_BEFORE_LEADERBOARD_SCROLL_DELAY = 1000 * 2;
-  const SECONDS_FOR_LEADERBOARD_SCROLLER = 1000 * 25;
-
-  const refreshLeagueAndAnimate = useCallback(async () => {
-    const getLeague = async () => {
-      await refetch();
-    };
-
-    getLeague();
-
-    const startScheduleScroll = () => {
-      scrollScheduleDiv(SECONDS_FOR_SCHEDULE_SCROLLER, scrollRef, () => {
-        setTimeout(() => {
-          startScheduleScroll();
-        }, SECONDS_BEFORE_SCHEDULE_SCROLL_DELAY);
-      });
-    };
-    const startLeaderboardScroll = () => {
-      scrollLeaderboardDiv(
-        SECONDS_FOR_LEADERBOARD_SCROLLER,
-        leaderboardScrollRef,
-        () => {
-          setTimeout(() => {
-            startLeaderboardScroll();
-          }, SECONDS_BEFORE_LEADERBOARD_SCROLL_DELAY);
-        },
-      );
-    };
-    setTimeout(() => {
-      startScheduleScroll();
-    }, SECONDS_BEFORE_SCHEDULE_SCROLL_DELAY);
-
-    setTimeout(() => {
-      startLeaderboardScroll();
-    }, SECONDS_BEFORE_LEADERBOARD_SCROLL_DELAY);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    refreshLeagueAndAnimate();
-  }, [refreshLeagueAndAnimate]);
+  const panels: RotatingPanelItem[] = useMemo(
+    () => [
+      {
+        key: 'schedule',
+        title: 'Upcoming games',
+        durationInMs: SCHEDULE_PANEL_DURATION_IN_MS,
+        scrollDelayInMs: SCHEDULE_SCROLL_DELAY_IN_MS,
+        enabled: !isSingleElimination && upcomingGames.length > 0,
+        node: (
+          <ResultsScheduleView
+            activeLeague={activeLeague}
+            hideFinishedGames
+            activeGameId={activeGame?.id}
+          />
+        ),
+      },
+      {
+        key: 'bracket',
+        title: 'Bracket',
+        durationInMs: BRACKET_PANEL_DURATION_IN_MS,
+        enabled: isSingleElimination,
+        node: (
+          <TournamentTypesPreview
+            group={activeLeague?.activeTournament?.currentStageGroups?.[0]}
+          />
+        ),
+      },
+      {
+        key: 'standings',
+        title: 'Standings',
+        durationInMs: LEADERBOARD_PANEL_DURATION_IN_MS,
+        enabled: hasLeaderboard,
+        node: <LeaderboardView activeLeague={activeLeague} />,
+      },
+    ],
+    [
+      activeLeague,
+      activeGame?.id,
+      upcomingGames.length,
+      isSingleElimination,
+      hasLeaderboard,
+    ],
+  );
 
   return (
     <FlexContainer
       flexDirection="column"
       height="100vh"
+      width="100%"
       alignItems="flex-start"
+      style={{ overflow: 'hidden' }}
     >
-      <div style={{ width: '100%' }}>
-        <CurrentGameView activeLeague={activeLeague} />
-      </div>
+      <FlexContainer
+        flexDirection="column"
+        width="100%"
+        alignItems="center"
+        style={{ flex: '0 0 auto' }}
+      >
+        <CurrentGameView activeGame={activeGame} />
+        <OnDeckBar onDeckGames={onDeckGames} />
+      </FlexContainer>
 
-      {currentStage?.stageGamesType.type ===
-        TournamentTypeEnum.singleElimination && (
-        <div>
-          <TournamentTypesPreview
-            group={activeLeague?.activeTournament?.currentStageGroups?.[0]}
-          />
-        </div>
-      )}
-      {currentStage?.stageGamesType.type === TournamentTypeEnum.roundRobin && (
-        <FlexContainer
-          flexDirection="row"
-          height="100%"
-          width="100%"
-          style={{ flex: 1, minHeight: 0 }}
-        >
-          <div
-            style={{
-              height: '100%',
-              maxHeight: '100%',
-              width: '100%',
-              overflowY: 'hidden',
-            }}
-            ref={scrollRef}
-          >
-            <ResultsScheduleView activeLeague={activeLeague} />
-          </div>
-          <div
-            style={{
-              height: '100%',
-              maxHeight: '100%',
-              width: '1200px',
-              overflowY: 'hidden',
-              borderLeft: `1px solid ${theme.palette.divider}`,
-            }}
-            ref={leaderboardScrollRef}
-          >
-            <LeaderboardView activeLeague={activeLeague} />
-          </div>
-        </FlexContainer>
-      )}
-
-      <div style={{ flex: '0 0 auto', width: '100%' }}>
-        <ResultsWindowUpcomingGamesSection activeLeague={activeLeague} />
-      </div>
+      <FlexContainer
+        width="100%"
+        height="100%"
+        alignItems="flex-start"
+        style={{ flex: 1, minHeight: 0 }}
+      >
+        <RotatingPanel panels={panels} />
+      </FlexContainer>
     </FlexContainer>
   );
 };

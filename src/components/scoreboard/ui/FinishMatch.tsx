@@ -28,6 +28,7 @@ const FinishMatch: React.FC<IProps> = ({
     useState<number[]>();
   const [availableTeam2Margins, setAvailableTeam2Margins] =
     useState<number[]>();
+  const [isFinishingMatch, setIsFinishingMatch] = useState(false);
 
   const onMatchStateChanged = (newMatchState: MatchState) => {
     setMatchState(newMatchState);
@@ -39,6 +40,10 @@ const FinishMatch: React.FC<IProps> = ({
     if (!matchState) {
       return;
     }
+    if (isFinishingMatch) {
+      return;
+    }
+    setIsFinishingMatch(true);
     const newMatchFinished: Match = {
       id: v4(),
       matchState,
@@ -47,7 +52,10 @@ const FinishMatch: React.FC<IProps> = ({
       matchDurationInSeconds: 123,
     };
     onMatchFinished(newMatchFinished);
-  }, [matchState, onMatchFinished, team1Margin, team2Margin]);
+    setTimeout(() => {
+      setIsFinishingMatch(false);
+    }, 1000);
+  }, [matchState, onMatchFinished, team1Margin, team2Margin, isFinishingMatch]);
 
   useEffect(() => {
     if (matchState === MatchState.team1Win) {
@@ -61,6 +69,8 @@ const FinishMatch: React.FC<IProps> = ({
         team2MarginsList.push(i);
       }
       setAvailableTeam2Margins(team2MarginsList);
+      setTeam1Margin(sizeOfTeams || 3);
+      setTeam2Margin(-(sizeOfTeams || 3));
       return;
     }
     if (matchState === MatchState.team2Win) {
@@ -74,6 +84,8 @@ const FinishMatch: React.FC<IProps> = ({
         team1MarginsList.push(i);
       }
       setAvailableTeam1Margins(team1MarginsList);
+      setTeam1Margin(-(sizeOfTeams || 3));
+      setTeam2Margin(sizeOfTeams || 3);
       return;
     }
     if (matchState === MatchState.draw) {
@@ -89,9 +101,12 @@ const FinishMatch: React.FC<IProps> = ({
       for (let i = sizeOfTeams || 3; i > 0; i -= 1) {
         team2MarginsList.push(i);
       }
+
       for (let i = -1; i >= (sizeOfTeams || 3) * -1; i -= 1) {
         team2MarginsList.push(i);
       }
+      setTeam1Margin(1);
+      setTeam2Margin(1);
       setAvailableTeam2Margins(team2MarginsList);
     }
   }, [matchState]);

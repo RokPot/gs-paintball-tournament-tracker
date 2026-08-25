@@ -10,12 +10,17 @@ export type Channels =
   | 'setSelectedPort'
   | 'getPortsListResponse'
   | 'selectSerialPort'
+  | 'reconnectSerialPort'
+  | 'getSerialPortStatus'
   | 'buttonsResponse'
   | 'serialPortError'
+  | 'serialPortStatus'
   | 'gameSwitched'
   | 'gamesSwitched'
   | 'tournamentSwitched'
-  | 'timerUpdate';
+  | 'timerUpdate'
+  | 'resultsSnapshot'
+  | 'requestResultsSnapshot';
 
 export interface TimerData {
   duration: number;

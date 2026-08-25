@@ -10,12 +10,11 @@ import {
 } from '@mui/material';
 import FlexContainer from 'components/shared/FlexContainer';
 import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
-import { CSSProperties, useContext, useEffect, useState } from 'react';
+import { CSSProperties, useContext, useMemo } from 'react';
 import { TournamentContext } from 'store/TournamentContext';
-import { GameState } from 'types/GameState';
 import Team from 'types/Team';
-import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentStatus } from 'types/TournamentStatus';
+import { TournamentFlow } from 'utils/tournamentFlowUtils';
 
 interface IProps {
   style?: CSSProperties;
@@ -48,35 +47,13 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
 
   const { openNewResultsWindow } = useIPCRendererMessages();
 
-  const [upcomingGames, setUpcomingGames] = useState<
-    TournamentScheduleGame[][]
-  >([]);
-
-  useEffect(() => {
-    if (!activeLeague?.activeTournament) {
-      return;
-    }
-    const notFinishedScheduledGames =
-      activeLeague?.activeTournament.currentStage?.schedule?.filter(
-        (scheduledGame) => scheduledGame.game.gameState === GameState.created,
-      ) || [];
-    const groupedUpcomingGames: TournamentScheduleGame[][] = [];
-    for (let i = 0; i < notFinishedScheduledGames.length; ) {
-      if (groupedUpcomingGames.length > 1) {
-        break;
-      }
-      const firstGamePair = notFinishedScheduledGames[i];
-      const secondGamePair = notFinishedScheduledGames[i + 1];
-      if (firstGamePair?.pairedGameId === secondGamePair?.id) {
-        groupedUpcomingGames.push([firstGamePair, secondGamePair]);
-        i += 2;
-      } else {
-        groupedUpcomingGames.push([firstGamePair]);
-        i += 1;
-      }
-    }
-    setUpcomingGames(groupedUpcomingGames);
-  }, [activeLeague?.activeTournament]);
+  const upcomingGames = useMemo(
+    () =>
+      TournamentFlow.getUpcomingScheduleGameGroups(
+        activeLeague?.activeTournament?.currentStage?.schedule,
+      ),
+    [activeLeague?.activeTournament?.currentStage?.schedule],
+  );
 
   const getTeamName = (team: Team) => {
     if (isInResultsWindow) {

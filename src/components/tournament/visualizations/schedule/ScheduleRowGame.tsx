@@ -1,10 +1,12 @@
 import {
+  faChevronDown,
+  faChevronUp,
   faEdit,
   faEllipsisVertical,
   faTrophy,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Typography, css, styled, useTheme } from '@mui/material';
+import { IconButton, Typography, css, styled, useTheme } from '@mui/material';
 import CustomDropdownMenu from 'components/shared/CustomDropdownMenu';
 import FlexContainer from 'components/shared/FlexContainer';
 import Game from 'types/Game';
@@ -45,6 +47,11 @@ interface IProps {
   };
   onEditGame: (gameToEdit: Game) => void;
   disableEditting?: boolean;
+  canReorder?: boolean;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
 const ScheduleRowGame: React.FC<IProps> = ({
@@ -53,6 +60,11 @@ const ScheduleRowGame: React.FC<IProps> = ({
   onEditGame,
   disableEditting,
   nextGames,
+  canReorder,
+  canMoveUp,
+  canMoveDown,
+  onMoveUp,
+  onMoveDown,
 }) => {
   const areThereNextGames =
     !!nextGames?.nextRoundGameWinner && !!nextGames?.nextRoundGameLoser;
@@ -68,6 +80,28 @@ const ScheduleRowGame: React.FC<IProps> = ({
   return (
     <StyledGameContainer>
       <FlexContainer alignItems="center" width="100%" height="50px" gap={8}>
+        {canReorder && (
+          <FlexContainer flexDirection="column" gap={0}>
+            <IconButton
+              size="small"
+              aria-label="Move game up"
+              disabled={!canMoveUp}
+              onClick={onMoveUp}
+              style={{ padding: '2px' }}
+            >
+              <FontAwesomeIcon icon={faChevronUp} width={12} height={12} />
+            </IconButton>
+            <IconButton
+              size="small"
+              aria-label="Move game down"
+              disabled={!canMoveDown}
+              onClick={onMoveDown}
+              style={{ padding: '2px' }}
+            >
+              <FontAwesomeIcon icon={faChevronDown} width={12} height={12} />
+            </IconButton>
+          </FlexContainer>
+        )}
         <Typography variant="h6Medium" textAlign="end" marginBottom="0px">
           Game: {gameNumber}
         </Typography>

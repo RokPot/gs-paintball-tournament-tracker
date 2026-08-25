@@ -1175,7 +1175,20 @@ describe('ScheduleGeneration', () => {
 
     expect(stage1FinishedTournament?.currentStage?.stage).toBe(2);
     expect(stage1FinishedTournament?.currentStage?.groups?.length).toBe(1);
-    expect(stage1FinishedTournament?.currentStageSchedule?.length).toBe(9);
+    expect(stage1FinishedTournament?.currentStageSchedule?.length).toBe(8);
+
+    const elimSchedule = stage1FinishedTournament.currentStageSchedule!;
+    const totalNumberOfRounds =
+      stage1FinishedTournament.currentStage?.groups?.[0].settings
+        ?.bracketNumberOfRounds;
+    expect(totalNumberOfRounds).toBe(3);
+    expect(
+      elimSchedule.every(
+        (scheduledGame) =>
+          (scheduledGame.game.bracketProperties?.round ?? 0) <
+          totalNumberOfRounds!,
+      ),
+    ).toBe(true);
 
     // Visualization https://www.printyourbrackets.com/6seeded.html
     // First and Fourth games are BYE games, which means we don't take them into account
@@ -1223,6 +1236,20 @@ describe('ScheduleGeneration', () => {
     );
     expect(['TBD']).toContain(
       stage1FinishedTournament?.currentStageSchedule?.[6].game.team2.teamName,
+    );
+    expect(
+      stage1FinishedTournament?.currentStageSchedule?.[6].game.bracketProperties
+        ?.isThridPlaceGame,
+    ).toBe(true);
+    expect(
+      stage1FinishedTournament?.currentStageSchedule?.[7].game.bracketProperties
+        ?.isFirstPlaceGame,
+    ).toBe(true);
+    expect(['TBD']).toContain(
+      stage1FinishedTournament?.currentStageSchedule?.[7].game.team1.teamName,
+    );
+    expect(['TBD']).toContain(
+      stage1FinishedTournament?.currentStageSchedule?.[7].game.team2.teamName,
     );
   });
   it('should generate stage 2 schedule with 2 groups - Round Robin', () => {

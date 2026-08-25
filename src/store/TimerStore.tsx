@@ -1,6 +1,7 @@
 import useIPCRendererMessages, {
   TimerData,
 } from 'hooks/main/useIPCRendererMessages';
+import { useEffect } from 'react';
 import { clearInterval, setInterval } from 'worker-timers';
 import { create } from 'zustand';
 
@@ -129,7 +130,7 @@ const useTimerStoreBase = create<TimerStoreState>((set, get) => ({
     set(() => ({ timerRef: timer }));
   },
   setDuration: (duration) => {
-    set(() => ({ duration }));
+    set(() => ({ duration, currentDuration: 0 }));
   },
   setBreakDuration: (breakDuration) => {
     set(() => ({ breakDuration }));
@@ -156,8 +157,11 @@ const useTimerStore = () => {
   const store = useTimerStoreBase();
   const { sendTimerUpdate } = useIPCRendererMessages();
 
-  // Set up the timer update callback
-  store.setOnTimerUpdate(sendTimerUpdate);
+  useEffect(() => {
+    useTimerStoreBase.getState().setOnTimerUpdate(sendTimerUpdate);
+  }, [sendTimerUpdate]);
+
+  // store.setOnTimerUpdate(sendTimerUpdate);
 
   return store;
 };

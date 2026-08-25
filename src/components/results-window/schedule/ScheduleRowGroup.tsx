@@ -12,7 +12,15 @@ interface IProps {
 
 const ScheduleRowGroup: React.FC<IProps> = ({ groupIndex }) => {
   return (
-    <Typography variant="p1Medium" textAlign="start" fontSize={25}>
+    <Typography
+      variant="p1Bold"
+      textAlign="start"
+      fontSize="clamp(1rem, 3vh, 2.2rem)"
+      lineHeight="1em"
+      padding="1.2vh 16px 0.6vh 20px"
+      color={({ palette }) => palette.text.secondary}
+      style={{ textTransform: 'uppercase', letterSpacing: '0.08em' }}
+    >
       Group {groupIndex}
     </Typography>
   );

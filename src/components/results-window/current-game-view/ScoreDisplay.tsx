@@ -25,8 +25,8 @@ const ScoreDisplay: React.FC<IProps> = ({ teamWins, fontSize }) => {
         variant="p1"
         fontWeight="500"
         fontSize={fontSize}
-        marginBottom="5px"
-        lineHeight="0.8em"
+        lineHeight="1em"
+        padding="0.05em 0.15em"
       >
         {teamWins}
       </Typography>

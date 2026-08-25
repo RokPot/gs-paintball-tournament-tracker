@@ -19,6 +19,25 @@ import { generateGamesForRoundRobin } from './tournament/roundRobinUtils';
 import { TournamentFlow } from './tournamentFlowUtils';
 import { calculateTournamentGroupLeaderboard } from './tournamentResultUtils';
 
+export const TBD_TEAM_LABEL = 'TBD';
+
+export { isByePlaceholderGame } from 'types/BracketProperties';
+
+/**
+ * Falls back to the shorter team tag once the full name would overflow a
+ * results-window row, so the same team always renders identically across the
+ * hero, the on-deck line and the schedule.
+ */
+export const getDisplayTeamName = (team?: Team, maxChars = 12) => {
+  if (!team?.id || !team.teamName || team.teamName === TBD_TEAM_LABEL) {
+    return TBD_TEAM_LABEL;
+  }
+  if (team.teamName.length > maxChars && team.teamTag) {
+    return team.teamTag;
+  }
+  return team.teamName;
+};
+
 export const generateGamesForLayer = (
   roundToGenerate: number,
   totalNumberOfRoundsToGenerate: number,
@@ -32,12 +51,13 @@ export const generateGamesForLayer = (
   let nextRoundGameNumber = 1;
 
   if (round + 1 === totalNumberOfRounds) {
-    // Finals + third place
-    const newFPId = v4();
-    const firstPlaceGame: Game = new Game({
+    // Finals + third place. Both games are terminal — they must not
+    // point at a following round or flow will fill leftover TBD slots.
+    const newThirdPlaceId = v4();
+    const thirdPlaceGame: Game = new Game({
       gameState: GameState.created,
-      id: newFPId,
-      _id: newFPId,
+      id: newThirdPlaceId,
+      _id: newThirdPlaceId,
       matches: [],
       team1: new Team({
         _id: v4(),
@@ -57,8 +77,7 @@ export const generateGamesForLayer = (
         bye: false,
         round,
         roundGameNumber: 1,
-        winnerNextRoundGameNumber: 1,
-        loserNextRoundGameNumber: 2,
+        winnerNextRoundGameNumber: -1,
         isThridPlaceGame: true,
         isFirstPlaceGame: false,
         previousLayerGame1Number: 1,
@@ -67,11 +86,11 @@ export const generateGamesForLayer = (
       gameTime,
     });
 
-    const newTPId = v4();
-    const thirdPlaceGame: Game = new Game({
+    const newFirstPlaceId = v4();
+    const firstPlaceGame: Game = new Game({
       gameState: GameState.created,
-      id: newTPId,
-      _id: newTPId,
+      id: newFirstPlaceId,
+      _id: newFirstPlaceId,
       matches: [],
       team1: new Team({
         _id: v4(),
@@ -97,7 +116,7 @@ export const generateGamesForLayer = (
       },
       gameTime,
     });
-    games.push(firstPlaceGame, thirdPlaceGame);
+    games.push(thirdPlaceGame, firstPlaceGame);
     return games;
   }
   if (round + 2 === totalNumberOfRounds) {
@@ -345,7 +364,7 @@ export const generateGamesForEliminationBrackets = (
     const numberOfTeamsInRound2 = 2 ** (totalNumberOfRounds - 1);
     const numberOfTeamsLeft = numberOfTeams - numberOfTeamsInRound2;
 
-    for (let round = 0; round <= totalNumberOfRounds; round += 1) {
+    for (let round = 0; round < totalNumberOfRounds; round += 1) {
       games.push(
         ...generateGamesForLayer(
           round,

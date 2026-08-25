@@ -13,11 +13,15 @@ import usePdfExporter from 'hooks/exporter/usePdfExporter';
 import useGameFlows from 'hooks/game/useGameFlows';
 import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import useGetScheduleRows from 'hooks/ui/useGetScheduleRows';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import { StageQueries } from 'services/queries/stage/StageQueries';
 import useTournamentStore from 'store/TournamentStore';
 import Game from 'types/Game';
 import Tournament from 'types/Tournament';
 import TournamentStage from 'types/TournamentStage';
+import { TournamentStatus } from 'types/TournamentStatus';
+import { reorderPlayableScheduledGames } from 'utils/scheduleReorderUtils';
 import { TournamentFlow } from 'utils/tournamentFlowUtils';
 import ScheduleRowGame from './ScheduleRowGame';
 import ScheduleRowGroup, { StyledDivider } from './ScheduleRowGroup';
@@ -28,6 +32,8 @@ interface IProps {
 
 const ScheduleContainer = ({ activeTournament }: IProps) => {
   const { updateGameWithMatchesAndRecalculate } = useGameFlows();
+  const { mutateAsync: updateStage } = StageQueries.useUpdateStage();
+  const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
   const [selectedStage, setSelectedStage] = useState<
     TournamentStage | undefined
@@ -42,10 +48,49 @@ const ScheduleContainer = ({ activeTournament }: IProps) => {
     selectedStage,
     activeTournament?.settings,
   );
+  const canReorderSchedule = [
+    TournamentStatus.created,
+    TournamentStatus.initialized,
+  ].includes(activeTournament?.state?.status || TournamentStatus.finished);
+  const playableScheduleCount = scheduleRows.filter(
+    (scheduleRow) => scheduleRow.scheduledGame,
+  ).length;
 
   const onEditGame = (game: Game) => {
     setGameForEditModal(game);
   };
+
+  const onReorderPlayableGame = useCallback(
+    async (fromPlayableIndex: number, toPlayableIndex: number) => {
+      if (!selectedStage?.schedule || !activeTournament) {
+        return;
+      }
+      const nextSchedule = reorderPlayableScheduledGames(
+        selectedStage.schedule,
+        fromPlayableIndex,
+        toPlayableIndex,
+        !!activeTournament.settings.switchGames,
+      );
+      const nextStage = new TournamentStage({
+        ...selectedStage,
+        schedule: nextSchedule,
+      });
+      selectedStage.schedule = nextSchedule;
+      const stageInTournament = activeTournament.stages?.find(
+        (stage) => stage.id === selectedStage.id,
+      );
+      if (stageInTournament) {
+        stageInTournament.schedule = nextSchedule;
+      }
+      if (activeTournament.currentStage?.id === selectedStage.id) {
+        activeTournament.currentStage.schedule = nextSchedule;
+      }
+      setSelectedStage(nextStage);
+      await updateStage(nextStage);
+      await invalidateSelectedLeague();
+    },
+    [activeTournament, invalidateSelectedLeague, selectedStage, updateStage],
+  );
 
   const closeModal = () => {
     setGameForEditModal(undefined);
@@ -122,7 +167,6 @@ const ScheduleContainer = ({ activeTournament }: IProps) => {
           </IconButton>
         </Tooltip>
       </FlexContainer>
-
       <TournamentStageTabSwitch
         selectedTournament={activeTournament}
         onStageSelected={setSelectedStage}
@@ -140,6 +184,12 @@ const ScheduleContainer = ({ activeTournament }: IProps) => {
           );
         }
 
+        const playableIndex = scheduleRows
+          .filter((row) => row.scheduledGame)
+          .findIndex(
+            (row) => row.scheduledGame?.id === scheduleRow.scheduledGame?.id,
+          );
+
         return (
           <ScheduleRowGame
             key={`${index}1`}
@@ -149,6 +199,15 @@ const ScheduleContainer = ({ activeTournament }: IProps) => {
             disableEditting={
               isMatchInProgress &&
               currentActiveGame?.id === scheduleRow.scheduledGame?.game.id
+            }
+            canReorder={canReorderSchedule}
+            canMoveUp={playableIndex > 0}
+            canMoveDown={playableIndex < playableScheduleCount - 1}
+            onMoveUp={() =>
+              onReorderPlayableGame(playableIndex, playableIndex - 1)
+            }
+            onMoveDown={() =>
+              onReorderPlayableGame(playableIndex, playableIndex + 1)
             }
             nextGames={TournamentFlow.getNextGamesForEliminationsTournament(
               scheduleRow.scheduledGame?.game!,

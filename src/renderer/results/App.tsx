@@ -1,13 +1,15 @@
 import { CssBaseline, GlobalStyles, ThemeProvider, alpha } from '@mui/material';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import PouchDBProvider from 'store/PouchDBContext';
 import { theme } from '../../theme/theme';
 import ResultsPage from '../pages/ResultsPage';
 
+/**
+ * This window is display-only: it receives its data over IPC, so it
+ * deliberately mounts neither PouchDB nor React Query. A second renderer
+ * opening the same IndexedDB is what caused "the database connection is
+ * closing".
+ */
 const App = () => {
-  const queryClient = new QueryClient();
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -27,15 +29,11 @@ const App = () => {
           },
         }}
       />
-      <PouchDBProvider>
-        <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
-            <Routes>
-              <Route path="/" element={<ResultsPage />} />
-            </Routes>
-          </MemoryRouter>
-        </QueryClientProvider>
-      </PouchDBProvider>
+      <MemoryRouter>
+        <Routes>
+          <Route path="/" element={<ResultsPage />} />
+        </Routes>
+      </MemoryRouter>
     </ThemeProvider>
   );
 };

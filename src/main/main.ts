@@ -24,11 +24,16 @@ export type Channels =
   | 'setSelectedPort'
   | 'getPortsListResponse'
   | 'selectSerialPort'
+  | 'reconnectSerialPort'
+  | 'getSerialPortStatus'
   | 'buttonsResponse'
   | 'serialPortError'
+  | 'serialPortStatus'
   | 'gameSwitched'
   | 'gamesSwitched'
-  | 'timerUpdate';
+  | 'timerUpdate'
+  | 'resultsSnapshot'
+  | 'requestResultsSnapshot';
 
 let mainWindow: BrowserWindow | null = null;
 const resultsWindows: BrowserWindow[] = [];
@@ -135,14 +140,14 @@ log.transports.file.resolvePathFn = () =>
 app
   .whenReady()
   .then(async () => {
-    let window = await createWindow('main/index.html');
+    const window = await createWindow('main/index.html');
     serialPortListener(window);
     app.on('activate', async () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) {
-        window = await createWindow('main/index.html');
-        serialPortListener(window);
+        const recreatedWindow = await createWindow('main/index.html');
+        serialPortListener(recreatedWindow);
       }
     });
   })
@@ -177,5 +182,44 @@ ipcMain.on('timerUpdate', async (event, timerData) => {
     );
   } catch (e) {
     console.error('Error broadcasting timer update:', e);
+  }
+});
+
+/**
+ * `createWindow` reassigns `mainWindow` for every window it opens, so there is
+ * no reliable handle on the operator window here. Relaying to every other
+ * window instead keeps this correct regardless of open order: only the
+ * operator listens for requests, and only results windows listen for
+ * snapshots.
+ */
+const relayToOtherWindows = (
+  senderId: number,
+  channel: Channels,
+  payload?: unknown,
+) => {
+  BrowserWindow.getAllWindows().forEach((browserWindow) => {
+    if (browserWindow.isDestroyed()) {
+      return;
+    }
+    if (browserWindow.webContents.id === senderId) {
+      return;
+    }
+    browserWindow.webContents.send(channel, payload);
+  });
+};
+
+ipcMain.on('resultsSnapshot', async (event, snapshot) => {
+  try {
+    relayToOtherWindows(event.sender.id, 'resultsSnapshot', snapshot);
+  } catch (e) {
+    console.error('Error broadcasting results snapshot:', e);
+  }
+});
+
+ipcMain.on('requestResultsSnapshot', async (event) => {
+  try {
+    relayToOtherWindows(event.sender.id, 'requestResultsSnapshot');
+  } catch (e) {
+    console.error('Error requesting results snapshot:', e);
   }
 });

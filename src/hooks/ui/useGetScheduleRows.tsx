@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { isByePlaceholderGame } from 'types/BracketProperties';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
@@ -15,13 +16,22 @@ export interface ScheduleRow {
 const useGetScheduleRows = (
   tournamentStage?: TournamentStage,
   tournamentSettings?: TournamentSettings,
+  filterScheduledGame?: (scheduledGame: TournamentScheduleGame) => boolean,
 ) => {
   const currentSchedule = useMemo(() => {
     if (!tournamentStage?.schedule) {
       return undefined;
     }
-    return tournamentStage?.schedule;
-  }, [tournamentStage?.schedule]);
+    const withoutByes = tournamentStage.schedule.filter(
+      (scheduledGame) => !isByePlaceholderGame(scheduledGame.game),
+    );
+    if (!filterScheduledGame) {
+      return withoutByes;
+    }
+    // Filtering before the rows are built keeps group headers from being
+    // emitted for groups that have no remaining games.
+    return withoutByes.filter(filterScheduledGame);
+  }, [tournamentStage?.schedule, filterScheduledGame]);
 
   const currentGroups = useMemo(() => {
     if (!tournamentStage?.groups) {

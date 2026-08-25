@@ -1,5 +1,4 @@
 import Game from 'types/Game';
-import { GameState } from 'types/GameState';
 import { Match } from 'types/Match';
 import Tournament from 'types/Tournament';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
@@ -92,11 +91,25 @@ export namespace TournamentFlowTestUtils {
       tournament.state.activeGameId = nextGameState.newActiveGame.id;
       tournament.state.pairedGame1Id = nextGameState.newPairedGame1.id;
       tournament.state.pairedGame2Id = nextGameState.newPairedGame2?.id;
-      nextGameState.newActiveGame.game.gameState = GameState.playing;
+      TournamentFlow.applyActivePairGameStates(
+        nextGameState.newActiveGame,
+        nextGameState.newPairedGame1,
+        nextGameState.newPairedGame2,
+      );
       TournamentFlowTestUtils.UpdateGameInTournament(
         nextGameState.newActiveGame.game,
         tournament,
       );
+      TournamentFlowTestUtils.UpdateGameInTournament(
+        nextGameState.newPairedGame1.game,
+        tournament,
+      );
+      if (nextGameState.newPairedGame2) {
+        TournamentFlowTestUtils.UpdateGameInTournament(
+          nextGameState.newPairedGame2.game,
+          tournament,
+        );
+      }
     }
 
     const tournamentEndState =

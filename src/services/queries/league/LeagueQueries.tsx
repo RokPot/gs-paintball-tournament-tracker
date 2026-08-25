@@ -10,12 +10,13 @@ export namespace LeagueQueries {
     list: () => [...keys.all, 'list'],
   };
 
-  export const useActiveLeague = () => {
+  export const useActiveLeague = (defaultDisabled: boolean = false) => {
     const { getActiveLeague } = useLeagueService();
 
     return useQuery({
       queryKey: LeagueQueries.keys.selectedLeague(),
       queryFn: () => getActiveLeague().then((res) => res),
+      enabled: !defaultDisabled,
     });
   };
 

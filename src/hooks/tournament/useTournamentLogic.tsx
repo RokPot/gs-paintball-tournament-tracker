@@ -6,7 +6,7 @@ import { TournamentQueries } from 'services/queries/tournament/TournamentQueries
 import useTimerStore from 'store/TimerStore';
 import Game from 'types/Game';
 import { DefaultGameSettings } from 'types/GameSettings';
-import { GameState, GameWinner } from 'types/GameState';
+import { GameWinner } from 'types/GameState';
 import { Match } from 'types/Match';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import TournamentStage from 'types/TournamentStage';
@@ -167,13 +167,23 @@ const useTournamentLogic = (activeLeague?: League | null) => {
       if (!newScheduledGame) {
         return;
       }
-      setDuration(newScheduledGame.game.gameTime * 1000 || 0);
+      const remainingSeconds = TournamentFlow.getRemainingGameTimeInSeconds(
+        newScheduledGame.game,
+        gameSettings?.gameTimeInSeconds ||
+          DefaultGameSettings.gameTimeInSeconds,
+      );
+      setDuration(remainingSeconds * 1000 || 0);
       setBreakDuration(
         (gameSettings?.manualGameStartTimeInSeconds ||
           DefaultGameSettings.manualGameStartTimeInSeconds) * 1000 || 0,
       );
     },
-    [gameSettings?.manualGameStartTimeInSeconds, setBreakDuration, setDuration],
+    [
+      gameSettings?.gameTimeInSeconds,
+      gameSettings?.manualGameStartTimeInSeconds,
+      setBreakDuration,
+      setDuration,
+    ],
   );
 
   const setNewActiveGroupAndGames = useCallback(
@@ -186,9 +196,13 @@ const useTournamentLogic = (activeLeague?: League | null) => {
         return;
       }
       tournament.state.activeGameId = newActiveGame.id;
-      newActiveGame.game.gameState = GameState.playing;
       tournament.state.pairedGame1Id = newGame1.id;
       tournament.state.pairedGame2Id = newGame2?.id;
+      TournamentFlow.applyActivePairGameStates(
+        newActiveGame,
+        newGame1,
+        newGame2,
+      );
 
       if (newGame1) {
         await updateGameData(newGame1.game);
@@ -329,6 +343,7 @@ const useTournamentLogic = (activeLeague?: League | null) => {
           timeLeft,
           currentDuration,
         );
+        await updateGameData(activeScheduledGame.game);
 
         const newTournamentState = TournamentFlow.onAfterFinishedMatchProcedure(
           activeScheduledGame,
@@ -353,6 +368,7 @@ const useTournamentLogic = (activeLeague?: League | null) => {
             nextGameState.newPairedGame1,
             nextGameState.newPairedGame2,
           );
+          resetTimer();
           setGameAndBreakDuration(nextGameState.newActiveGame);
         }
         newTournamentActivity.nextTeam1Wins =
@@ -396,6 +412,7 @@ const useTournamentLogic = (activeLeague?: League | null) => {
       finishTournament,
       getDuration,
       goToNextTournamentStage,
+      resetTimer,
       sendGameSwitched,
       setGameAndBreakDuration,
       setIsMatchInProgress,
@@ -442,7 +459,11 @@ const useTournamentLogic = (activeLeague?: League | null) => {
     setIsMatchInProgress(true);
     setCurrentActiveGame(activeScheduledGame.game, true);
     const timerDelayInMs = 200;
-    const timerDurationInMs = activeScheduledGame.game.gameTime * 1000;
+    const remainingSeconds = TournamentFlow.getRemainingGameTimeInSeconds(
+      activeScheduledGame.game,
+      gameSettings.gameTimeInSeconds || DefaultGameSettings.gameTimeInSeconds,
+    );
+    const timerDurationInMs = remainingSeconds * 1000;
     const breakDurationInMs =
       (gameSettings.manualGameStartTimeInSeconds ||
         DefaultGameSettings.manualGameStartTimeInSeconds) * 1000;
@@ -540,7 +561,8 @@ const useTournamentLogic = (activeLeague?: League | null) => {
       !gameSettings ||
       isCurrentMatchInProgress ||
       hasGameTimeRanOut ||
-      showFinishMatchModal
+      showFinishMatchModal ||
+      isProcessing
     ) {
       return;
     }
@@ -551,6 +573,7 @@ const useTournamentLogic = (activeLeague?: League | null) => {
     activeScheduledGame,
     gameSettings,
     isMatchInProgress,
+    isProcessing,
     setGameAndBreakDuration,
     timingBreak,
     timingGame,

@@ -56,6 +56,8 @@ const ScoreboardPage: React.FC<IProps> = () => {
     availablePorts,
     refreshAvailablePorts,
     selectReceiverPort,
+    reconnectReceiver,
+    connectionStatus,
   } = useContext(ButtonsContext);
 
   const onPortSelected = useCallback(
@@ -110,6 +112,8 @@ const ScoreboardPage: React.FC<IProps> = () => {
         selectReceiverPort={onPortSelected}
         selectedPort={selectedPort}
         refreshAvailablePorts={refreshAvailablePorts}
+        connectionStatus={connectionStatus}
+        reconnectReceiver={reconnectReceiver}
       />
     </PageContainer>
   );

@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ErrorPlaceholderIcon from 'assets/icons/ErrorPlaceholder';
 import FlexContainer from 'components/shared/FlexContainer';
 import { SnackbarProvider } from 'notistack';
+import { useState } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import ButtonsProvider from 'store/ButtonsContext';
@@ -51,13 +52,16 @@ const Fallback = ({ error, resetErrorBoundary }: FallbackProps) => {
 };
 
 const App = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        refetchOnWindowFocus: false,
-      },
-    },
-  });
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false,
+          },
+        },
+      }),
+  );
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -80,11 +84,12 @@ const App = () => {
 
       <ErrorBoundary fallbackRender={Fallback}>
         <PouchDBProvider>
-          <ButtonsProvider>
-            <SnackbarProvider
-              maxSnack={5}
-              anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-            >
+          <SnackbarProvider
+            maxSnack={5}
+            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+            autoHideDuration={}
+          >
+            <ButtonsProvider>
               <QueryClientProvider client={queryClient}>
                 <MemoryRouter>
                   <TournamentProvider>
@@ -112,8 +117,8 @@ const App = () => {
 
                 <ConfirmationModal />
               </QueryClientProvider>
-            </SnackbarProvider>
-          </ButtonsProvider>
+            </ButtonsProvider>
+          </SnackbarProvider>
         </PouchDBProvider>
       </ErrorBoundary>
     </ThemeProvider>

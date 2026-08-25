@@ -17,3 +17,9 @@ export interface BracketProperties {
 
   bye: boolean;
 }
+
+export const isByePlaceholderGame = (
+  game?: {
+    bracketProperties?: BracketProperties | null;
+  } | null,
+) => game?.bracketProperties?.bye === true;
