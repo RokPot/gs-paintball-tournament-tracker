@@ -13,9 +13,9 @@ import usePdfExporter from 'hooks/exporter/usePdfExporter';
 import useGameFlows from 'hooks/game/useGameFlows';
 import useIPCRendererMessages from 'hooks/main/useIPCRendererMessages';
 import useGetScheduleRows from 'hooks/ui/useGetScheduleRows';
-import { useCallback, useState } from 'react';
-import { LeagueQueries } from 'services/queries/league/LeagueQueries';
-import { StageQueries } from 'services/queries/stage/StageQueries';
+import { useCallback, useContext, useState } from 'react';
+import { TournamentQueries } from 'services/queries/tournament/TournamentQueries';
+import { TournamentContext } from 'store/TournamentContext';
 import useTournamentStore from 'store/TournamentStore';
 import Game from 'types/Game';
 import Tournament from 'types/Tournament';
@@ -32,12 +32,14 @@ interface IProps {
 
 const ScheduleContainer = ({ activeTournament }: IProps) => {
   const { updateGameWithMatchesAndRecalculate } = useGameFlows();
-  const { mutateAsync: updateStage } = StageQueries.useUpdateStage();
-  const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
+  const { forceRefreshTournament } = useContext(TournamentContext);
+  const { mutateAsync: updateTournament } =
+    TournamentQueries.useUpdateTournament();
   const [gameForEditModal, setGameForEditModal] = useState<Game>();
-  const [selectedStage, setSelectedStage] = useState<
-    TournamentStage | undefined
-  >(activeTournament?.currentStage);
+  const [selectedStageId, setSelectedStageId] = useState<string | undefined>();
+  const selectedStage =
+    activeTournament?.stages?.find((stage) => stage.id === selectedStageId) ||
+    activeTournament?.currentStage;
   const theme = useTheme();
   const { exportScheduleToPdf } = usePdfExporter();
 
@@ -85,11 +87,11 @@ const ScheduleContainer = ({ activeTournament }: IProps) => {
       if (activeTournament.currentStage?.id === selectedStage.id) {
         activeTournament.currentStage.schedule = nextSchedule;
       }
-      setSelectedStage(nextStage);
-      await updateStage(nextStage);
-      await invalidateSelectedLeague();
+      setSelectedStageId(nextStage.id);
+      await updateTournament(activeTournament);
+      forceRefreshTournament?.();
     },
-    [activeTournament, invalidateSelectedLeague, selectedStage, updateStage],
+    [activeTournament, selectedStage, updateTournament, forceRefreshTournament],
   );
 
   const closeModal = () => {
@@ -169,7 +171,7 @@ const ScheduleContainer = ({ activeTournament }: IProps) => {
       </FlexContainer>
       <TournamentStageTabSwitch
         selectedTournament={activeTournament}
-        onStageSelected={setSelectedStage}
+        onStageSelected={(stage) => setSelectedStageId(stage.id)}
       />
       {scheduleRows?.map((scheduleRow, index) => {
         if (scheduleRow.showDivider) {
@@ -230,6 +232,7 @@ const ScheduleContainer = ({ activeTournament }: IProps) => {
                 updatedGame,
                 activeTournament,
               );
+              forceRefreshTournament?.();
               closeModal();
             }}
             sizeOfTeams={activeTournament?.settings?.numberOfTeamSize}

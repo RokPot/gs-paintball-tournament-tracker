@@ -109,7 +109,7 @@ const useActiveStateServiceRxDB = () => {
         }
 
         // Update using incrementalModify
-        await activeStateDoc.incrementalModify((oldData) => ({
+        await activeStateDoc.incrementalModify((oldData: any) => ({
           ...oldData,
           ...updates,
         }));

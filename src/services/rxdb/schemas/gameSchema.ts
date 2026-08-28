@@ -9,7 +9,7 @@
 export const gameSchema = {
   title: 'game schema',
   description: 'Game document schema for RxDB',
-  version: 0,
+  version: 3,
   type: 'object',
   primaryKey: '_id',
   properties: {
@@ -79,7 +79,7 @@ export const gameSchema = {
     gameTime: {
       type: 'number',
       minimum: 0,
-      multipleOf: 1,
+      multipleOf: 0.1,
       default: 0,
     },
     gameWinner: {

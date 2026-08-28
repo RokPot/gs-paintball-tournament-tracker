@@ -11,7 +11,7 @@
 export const tournamentActivitySchema = {
   title: 'tournament activity schema',
   description: 'Tournament activity document schema for RxDB',
-  version: 0,
+  version: 3,
   type: 'object',
   primaryKey: '_id',
   properties: {
@@ -68,7 +68,7 @@ export const tournamentActivitySchema = {
     gameTime: {
       type: ['number', 'null'],
       minimum: 0,
-      multipleOf: 1,
+      multipleOf: 0.1,
     },
     updatedAt: {
       type: 'string', // ISO date string

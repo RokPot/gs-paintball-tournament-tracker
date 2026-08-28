@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import useTeamServiceRxDB from 'services/TeamServiceRxDB';
+import LeaderboardTeam from 'types/LeadeboardTeam';
 import Team from 'types/Team';
 
 export namespace TeamQueries {
@@ -15,6 +16,16 @@ export namespace TeamQueries {
     return useMutation({
       mutationFn: (team: Team) => {
         return addNewTeam(team.toDto());
+      },
+    });
+  };
+
+  export const useAddLeaderboardTeam = () => {
+    const { addNewLeaderboardTeam } = useTeamServiceRxDB();
+
+    return useMutation({
+      mutationFn: (leaderboardTeam: LeaderboardTeam) => {
+        return addNewLeaderboardTeam(leaderboardTeam.toDto());
       },
     });
   };

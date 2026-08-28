@@ -17,8 +17,7 @@ const useTournamentFlows = () => {
   const { mutateAsync: addTournament } = TournamentQueries.useAddTournament();
   const { mutateAsync: updateExistingLeagueMutate } =
     LeagueQueries.useUpdateLeague();
-  const { invalidateLeaguesList, invalidateSelectedLeague } =
-    LeagueQueries.useLeagueInvalidations();
+  const { invalidateLeaguesList } = LeagueQueries.useLeagueInvalidations();
   const { mutateAsync: updateTournament } =
     TournamentQueries.useUpdateTournament();
   const { mutateAsync: addActivityToTournament } =
@@ -42,9 +41,6 @@ const useTournamentFlows = () => {
       league.tournaments = [...league.tournaments, newTournament];
       await updateExistingLeagueMutate(league);
       await invalidateLeaguesList();
-      if (league.id === selectedLeague?.id) {
-        await invalidateSelectedLeague();
-      }
       enqueueSnackbar('Tournament created', snackbarSuccessOptions);
 
       return league;
@@ -53,7 +49,6 @@ const useTournamentFlows = () => {
       addTournament,
       enqueueSnackbar,
       invalidateLeaguesList,
-      invalidateSelectedLeague,
       updateExistingLeagueMutate,
     ],
   );
@@ -75,11 +70,9 @@ const useTournamentFlows = () => {
         tournament.stages.push(newStage);
       }
       await updateTournament(tournament);
-
-      await invalidateSelectedLeague();
       return tournament;
     },
-    [addGames, invalidateSelectedLeague, updateTournament],
+    [addGames, updateTournament],
   );
 
   const initializeTournament = useCallback(

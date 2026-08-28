@@ -21,7 +21,7 @@ export default class Team extends IRxDB {
 
   color?: string;
 
-  dateCreated: Dayjs;
+  createdAt: Dayjs;
 
   constructor(props: ITeam) {
     super(props._id);
@@ -33,7 +33,7 @@ export default class Team extends IRxDB {
     this.draw = props.draw || 0;
     this.members = props.members || [];
     this.color = props.color || '#ffbbff';
-    this.dateCreated = props.dateCreated || dayjs();
+    this.createdAt = props.createdAt ? dayjs(props.createdAt) : dayjs();
   }
 
   public toDto = (): TeamDto => {
@@ -47,6 +47,7 @@ export default class Team extends IRxDB {
       members: this.members,
       color: this.color,
       draw: this.draw,
+      createdAt: this.createdAt.toISOString(),
     };
   };
 }

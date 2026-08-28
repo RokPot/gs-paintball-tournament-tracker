@@ -6,6 +6,7 @@ import {
   collectGameIdsFromTournament,
   populateTournament,
 } from 'utils/tournamentPopulationUtils';
+import { ObservableResult } from './observableTypes';
 
 /**
  * Hook to reactively observe a tournament using RxDB observables
@@ -13,30 +14,22 @@ import {
  * This hook automatically updates when:
  * - The tournament document changes
  * - Any game in the tournament changes (by also subscribing to game documents)
- *
- * No manual invalidation needed - RxDB handles reactivity automatically!
- *
- * @param tournamentId - The tournament ID to observe
- * @returns Tournament object that updates reactively, or null if not found
- *
- * @example
- * ```tsx
- * const tournament = useTournamentObservable(tournamentId);
- * // tournament automatically updates when any game in it changes
- * ```
  */
 const useTournamentObservable = (
   tournamentId: string | null | undefined,
-): Tournament | null => {
+): ObservableResult<Tournament> => {
   const { database } = useRxDB();
   const { getGames } = useGameServiceRxDB();
-  const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [data, setData] = useState<Tournament | null>(null);
+  const [isLoading, setIsLoading] = useState(!!tournamentId);
+  const [error, setError] = useState<Error | null>(null);
   const gameSubscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
 
   useEffect(() => {
     if (!tournamentId || !database) {
-      setTournament(null);
-      // Cleanup game subscription if it exists
+      setData(null);
+      setIsLoading(false);
+      setError(null);
       if (gameSubscriptionRef.current) {
         gameSubscriptionRef.current.unsubscribe();
         gameSubscriptionRef.current = null;
@@ -44,10 +37,9 @@ const useTournamentObservable = (
       return undefined;
     }
 
+    setIsLoading(true);
     let tournamentDataCache: any = null;
 
-    // Helper function to populate and set tournament
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const populateAndSetTournament = async (tournamentData: any) => {
       try {
         const populated = await populateTournament(
@@ -55,21 +47,23 @@ const useTournamentObservable = (
           database!,
           getGames,
         );
-        setTournament(populated);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to populate tournament in observable:', error);
-        setTournament(null);
+        setData(populated);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error(String(err)));
+        setData(null);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    // Subscribe to tournament document changes
     const tournamentSubscription = database.collections.tournaments
       .findOne({ selector: { _id: tournamentId } })
-      .$.subscribe(async (tournamentDoc) => {
+      .$.subscribe(async (tournamentDoc: any) => {
         if (!tournamentDoc) {
-          setTournament(null);
-          // Cleanup game subscription
+          setData(null);
+          setIsLoading(false);
+          setError(null);
           if (gameSubscriptionRef.current) {
             gameSubscriptionRef.current.unsubscribe();
             gameSubscriptionRef.current = null;
@@ -80,13 +74,9 @@ const useTournamentObservable = (
         tournamentDataCache = tournamentDoc.toMutableJSON();
         await populateAndSetTournament(tournamentDataCache);
 
-        // Also subscribe to games in this tournament
-        // When games change, we need to re-populate the tournament
         const gameIds = collectGameIdsFromTournament(tournamentDataCache);
 
         if (gameIds.length > 0 && !gameSubscriptionRef.current) {
-          // Subscribe to all games in the tournament
-          // When any game changes, re-populate the tournament
           const gameSubscription = database.collections.games
             .find({
               selector: {
@@ -94,7 +84,6 @@ const useTournamentObservable = (
               },
             })
             .$.subscribe(async () => {
-              // Game changed - re-populate tournament with fresh games
               if (tournamentDataCache) {
                 await populateAndSetTournament(tournamentDataCache);
               }
@@ -104,7 +93,6 @@ const useTournamentObservable = (
         }
       });
 
-    // Cleanup subscriptions on unmount or when tournamentId changes
     return () => {
       tournamentSubscription.unsubscribe();
       if (gameSubscriptionRef.current) {
@@ -114,7 +102,11 @@ const useTournamentObservable = (
     };
   }, [tournamentId, database, getGames]);
 
-  return tournament;
+  return {
+    data: tournamentId ? data : null,
+    isLoading: tournamentId ? isLoading : false,
+    error: tournamentId ? error : null,
+  };
 };
 
 export default useTournamentObservable;

@@ -11,13 +11,13 @@
 export const leagueSchema = {
   title: 'league schema',
   description: 'League document schema for RxDB',
-  version: 0, // Bumped version: Changed isLeagueSelected from nullable to required boolean
+  version: 4,
   type: 'object',
   primaryKey: '_id',
   properties: {
     _id: {
       type: 'string',
-      maxLength: 100, // RxDB requirement
+      maxLength: 100,
     },
     id: {
       type: 'string',
@@ -27,7 +27,10 @@ export const leagueSchema = {
       type: 'string',
       maxLength: 500,
     },
-    // Arrays
+    createdAt: {
+      type: 'string',
+      maxLength: 100,
+    },
     teamIds: {
       type: 'array',
       items: {
@@ -52,20 +55,11 @@ export const leagueSchema = {
       },
       default: [],
     },
-    // Optional fields
-    isLeagueSelected: {
-      type: 'boolean',
-      default: false,
-    },
     activeTournamentId: {
       type: ['string', 'null'],
       maxLength: 100,
     },
   },
-  required: ['id', 'name'],
-  indexes: [
-    'id', // Index for quick lookup by league id
-    'name', // Index for searching by name
-    // Note: isLeagueSelected not indexed - boolean fields don't need indexes, and Dexie has issues with boolean indexes
-  ],
+  required: ['id', 'name', 'createdAt'],
+  indexes: ['id', 'name', 'createdAt'],
 };

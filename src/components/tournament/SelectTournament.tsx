@@ -5,7 +5,8 @@ import {
   Select,
   SelectChangeEvent,
 } from '@mui/material';
-import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import { useContext } from 'react';
+import { TournamentContext } from 'store/TournamentContext';
 import Tournament from 'types/Tournament';
 
 interface IProps {
@@ -13,7 +14,7 @@ interface IProps {
 }
 
 const SelectTournament = ({ onTournamentSelected }: IProps) => {
-  const { data: activeLeague } = LeagueQueries.useActiveLeague();
+  const { activeLeague } = useContext(TournamentContext);
   const selectedTournament = activeLeague?.activeTournament;
   const leagueTournaments = activeLeague?.tournaments;
 

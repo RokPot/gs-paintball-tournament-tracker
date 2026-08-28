@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useRxDB } from 'store/RxDBContext';
 import { IActiveState } from 'types/interfaces/IActiveState';
+import { ObservableResult } from './observableTypes';
+
+const ACTIVE_STATE_ID = 'active-state';
 
 /**
  * Hook to reactively observe the active state using RxDB observables
@@ -9,54 +12,49 @@ import { IActiveState } from 'types/interfaces/IActiveState';
  * - The active state document changes (leagueId, tournamentId, or gameId)
  *
  * The active state is stored as a singleton document with _id: "active-state"
- *
- * @returns ActiveState object with leagueId, tournamentId, and gameId, or null if not initialized
- *
- * @example
- * ```tsx
- * const activeState = useActiveStateObservable();
- * // activeState automatically updates when any active ID changes
- * ```
  */
-const useActiveStateObservable = (): IActiveState | null => {
+const useActiveStateObservable = (): ObservableResult<IActiveState> => {
   const { database } = useRxDB();
-  const [activeState, setActiveState] = useState<IActiveState | null>(null);
+  const [data, setData] = useState<IActiveState | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!database) {
-      setActiveState(null);
+      setData(null);
+      setIsLoading(false);
       return undefined;
     }
 
-    const ACTIVE_STATE_ID = 'active-state';
+    setIsLoading(true);
 
-    // Subscribe to active state document changes
-    // The $ property creates an observable that emits whenever the document changes
     const subscription = database.collections.activeState
       .findOne({ selector: { _id: ACTIVE_STATE_ID } })
-      .$.subscribe((activeStateDoc) => {
+      .$.subscribe((activeStateDoc: any) => {
         if (!activeStateDoc) {
-          setActiveState(null);
+          setData(null);
+          setIsLoading(false);
+          setError(null);
           return;
         }
 
         try {
-          const activeStateData = activeStateDoc.toMutableJSON();
-          setActiveState(activeStateData);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error('Failed to get active state in observable:', error);
-          setActiveState(null);
+          setData(activeStateDoc.toMutableJSON());
+          setError(null);
+        } catch (err) {
+          setError(err instanceof Error ? err : new Error(String(err)));
+          setData(null);
+        } finally {
+          setIsLoading(false);
         }
       });
 
-    // Cleanup subscription on unmount
     return () => {
       subscription.unsubscribe();
     };
   }, [database]);
 
-  return activeState;
+  return { data, isLoading, error };
 };
 
 export default useActiveStateObservable;

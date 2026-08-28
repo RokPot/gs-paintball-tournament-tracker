@@ -6,7 +6,7 @@ import { usePopulatedActiveState } from 'hooks/observables/usePopulatedActiveSta
 import React, { useEffect, useMemo, useState } from 'react';
 
 const ActiveStateDebugPanel: React.FC = () => {
-  const activeState = useActiveStateObservable();
+  const { data: activeState } = useActiveStateObservable();
   const { league, tournament, game, isLoading } = usePopulatedActiveState();
 
   const [lastUpdated, setLastUpdated] = useState<string>(

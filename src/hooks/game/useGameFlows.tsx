@@ -1,7 +1,6 @@
 import useTournamentFlows from 'hooks/tournament/useTournamentFlows';
 import { useCallback } from 'react';
 import { GameQueries } from 'services/queries/game/GameQueries';
-import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import ActivityChangeType from 'types/ActivityChangeType';
 import Game from 'types/Game';
 import { GameWinner } from 'types/GameState';
@@ -12,7 +11,6 @@ import { TournamentFlow } from 'utils/tournamentFlowUtils';
 
 const useGameFlows = () => {
   const { mutateAsync: updateGame } = GameQueries.useUpdateGame();
-  const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
   const { addNewTournamentActivity } = useTournamentFlows();
 
   const updateGameData = useCallback(
@@ -86,11 +84,10 @@ const useGameFlows = () => {
         }
       }
       await updateGame(game);
-      await invalidateSelectedLeague();
 
       await addNewTournamentActivity(newTournamentActivity);
     },
-    [addNewTournamentActivity, invalidateSelectedLeague, updateGame],
+    [addNewTournamentActivity, updateGame],
   );
 
   return { updateGameData, updateGameWithMatchesAndRecalculate };

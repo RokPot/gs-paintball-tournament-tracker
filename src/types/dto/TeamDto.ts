@@ -10,4 +10,5 @@ export interface TeamDto extends RxDBDto {
   draw: number;
   members: TeamMember[];
   color?: string;
+  createdAt: string;
 }

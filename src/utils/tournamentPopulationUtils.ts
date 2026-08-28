@@ -34,7 +34,18 @@ export const populateTournamentTeams = async (
       })
       .exec();
 
-    return teamDocs.map((doc) => {
+    const docs =
+      teamDocs.length > 0
+        ? teamDocs
+        : await database.collections.teams
+            .find({
+              selector: {
+                id: { $in: tournamentData.teamIds },
+              },
+            })
+            .exec();
+
+    return docs.map((doc: any) => {
       const teamData = doc.toMutableJSON();
       return new Team(teamData as ITeam);
     });
@@ -79,21 +90,34 @@ export const collectGameIdsFromTournament = (
 export const populateTournamentStages = async (
   tournamentData: TournamentDto,
   allGames: Game[],
+  teams: Team[] = [],
 ): Promise<TournamentStage[]> => {
   if (!tournamentData.stages || tournamentData.stages.length === 0) {
     return [];
   }
 
   try {
-    // Create a map for quick game lookup
     const gamesMap = new Map<string, Game>();
     allGames.forEach((game) => {
-      gamesMap.set(game._id, game);
+      if (game._id) {
+        gamesMap.set(game._id, game);
+      }
+      if (game.id) {
+        gamesMap.set(game.id, game);
+      }
     });
 
-    // Populate stages with groups and games
+    const teamsMap = new Map<string, Team>();
+    teams.forEach((team) => {
+      if (team._id) {
+        teamsMap.set(team._id, team);
+      }
+      if (team.id) {
+        teamsMap.set(team.id, team);
+      }
+    });
+
     const stages = tournamentData.stages.map((stageDto) => {
-      // Populate groups
       let groups: TournamentGroup[] = [];
       if (stageDto.groups && stageDto.groups.length > 0) {
         groups = stageDto.groups.map((groupDto) => {
@@ -107,23 +131,43 @@ export const populateTournamentStages = async (
             });
           }
 
+          const groupTeams = (groupDto.teamIds || [])
+            .map((teamId: string) => teamsMap.get(teamId))
+            .filter((team): team is Team => !!team);
+
+          if (groupTeams.length === 0 && groupGames.length > 0) {
+            const seenTeamIds = new Set<string>();
+            groupGames.forEach((game) => {
+              [game.team1, game.team2].forEach((team) => {
+                const teamId = team?._id || team?.id;
+                if (teamId && !seenTeamIds.has(teamId)) {
+                  seenTeamIds.add(teamId);
+                  groupTeams.push(team);
+                }
+              });
+            });
+          }
+
           return new TournamentGroup({
             ...groupDto,
-            teams: [],
+            teams: groupTeams,
             games: groupGames,
           } as ITournamentGroup);
         });
       }
 
-      // Populate schedule
       const schedule: TournamentScheduleGame[] = [];
       if (stageDto.schedule && stageDto.schedule.length > 0) {
         stageDto.schedule.forEach((scheduledGame) => {
           const scheduledGameGroup = groups?.find(
-            (group) => group.id === scheduledGame.groupId,
+            (group) =>
+              group.id === scheduledGame.groupId ||
+              group._id === scheduledGame.groupId,
           );
           const scheduledActiveGame = scheduledGameGroup?.games.find(
-            (game) => game.id === scheduledGame.gameId,
+            (game) =>
+              game.id === scheduledGame.gameId ||
+              game._id === scheduledGame.gameId,
           );
           if (scheduledGameGroup && scheduledActiveGame) {
             schedule.push({
@@ -186,7 +230,7 @@ export const populateTournament = async (
   }
 
   // Populate stages (includes groups and games)
-  const stages = await populateTournamentStages(tournamentData, allGames);
+  const stages = await populateTournamentStages(tournamentData, allGames, teams);
 
   // Return fully populated Tournament
   return new Tournament({

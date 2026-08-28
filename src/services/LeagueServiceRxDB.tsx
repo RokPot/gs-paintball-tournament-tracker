@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { toPersistedLeaderboardTeam } from 'services/rxdb/database';
 import { useRxDB } from 'store/RxDBContext';
 import { LeagueDto } from 'types/dto/LeagueDto';
 import LeaderboardTeam from 'types/LeadeboardTeam';
@@ -6,17 +7,163 @@ import League from 'types/League';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
 import useTournamentServiceRxDB from './TournamentServiceRxDB';
-/* LeagueService using RxDB
- *
- *
- * Usage:
- * const { addNewLeague, getLeague } = useLeagueServiceRxDB();
- */
+
+const toPersistedLeague = (league: LeagueDto) => ({
+  _id: league._id,
+  id: league.id,
+  name: league.name,
+  createdAt: league.createdAt || new Date().toISOString(),
+  teamIds: league.teamIds || [],
+  tournamentIds: league.tournamentIds || [],
+  leaderboardTeamIds: league.leaderboardTeamIds || [],
+  activeTournamentId: league.activeTournamentId || null,
+});
+
 const useLeagueServiceRxDB = () => {
   const { database } = useRxDB();
-
-  // Use RxDB service for populating tournaments
   const { getTournament, getTournaments } = useTournamentServiceRxDB();
+
+  const persistLeaderboardTeams = useCallback(
+    async (league: LeagueDto) => {
+      if (!database || !league.leaderboard?.length) {
+        return;
+      }
+
+      await Promise.all(
+        league.leaderboard.map(async (leaderboardTeam) => {
+          const stored = toPersistedLeaderboardTeam(leaderboardTeam);
+          const existing = await database.collections.leaderboardTeams
+            .findOne({ selector: { _id: stored._id } })
+            .exec();
+          if (existing) {
+            await existing.incrementalModify((oldData: any) => ({
+              ...oldData,
+              ...stored,
+            }));
+            return;
+          }
+          await database.collections.leaderboardTeams.insert(stored);
+        }),
+      );
+    },
+    [database],
+  );
+
+  const populateLeaderboard = useCallback(
+    async (leaderboardTeamIds?: string[]) => {
+      if (!database || !leaderboardTeamIds?.length) {
+        return [];
+      }
+
+      const leaderboardDocs = await database.collections.leaderboardTeams
+        .find({
+          selector: {
+            _id: { $in: leaderboardTeamIds },
+          },
+        })
+        .exec();
+
+      const teamIds = leaderboardDocs
+        .map((doc: any) => doc.toMutableJSON().teamId)
+        .filter(Boolean);
+
+      const teamDocs =
+        teamIds.length > 0
+          ? await database.collections.teams
+              .find({
+                selector: {
+                  _id: { $in: teamIds },
+                },
+              })
+              .exec()
+          : [];
+
+      const teamsById = new Map(
+        teamDocs.map((doc: any) => {
+          const teamData = doc.toMutableJSON();
+          return [teamData._id, new Team(teamData as any)];
+        }),
+      );
+
+      return leaderboardDocs
+        .map((doc: any) => {
+          const leaderboardData = doc.toMutableJSON();
+          const team = teamsById.get(leaderboardData.teamId);
+          if (!team) {
+            return null;
+          }
+          return new LeaderboardTeam({
+            ...leaderboardData,
+            team,
+          } as any);
+        })
+        .filter((item: LeaderboardTeam | null): item is LeaderboardTeam => !!item);
+    },
+    [database],
+  );
+
+  const populateLeague = useCallback(
+    async (leagueData: LeagueDto) => {
+      let teams: Team[] = [];
+      if (leagueData.teamIds?.length) {
+        try {
+          const teamDocs = await database!.collections.teams
+            .find({
+              selector: {
+                _id: { $in: leagueData.teamIds },
+              },
+            })
+            .exec();
+          teams = teamDocs.map((doc: any) => new Team(doc.toMutableJSON() as any));
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.warn(
+            `Failed to populate teams for league ${leagueData.id}:`,
+            error,
+          );
+        }
+      }
+
+      let tournaments: Tournament[] = [];
+      if (leagueData.tournamentIds?.length) {
+        try {
+          tournaments = await getTournaments(leagueData.tournamentIds);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.warn(
+            `Failed to populate tournaments for league ${leagueData.id}:`,
+            error,
+          );
+        }
+      }
+
+      let activeTournament: Tournament | undefined;
+      if (leagueData.activeTournamentId) {
+        try {
+          activeTournament = await getTournament(leagueData.activeTournamentId);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.warn(
+            `Failed to populate active tournament for league ${leagueData.id}:`,
+            error,
+          );
+        }
+      }
+
+      const leaderboard = await populateLeaderboard(
+        leagueData.leaderboardTeamIds,
+      );
+
+      return new League({
+        ...leagueData,
+        teams,
+        tournaments,
+        leaderboard,
+        activeTournament,
+      } as any);
+    },
+    [database, getTournament, getTournaments, populateLeaderboard],
+  );
 
   const addNewLeague = useCallback(
     async (league: LeagueDto) => {
@@ -24,32 +171,24 @@ const useLeagueServiceRxDB = () => {
         throw new Error('RxDB database not initialized');
       }
 
-      // Validate required fields
       if (!league.id || !league.name) {
         throw new Error('Missing required league fields: id or name');
       }
 
       try {
-        // Insert league into RxDB
-        const insertedDoc = await database.collections.leagues.insert(league);
-        const leagueData = insertedDoc.toMutableJSON();
-
-        // Return as League instance (without population - will be populated on read)
-        return new League({
-          ...leagueData,
-          teams: [],
-          tournaments: [],
-          leaderboard: [],
-        } as any);
+        await persistLeaderboardTeams(league);
+        const insertedDoc = await database.collections.leagues.insert(
+          toPersistedLeague(league),
+        );
+        return populateLeague(insertedDoc.toMutableJSON());
       } catch (error: any) {
         if (error.name === 'RxError' && error.code === 'VD2') {
-          // Validation error
           throw new Error(`League validation failed: ${error.message}`);
         }
         throw new Error(`Failed to create league: ${error.message}`);
       }
     },
-    [database],
+    [database, persistLeaderboardTeams, populateLeague],
   );
 
   const updateLeague = useCallback(
@@ -63,7 +202,6 @@ const useLeagueServiceRxDB = () => {
       }
 
       try {
-        // Get existing league document
         const existing = await database.collections.leagues
           .findOne({ selector: { _id: league._id } })
           .exec();
@@ -72,30 +210,22 @@ const useLeagueServiceRxDB = () => {
           throw new Error(`League with id ${league._id} not found`);
         }
 
-        // Update the league using incrementalModify
-        await existing.incrementalModify((oldData) => ({
+        await persistLeaderboardTeams(league);
+        await existing.incrementalModify((oldData: any) => ({
           ...oldData,
-          ...league,
+          ...toPersistedLeague(league),
+          createdAt: oldData.createdAt || league.createdAt,
         }));
 
-        const leagueData = existing.toMutableJSON();
-
-        // Populate related entities
-        // This will be populated on read, so return basic structure here
-        return new League({
-          ...leagueData,
-          teams: [],
-          tournaments: [],
-          leaderboard: [],
-        } as any);
+        return populateLeague(existing.toMutableJSON());
       } catch (error: any) {
         if (error.message.includes('not found')) {
-          throw error; // Re-throw not found errors as-is
+          throw error;
         }
         throw new Error(`Failed to update league: ${error.message}`);
       }
     },
-    [database],
+    [database, persistLeaderboardTeams, populateLeague],
   );
 
   const deleteLeague = useCallback(
@@ -117,13 +247,20 @@ const useLeagueServiceRxDB = () => {
           throw new Error(`League with id ${league._id} not found`);
         }
 
-        // Remove the league
-        await leagueDoc.remove();
+        if (league.leaderboardTeamIds?.length) {
+          const leaderboardDocs = await database.collections.leaderboardTeams
+            .find({
+              selector: { _id: { $in: league.leaderboardTeamIds } },
+            })
+            .exec();
+          await Promise.all(leaderboardDocs.map((doc: any) => doc.remove()));
+        }
 
+        await leagueDoc.remove();
         return true;
       } catch (error: any) {
         if (error.message.includes('not found')) {
-          throw error; // Re-throw not found errors as-is
+          throw error;
         }
         throw new Error(`Failed to delete league: ${error.message}`);
       }
@@ -150,87 +287,12 @@ const useLeagueServiceRxDB = () => {
           return null;
         }
 
-        const leagueData = leagueDoc.toMutableJSON();
-
-        // Populate teams from RxDB
-        let teams: Team[] = [];
-        if (leagueData.teamIds && leagueData.teamIds.length > 0) {
-          try {
-            // Fetch teams from RxDB using $in selector
-            const teamDocs = await database.collections.teams
-              .find({
-                selector: {
-                  _id: { $in: leagueData.teamIds },
-                },
-              })
-              .exec();
-            // Convert to Team instances
-            teams = teamDocs.map((doc) => {
-              const teamData = doc.toMutableJSON();
-              return new Team(teamData as any);
-            });
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.warn(
-              `Failed to populate teams for league ${leagueId}:`,
-              error,
-            );
-            // Continue without teams populated
-          }
-        }
-
-        // Populate tournaments from RxDB
-        let tournaments: Tournament[] = [];
-        if (leagueData.tournamentIds && leagueData.tournamentIds.length > 0) {
-          try {
-            // Fetch tournaments using TournamentServiceRxDB batch function (handles population)
-            tournaments = await getTournaments(leagueData.tournamentIds);
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.warn(
-              `Failed to populate tournaments for league ${leagueId}:`,
-              error,
-            );
-            // Continue without tournaments populated
-          }
-        }
-
-        // Populate active tournament if specified
-        let activeTournament: Tournament | undefined;
-        if (leagueData.activeTournamentId) {
-          try {
-            activeTournament = await getTournament(
-              leagueData.activeTournamentId,
-            );
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.warn(
-              `Failed to populate active tournament for league ${leagueId}:`,
-              error,
-            );
-            // Continue without active tournament populated
-          }
-        }
-
-        // TODO: Populate leaderboard
-        // LeaderboardTeam is a separate document type that references teams
-        // For now, return empty array - LeaderboardTeam collection needs to be added later
-        // or fetched from a separate service
-        const leaderboard: LeaderboardTeam[] = [];
-
-        // Return as League instance
-        return new League({
-          ...leagueData,
-          teams,
-          tournaments,
-          leaderboard,
-          activeTournament,
-        } as any);
+        return populateLeague(leagueDoc.toMutableJSON());
       } catch (error: any) {
         throw new Error(`Failed to get league: ${error.message}`);
       }
     },
-    [database, getTournaments, getTournament],
+    [database, populateLeague],
   );
 
   const getLeagues = useCallback(async () => {
@@ -240,174 +302,13 @@ const useLeagueServiceRxDB = () => {
 
     try {
       const leagueDocs = await database.collections.leagues.find().exec();
-
-      // Convert to League instances and populate related entities
-      const leagues = await Promise.all(
-        leagueDocs.map(async (doc) => {
-          const leagueData = doc.toMutableJSON();
-
-          // Populate teams
-          let teams: Team[] = [];
-          if (leagueData.teamIds && leagueData.teamIds.length > 0) {
-            try {
-              const teamDocs = await database.collections.teams
-                .find({
-                  selector: {
-                    _id: { $in: leagueData.teamIds },
-                  },
-                })
-                .exec();
-              teams = teamDocs.map((teamDoc) => {
-                const teamData = teamDoc.toMutableJSON();
-                return new Team(teamData as any);
-              });
-            } catch (error) {
-              // eslint-disable-next-line no-console
-              console.warn(
-                `Failed to populate teams for league ${leagueData.id}:`,
-                error,
-              );
-            }
-          }
-
-          // Populate tournaments
-          let tournaments: Tournament[] = [];
-          if (leagueData.tournamentIds && leagueData.tournamentIds.length > 0) {
-            try {
-              tournaments = await getTournaments(leagueData.tournamentIds);
-            } catch (error) {
-              // eslint-disable-next-line no-console
-              console.warn(
-                `Failed to populate tournaments for league ${leagueData.id}:`,
-                error,
-              );
-            }
-          }
-
-          // Populate active tournament if specified
-          let activeTournament: Tournament | undefined;
-          if (leagueData.activeTournamentId) {
-            try {
-              activeTournament = await getTournament(
-                leagueData.activeTournamentId,
-              );
-            } catch (error) {
-              // eslint-disable-next-line no-console
-              console.warn(
-                `Failed to populate active tournament for league ${leagueData.id}:`,
-                error,
-              );
-            }
-          }
-
-          // TODO: Populate leaderboard (see getLeague for details)
-          const leaderboard: LeaderboardTeam[] = [];
-
-          return new League({
-            ...leagueData,
-            teams,
-            tournaments,
-            leaderboard,
-            activeTournament,
-          } as any);
-        }),
+      return Promise.all(
+        leagueDocs.map((doc: any) => populateLeague(doc.toMutableJSON())),
       );
-
-      return leagues;
     } catch (error: any) {
       throw new Error(`Failed to get leagues: ${error.message}`);
     }
-  }, [database, getTournaments, getTournament]);
-
-  const getActiveLeague = useCallback(async () => {
-    if (!database) {
-      throw new Error('RxDB database not initialized');
-    }
-
-    try {
-      // Find league where isLeagueSelected is true
-      const leagueDoc = await database.collections.leagues
-        .findOne({
-          selector: {
-            isLeagueSelected: true,
-          },
-        })
-        .exec();
-
-      if (!leagueDoc) {
-        return null;
-      }
-
-      const leagueData = leagueDoc.toMutableJSON();
-
-      // Populate teams
-      let teams: Team[] = [];
-      if (leagueData.teamIds && leagueData.teamIds.length > 0) {
-        try {
-          const teamDocs = await database.collections.teams
-            .find({
-              selector: {
-                _id: { $in: leagueData.teamIds },
-              },
-            })
-            .exec();
-          teams = teamDocs.map((teamDoc) => {
-            const teamData = teamDoc.toMutableJSON();
-            return new Team(teamData as any);
-          });
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.warn(
-            `Failed to populate teams for active league ${leagueData.id}:`,
-            error,
-          );
-        }
-      }
-
-      // Populate tournaments
-      let tournaments: Tournament[] = [];
-      if (leagueData.tournamentIds && leagueData.tournamentIds.length > 0) {
-        try {
-          tournaments = await getTournaments(leagueData.tournamentIds);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.warn(
-            `Failed to populate tournaments for active league ${leagueData.id}:`,
-            error,
-          );
-        }
-      }
-
-      // Populate active tournament if specified
-      let activeTournament: Tournament | undefined;
-      if (leagueData.activeTournamentId) {
-        try {
-          activeTournament = await getTournament(leagueData.activeTournamentId);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.warn(
-            `Failed to populate active tournament for active league ${leagueData.id}:`,
-            error,
-          );
-        }
-      }
-
-      // TODO: Populate leaderboard (see getLeague for details)
-      const leaderboard: LeaderboardTeam[] = [];
-
-      const league = new League({
-        ...leagueData,
-        teams,
-        tournaments,
-        leaderboard,
-        activeTournament,
-      });
-
-      return league;
-    } catch (error: any) {
-      throw new Error(`Failed to get active league: ${error.message}`);
-    }
-  }, [database, getTournaments, getTournament]);
+  }, [database, populateLeague]);
 
   return {
     addNewLeague,
@@ -415,7 +316,6 @@ const useLeagueServiceRxDB = () => {
     deleteLeague,
     getLeague,
     getLeagues,
-    getActiveLeague,
   };
 };
 

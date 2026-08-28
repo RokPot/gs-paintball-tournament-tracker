@@ -29,10 +29,11 @@ import ScheduleUpcomingGames from 'components/tournament/visualizations/schedule
 import useLeagueFlows from 'hooks/league/useLeagueFlows';
 import useTournamentFlows from 'hooks/tournament/useTournamentFlows';
 import { useSnackbar } from 'notistack';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import { TournamentQueries } from 'services/queries/tournament/TournamentQueries';
+import { TournamentContext } from 'store/TournamentContext';
 import Tournament from 'types/Tournament';
 import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
@@ -105,13 +106,11 @@ const TournamentPage = () => {
     useState(false);
   const { setSelectedLeague, setSelectedLeagueTournament } = useLeagueFlows();
 
-  const { data: activeLeague, isLoading: isFetchingActiveLeague } =
-    LeagueQueries.useActiveLeague();
+  const { activeLeague, isFetchingActiveLeague } =
+    useContext(TournamentContext);
 
   const { addNewTournamentToLeague, initializeTournament } =
     useTournamentFlows();
-
-  const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
 
   const { mutateAsync: updateTournament } =
     TournamentQueries.useUpdateTournament();
@@ -122,7 +121,6 @@ const TournamentPage = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const selectedTournament = activeLeague?.activeTournament;
-  console.log(selectedTournament);
 
   const setSelectedTournament = useCallback(
     async (tournament?: Tournament) => {
@@ -142,7 +140,6 @@ const TournamentPage = () => {
     } else {
       await addNewTournamentToLeague(tournament, activeLeague);
     }
-    await invalidateSelectedLeague();
 
     setAddOrEditTournamentModalProps({ isOpen: false });
   };
@@ -294,7 +291,10 @@ const TournamentPage = () => {
       />
       <TournamentPageSelectTournamentView
         activeLeague={activeLeague}
-        onTournamentDeselected={() => setSelectedTournament(undefined)}
+        onTournamentDeselected={() => {
+          setAllowAutomaticTournamentAssignment(false);
+          setSelectedTournament(undefined);
+        }}
         onTournamentSelected={(tournament) => setSelectedTournament(tournament)}
       />
 

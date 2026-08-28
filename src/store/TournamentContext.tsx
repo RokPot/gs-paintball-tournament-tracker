@@ -1,7 +1,7 @@
+import { usePopulatedActiveState } from 'hooks/observables/usePopulatedActiveState';
 import useBroadcastResultsSnapshot from 'hooks/results/useBroadcastResultsSnapshot';
 import useTournamentLogic from 'hooks/tournament/useTournamentLogic';
 import React, { useMemo } from 'react';
-import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import League from 'types/League';
 import { Match } from 'types/Match';
 import Team from 'types/Team';
@@ -36,9 +36,13 @@ export const TournamentContext = React.createContext<TournamentContextProps>(
 const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { data: activeLeague, isLoading: isFetchingActiveLeague } =
-    LeagueQueries.useActiveLeague();
-  console.log('activeLeague', activeLeague);
+  const {
+    league,
+    tournament,
+    isLoading: isFetchingActiveLeague,
+  } = usePopulatedActiveState();
+
+  const activeLeague = league;
   const {
     finishMatch,
     beginTournament,
@@ -74,7 +78,7 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
       confirmNextTournamentStage,
       onTeamPause,
       forceRefreshTournament,
-      activeTournament: activeLeague?.activeTournament,
+      activeTournament: tournament ?? activeLeague?.activeTournament,
     }),
     [
       activeGame,
@@ -92,6 +96,7 @@ const TournamentProvider: React.FC<{ children: React.ReactNode }> = ({
       startStopMatch,
       timingBreak,
       forceRefreshTournament,
+      tournament,
     ],
   );
   return (

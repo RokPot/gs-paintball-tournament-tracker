@@ -3,7 +3,6 @@ import { BracketProperties } from 'types/BracketProperties';
 import Game from 'types/Game';
 import { GameSettings } from 'types/GameSettings';
 import { GameState, GameWinner } from 'types/GameState';
-import { DocType } from 'types/interfaces/IPouchDB';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import League from 'types/League';
 import { Match } from 'types/Match';
@@ -41,6 +40,7 @@ interface TeamSnapshot {
   draw: number;
   members: TeamMember[];
   color?: string;
+  createdAt?: string;
   dateCreated?: string;
 }
 
@@ -123,6 +123,7 @@ interface LeagueSnapshot {
   _rev?: string;
   id: string;
   name: string;
+  createdAt?: string;
   isLeagueSelected?: boolean;
   teamKeys: EntityKey[];
   leaderboardKeys: EntityKey[];
@@ -190,7 +191,6 @@ export const serializeResultsSnapshot = (
     if (!teams.has(key)) {
       teams.set(key, {
         _id: team._id,
-        _rev: team._rev,
         id: team.id,
         teamName: team.teamName,
         teamTag: team.teamTag,
@@ -199,8 +199,8 @@ export const serializeResultsSnapshot = (
         draw: team.draw,
         members: team.members || [],
         color: team.color,
-        dateCreated: team.dateCreated
-          ? dayjs(team.dateCreated).toISOString()
+        createdAt: team.createdAt
+          ? dayjs(team.createdAt).toISOString()
           : undefined,
       });
     }
@@ -215,7 +215,6 @@ export const serializeResultsSnapshot = (
     if (!games.has(key)) {
       games.set(key, {
         _id: game._id,
-        _rev: game._rev,
         id: game.id,
         team1Key: addTeam(game.team1),
         team2Key: addTeam(game.team2),
@@ -239,7 +238,6 @@ export const serializeResultsSnapshot = (
     if (!groups.has(key)) {
       groups.set(key, {
         _id: group._id,
-        _rev: group._rev,
         id: group.id,
         groupIndex: group.groupIndex,
         groupType: group.groupType,
@@ -266,7 +264,6 @@ export const serializeResultsSnapshot = (
     if (!leaderboardTeams.has(key)) {
       leaderboardTeams.set(key, {
         _id: leaderboardTeam._id,
-        _rev: leaderboardTeam._rev,
         id: leaderboardTeam.id,
         totalWins: leaderboardTeam.totalWins,
         totalLosses: leaderboardTeam.totalLosses,
@@ -285,7 +282,6 @@ export const serializeResultsSnapshot = (
   const tournament: TournamentSnapshot | null = activeTournament
     ? {
         _id: activeTournament._id,
-        _rev: activeTournament._rev,
         id: activeTournament.id,
         name: activeTournament.name,
         startDate: activeTournament.startDate?.toISOString(),
@@ -301,7 +297,6 @@ export const serializeResultsSnapshot = (
           .filter((boardKey): boardKey is EntityKey => !!boardKey),
         stages: (activeTournament.stages || []).map((stage) => ({
           _id: stage._id,
-          _rev: stage._rev,
           id: stage.id,
           stage: stage.stage,
           stageGamesType: stage.stageGamesType,
@@ -324,10 +319,9 @@ export const serializeResultsSnapshot = (
     version: RESULTS_SNAPSHOT_VERSION,
     league: {
       _id: league._id,
-      _rev: league._rev,
       id: league.id,
       name: league.name,
-      isLeagueSelected: league.isLeagueSelected,
+      createdAt: league.createdAt?.toISOString(),
       teamKeys: (league.teams || [])
         .map(addTeam)
         .filter((teamKey): teamKey is EntityKey => !!teamKey),
@@ -361,8 +355,10 @@ export const hydrateResultsSnapshot = (snapshot: unknown): League | null => {
       team._id || team.id,
       new Team({
         ...team,
-        docType: DocType.Team,
-        dateCreated: team.dateCreated ? dayjs(team.dateCreated) : undefined,
+        createdAt:
+          team.createdAt || team.dateCreated
+            ? dayjs(team.createdAt || team.dateCreated)
+            : undefined,
       }),
     ]),
   );
@@ -375,7 +371,6 @@ export const hydrateResultsSnapshot = (snapshot: unknown): League | null => {
       game._id || game.id,
       new Game({
         ...game,
-        docType: DocType.Game,
         team1: resolveTeam(game.team1Key) ?? createPlaceholderTeam(),
         team2: resolveTeam(game.team2Key) ?? createPlaceholderTeam(),
       }),
@@ -387,7 +382,6 @@ export const hydrateResultsSnapshot = (snapshot: unknown): League | null => {
       group._id || group.id,
       new TournamentGroup({
         ...group,
-        docType: DocType.Group,
         teams: group.teamKeys
           .map((key) => teams.get(key))
           .filter((team): team is Team => !!team),
@@ -403,7 +397,6 @@ export const hydrateResultsSnapshot = (snapshot: unknown): League | null => {
       leaderboardTeam._id || leaderboardTeam.id,
       new LeaderboardTeam({
         ...leaderboardTeam,
-        docType: DocType.LeaderboardTeam,
         team: resolveTeam(leaderboardTeam.teamKey) as Team,
       }),
     ]),
@@ -411,7 +404,6 @@ export const hydrateResultsSnapshot = (snapshot: unknown): League | null => {
 
   const league = new League({
     ...snapshot.league,
-    docType: DocType.League,
     teams: snapshot.league.teamKeys
       .map((key) => teams.get(key))
       .filter((team): team is Team => !!team),
@@ -430,7 +422,6 @@ export const hydrateResultsSnapshot = (snapshot: unknown): League | null => {
     (stage) =>
       new TournamentStage({
         ...stage,
-        docType: DocType.TournamentStage,
         groups: stage.groupKeys
           .map((key) => groups.get(key))
           .filter((group): group is TournamentGroup => !!group),
@@ -463,7 +454,6 @@ export const hydrateResultsSnapshot = (snapshot: unknown): League | null => {
 
   const tournament = new Tournament({
     ...tournamentSnapshot,
-    docType: DocType.Tournament,
     state: new TournamentState(tournamentSnapshot.state),
     teams: tournamentSnapshot.teamKeys
       .map((key) => teams.get(key))

@@ -2,7 +2,6 @@ import { useCallback } from 'react';
 import { useRxDB } from 'store/RxDBContext';
 import Game from 'types/Game';
 import { GameDto } from 'types/dto/GameDto';
-// Note: Still need TeamService for populating teams in games
 import useTeamServiceRxDB from './TeamServiceRxDB';
 
 /**
@@ -133,7 +132,7 @@ const useGameServiceRxDB = () => {
         }
 
         // Update the game using incrementalModify
-        await existing.incrementalModify((oldData) => ({
+        await existing.incrementalModify((oldData: any) => ({
           ...oldData,
           ...game,
         }));
@@ -286,17 +285,25 @@ const useGameServiceRxDB = () => {
           .find({ selector })
           .exec();
 
-        // If no results found, try _id as fallback (in case games use _id instead of id)
-        if (gameIds && gameIds.length > 0 && gameDocs.length === 0) {
-          const selectorById: any = { id: { $in: gameIds } };
-          gameDocs = await database.collections.games
-            .find({ selector: selectorById })
-            .exec();
+        if (gameIds && gameIds.length > 0 && gameDocs.length < gameIds.length) {
+          const matchedIds = new Set(
+            gameDocs.flatMap((doc: any) => {
+              const data = doc.toMutableJSON();
+              return [data.id, data._id].filter(Boolean);
+            }),
+          );
+          const missingIds = gameIds.filter((id) => !matchedIds.has(id));
+          if (missingIds.length > 0) {
+            const extraDocs = await database.collections.games
+              .find({ selector: { _id: { $in: missingIds } } })
+              .exec();
+            gameDocs = [...gameDocs, ...extraDocs];
+          }
         }
 
         // Convert to Game instances and populate teams
         const games = await Promise.all(
-          gameDocs.map(async (doc) => {
+          gameDocs.map(async (doc: any) => {
             const gameData = doc.toMutableJSON();
 
             // Populate teams

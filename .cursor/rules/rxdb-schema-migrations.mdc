@@ -1,0 +1,33 @@
+---
+description: Always bump RxDB schema version and add a migration when a collection schema changes, to avoid DB6 hash mismatch.
+globs: src/services/rxdb/**
+alwaysApply: true
+---
+
+# RxDB schema changes
+
+Changing an existing collection schema **without incrementing `version`** causes `DB6`: "another instance created this collection with a different schema".
+
+This includes any hash-changing edit: properties, `required`, `indexes`, `multipleOf`, types, defaults.
+
+## Checklist (every schema edit)
+
+1. Increment `version` in `src/services/rxdb/schemas/<collection>Schema.ts`. Do **not** edit an already-shipped version in place.
+2. Add `migrationStrategies[newVersion]` in `src/services/rxdb/database.ts` for that collection. Keep every previous strategy.
+3. If you only changed constraints (e.g. `required`, `multipleOf`) and documents already match, use an identity migration: `(oldDoc) => oldDoc`.
+4. If you added a field, set it on every old doc in the migration (never leave required fields missing).
+5. If this version was already loaded in a local DB, bump **again**. Same version + different hash = `DB6`.
+
+```ts
+// Schema: version: 2
+// database.ts
+teams: {
+  schema: teamSchema,
+  migrationStrategies: {
+    1: withCreatedAt,
+    2: (oldDoc) => oldDoc, // or transform
+  },
+},
+```
+
+Never reuse a version number after anyone may have opened the app with it.

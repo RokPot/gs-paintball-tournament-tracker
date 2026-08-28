@@ -11,5 +11,5 @@ export interface ITeam extends RxDBDto {
   draw?: number;
   members?: TeamMember[];
   color?: string;
-  dateCreated?: Dayjs;
+  createdAt?: Dayjs | string;
 }

@@ -8,6 +8,8 @@ export interface LeagueDto extends RxDBDto {
 
   name: string;
 
+  createdAt: string;
+
   teams?: TeamDto[];
 
   tournaments?: TournamentDto[];
@@ -19,8 +21,6 @@ export interface LeagueDto extends RxDBDto {
   tournamentIds: string[];
 
   leaderboardTeamIds: string[];
-
-  isLeagueSelected?: boolean;
 
   activeTournamentId?: string;
 }

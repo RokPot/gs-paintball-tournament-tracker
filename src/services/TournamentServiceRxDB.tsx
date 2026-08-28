@@ -50,7 +50,7 @@ const useTournamentServiceRxDB = () => {
         const tournamentData = insertedDoc.toMutableJSON();
 
         const stages =
-          tournamentData.stages?.map((stageDto) => {
+          tournamentData.stages?.map((stageDto: any) => {
             return new TournamentStage({
               ...stageDto,
               groups: [],
@@ -92,7 +92,7 @@ const useTournamentServiceRxDB = () => {
           throw new Error(`Tournament with id ${tournament._id} not found`);
         }
 
-        await existing.incrementalModify((oldData) => ({
+        await existing.incrementalModify((oldData: any) => ({
           ...oldData,
           ...tournament,
         }));
@@ -100,7 +100,7 @@ const useTournamentServiceRxDB = () => {
         const tournamentData = existing.toMutableJSON();
 
         const stages =
-          tournamentData.stages?.map((stageDto) => {
+          tournamentData.stages?.map((stageDto: any) => {
             return new TournamentStage({
               ...stageDto,
               groups: [],
@@ -217,7 +217,7 @@ const useTournamentServiceRxDB = () => {
 
         // Use shared utility function to populate all tournaments
         const tournaments = await Promise.all(
-          tournamentDocs.map(async (doc) => {
+          tournamentDocs.map(async (doc: any) => {
             const tournamentData = doc.toMutableJSON();
             const populatedTournament = await populateTournament(
               tournamentData,
@@ -290,15 +290,15 @@ const useTournamentServiceRxDB = () => {
           .exec();
 
         const sortedActivities = activityDocs
-          .map((doc) => doc.toMutableJSON())
-          .sort((a, b) => {
+          .map((doc: any) => doc.toMutableJSON())
+          .sort((a: any, b: any) => {
             const dateA = new Date(a.updatedAt).getTime();
             const dateB = new Date(b.updatedAt).getTime();
             return dateB - dateA;
           });
 
         const activities = await Promise.all(
-          sortedActivities.map(async (activityData) => {
+          sortedActivities.map(async (activityData: any) => {
             let game: Game | null = null;
             if (activityData.gameId) {
               try {

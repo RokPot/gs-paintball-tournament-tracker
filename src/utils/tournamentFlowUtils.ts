@@ -743,7 +743,8 @@ export namespace TournamentFlow {
       scheduledGame.game.matches = [match];
     }
 
-    scheduledGame.game.gameTime = timeLeftInMilliseconds / 1000;
+    scheduledGame.game.gameTime =
+      Math.round(timeLeftInMilliseconds / 100) / 10;
 
     switch (match.matchState) {
       case MatchState.team1Win:

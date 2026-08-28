@@ -6,18 +6,7 @@ import League from 'types/League';
 export namespace LeagueQueries {
   export const keys = {
     all: ['leagues'] as const,
-    selectedLeague: () => [...keys.all, 'selected-league'],
     list: () => [...keys.all, 'list'],
-  };
-
-  export const useActiveLeague = (defaultDisabled: boolean = false) => {
-    const { getActiveLeague } = useLeagueServiceRxDB();
-
-    return useQuery({
-      queryKey: LeagueQueries.keys.selectedLeague(),
-      queryFn: () => getActiveLeague().then((res) => res),
-      enabled: !defaultDisabled,
-    });
   };
 
   export const useAddLeague = () => {
@@ -47,14 +36,8 @@ export namespace LeagueQueries {
       queryClient.invalidateQueries({ queryKey: LeagueQueries.keys.list() });
     }, [queryClient]);
 
-    const invalidateSelectedLeague = useCallback(async () => {
-      queryClient.invalidateQueries({
-        queryKey: LeagueQueries.keys.selectedLeague(),
-      });
-    }, [queryClient]);
     return {
       invalidateLeaguesList,
-      invalidateSelectedLeague,
     };
   };
 

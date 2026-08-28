@@ -1,3 +1,5 @@
+import dayjs, { Dayjs } from 'dayjs';
+import { sortTeamsByCreatedAt } from 'utils/teamUtils';
 import LeaderboardTeam from './LeadeboardTeam';
 import Team from './Team';
 import Tournament from './Tournament';
@@ -10,13 +12,13 @@ export default class League extends IRxDB {
 
   name: string;
 
+  createdAt: Dayjs;
+
   teams: Team[];
 
   tournaments: Tournament[];
 
   leaderboard: LeaderboardTeam[];
-
-  isLeagueSelected?: boolean;
 
   activeTournament?: Tournament;
 
@@ -24,10 +26,10 @@ export default class League extends IRxDB {
     super(props._id);
     this.id = props.id;
     this.name = props.name;
-    this.teams = props.teams || [];
+    this.createdAt = props.createdAt ? dayjs(props.createdAt) : dayjs();
+    this.teams = sortTeamsByCreatedAt(props.teams || []);
     this.tournaments = props.tournaments || [];
     this.leaderboard = props.leaderboard || [];
-    this.isLeagueSelected = props.isLeagueSelected;
     this.activeTournament = props.activeTournament;
   }
 
@@ -36,7 +38,7 @@ export default class League extends IRxDB {
   };
 
   public addTeam = (team: Team) => {
-    this.teams = [...this.teams, team];
+    this.teams = sortTeamsByCreatedAt([...this.teams, team]);
   };
 
   public toDto = (): LeagueDto => {
@@ -44,10 +46,10 @@ export default class League extends IRxDB {
       _id: this._id,
       id: this.id,
       name: this.name,
+      createdAt: this.createdAt.toISOString(),
       teamIds: this.teams.map((team) => team._id),
       tournamentIds: this.tournaments.map((tournament) => tournament._id),
       leaderboardTeamIds: this.leaderboard.map((team) => team._id),
-      isLeagueSelected: this.isLeagueSelected,
       activeTournamentId: this.activeTournament?._id,
       // Optionally include full DTOs if needed (for deserialization)
       teams: this.teams.map((team) => team.toDto()),

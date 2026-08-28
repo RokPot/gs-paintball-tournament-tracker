@@ -3,7 +3,6 @@ import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import FlexContainer from 'components/shared/FlexContainer';
 import { useContext, useState } from 'react';
 import { TournamentContext } from 'store/TournamentContext';
-import TournamentStage from 'types/TournamentStage';
 import TournamentGroupCard from './TournamentGroupCard';
 import TournamentStageTabSwitch from './TournamentStageTabSwitch';
 
@@ -12,9 +11,10 @@ interface IProps {}
 const TournamentGroupsTab: React.FC<IProps> = () => {
   const { activeTournament } = useContext(TournamentContext);
 
-  const [selectedStage, setSelectedStage] = useState<
-    TournamentStage | undefined
-  >(activeTournament?.currentStage);
+  const [selectedStageId, setSelectedStageId] = useState<string | undefined>();
+  const selectedStage =
+    activeTournament?.stages?.find((stage) => stage.id === selectedStageId) ||
+    activeTournament?.currentStage;
 
   if (!activeTournament) {
     return (
@@ -56,7 +56,7 @@ const TournamentGroupsTab: React.FC<IProps> = () => {
     >
       <TournamentStageTabSwitch
         selectedTournament={activeTournament}
-        onStageSelected={setSelectedStage}
+        onStageSelected={(stage) => setSelectedStageId(stage.id)}
       />
       {selectedStage?.groups
         .sort((a, b) => a.groupIndex - b.groupIndex)

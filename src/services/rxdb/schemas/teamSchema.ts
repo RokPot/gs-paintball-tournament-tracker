@@ -11,7 +11,7 @@
 export const teamSchema = {
   title: 'team schema',
   description: 'Team document schema for RxDB',
-  version: 0,
+  version: 2,
   type: 'object',
   primaryKey: '_id',
   properties: {
@@ -54,6 +54,10 @@ export const teamSchema = {
       type: 'string',
       maxLength: 50, // Hex color code
     },
+    createdAt: {
+      type: 'string',
+      maxLength: 100,
+    },
     // Members array - complex nested objects
     members: {
       type: 'array',
@@ -70,11 +74,11 @@ export const teamSchema = {
       default: [],
     },
   },
-  required: ['id', 'teamName', 'teamTag', 'wins', 'loses', 'draw'],
+  required: ['id', 'teamName', 'teamTag', 'wins', 'loses', 'draw', 'createdAt'],
   indexes: [
     'id', // Index for quick lookup by team id
     'teamName', // Index for searching by name
     'teamTag', // Index for searching by tag
-    // Note: docType not indexed - not needed since collection already separates document types
+    'createdAt',
   ],
 };

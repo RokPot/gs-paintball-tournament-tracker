@@ -1,144 +1,43 @@
 # RxDB Observable Hooks
 
-This directory contains hooks that use RxDB observables for reactive data management. These hooks automatically update when the underlying database data changes, eliminating the need for manual cache invalidation.
+This directory contains hooks that use RxDB observables for reactive data management.
+They update when the underlying database documents change.
 
-**📋 For implementation status and next steps, see [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)**
-
-## Benefits
-
-- **Automatic Updates**: No manual invalidation needed - components update automatically when data changes
-- **Better Performance**: Only updates what changed, not entire query results
-- **Real-time**: Immediate updates across all subscribed components
-- **Offline-first**: Works seamlessly offline, syncs when online
+**Status:** see [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)
 
 ## Available Hooks
 
-### `useActiveStateObservable()`
-Reactively observes the active state (leagueId, tournamentId, gameId).
+All hooks return `{ data, isLoading, error }`.
 
-```tsx
-const activeState = useActiveStateObservable();
-// Returns: { leagueId, tournamentId, gameId } | null
-```
+### `useActiveStateObservable()`
+Observes the singleton active state (`leagueId`, `tournamentId`, `gameId`).
 
 ### `useTournamentObservable(tournamentId)`
-Reactively observes a tournament and all its games. Automatically updates when:
-- Tournament document changes
-- Any game in the tournament changes
+Observes a tournament and re-populates when the tournament or its games change.
 
-```tsx
-const tournament = useTournamentObservable(tournamentId);
-// Returns: Tournament | null
-// Automatically updates when any game in the tournament changes!
-```
+### `useLeagueObservable(leagueId)`
+Observes a league document and re-populates teams, tournaments, and leaderboard.
+
+### `useGameObservable(gameId)`
+Observes a single game document.
 
 ### `usePopulatedActiveState()`
-Combines active state IDs with populated objects. Returns fully populated League, Tournament, and Game objects that update reactively.
+Combines the IDs above into populated `league`, `tournament`, and `game` objects.
+Used by `TournamentContext`.
 
 ```tsx
-const { league, tournament, game, isLoading } = usePopulatedActiveState();
-// All objects automatically update when any related data changes
+const { league, tournament, game, isLoading, error } = usePopulatedActiveState();
 ```
 
-## Migration Guide
+## When to Use Which
 
-### Replacing React Query with Observables
-
-#### Before (React Query):
-```tsx
-// Old way - requires manual invalidation
-const { data: tournament } = useQuery({
-  queryKey: ['tournament', tournamentId],
-  queryFn: () => getTournament(tournamentId),
-});
-
-// After updating a game:
-await updateGame(game);
-await invalidateQueries({ queryKey: ['tournament', tournamentId] }); // ❌ Manual invalidation
-```
-
-#### After (RxDB Observables):
-```tsx
-// New way - automatic updates
-const tournament = useTournamentObservable(tournamentId);
-
-// After updating a game:
-await updateGame(game);
-// ✅ Tournament automatically updates - no invalidation needed!
-```
-
-### When to Use Which
-
-**Use RxDB Observables for:**
-- ✅ Frequently updated data (games, scores, match states)
-- ✅ Data that needs real-time updates
-- ✅ Local database data (leagues, tournaments, games)
-- ✅ Complex nested relationships that change frequently
+**Use RxDB observables for:**
+- Active league / tournament / game
+- Data that should update live after local writes (scores, schedule)
 
 **Keep React Query for:**
-- ✅ External API calls
-- ✅ Server-side data fetching
-- ✅ One-time data loads
-- ✅ Network requests with retry logic
+- Collection lists (`useLeaguesList`, `useTeamsList`)
+- One-off mutations (`useUpdateGame`, `useUpdateTournament`)
 
-## How It Works
-
-RxDB observables use the `$` property on queries to create reactive streams:
-
-```tsx
-database.collections.tournaments
-  .findOne({ selector: { _id: tournamentId } })
-  .$.subscribe((tournamentDoc) => {
-    // This callback fires whenever:
-    // 1. Tournament document changes
-    // 2. Any related document changes (if using reactive queries)
-  });
-```
-
-When you update a game:
-```tsx
-await gameDoc.incrementalModify(data => ({ ...data, score: 100 }));
-```
-
-The tournament observable automatically detects the change and re-populates the tournament with fresh game data.
-
-## Example: Game Updates
-
-**Old approach (React Query):**
-```tsx
-const updateGame = async (game: Game) => {
-  await updateGameMutation(game);
-  await invalidateSelectedLeague(); // ❌ Causes full refetch cascade
-  // - League refetches
-  // - All tournaments refetch
-  // - All games refetch
-};
-```
-
-**New approach (RxDB Observables):**
-```tsx
-const updateGame = async (game: Game) => {
-  await updateGameMutation(game);
-  // ✅ Tournament automatically updates via observable
-  // ✅ Only changed game data is updated
-  // ✅ No refetch cascade
-};
-```
-
-## Testing
-
-To test observable hooks:
-
-1. Use the hook in a component
-2. Update the underlying data (e.g., update a game)
-3. Verify the component automatically re-renders with new data
-4. No manual invalidation should be needed
-
-## Future Enhancements
-
-- [ ] Create `useLeagueObservable` hook
-- [ ] Create `useGameObservable` hook
-- [ ] Add loading/error states to observable hooks
-- [ ] Add debouncing for frequent updates
-- [ ] Add optimistic updates support
-
+Mutations do not need `invalidateSelectedLeague` — that query no longer exists.
+List screens still call `invalidateLeaguesList` after league create/update/delete.

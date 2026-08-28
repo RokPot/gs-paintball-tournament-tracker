@@ -12,9 +12,10 @@ const TournamentStageTabSwitch: React.FC<IProps> = ({
   selectedTournament,
   onStageSelected,
 }) => {
-  const [selectedStage, setSelectedStage] = useState<
-    TournamentStage | undefined
-  >(selectedTournament?.currentStage);
+  const [selectedStageId, setSelectedStageId] = useState<string | undefined>();
+  const selectedStage =
+    selectedTournament?.stages?.find((stage) => stage.id === selectedStageId) ||
+    selectedTournament?.currentStage;
 
   const onStageChanged = (activeTab: string) => {
     const newSelectedStage = selectedTournament?.stages?.find(
@@ -23,7 +24,7 @@ const TournamentStageTabSwitch: React.FC<IProps> = ({
     if (!newSelectedStage) {
       return;
     }
-    setSelectedStage(newSelectedStage);
+    setSelectedStageId(newSelectedStage.id);
     onStageSelected(newSelectedStage);
   };
 

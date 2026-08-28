@@ -87,7 +87,7 @@ const App = () => {
           <SnackbarProvider
             maxSnack={5}
             anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-            autoHideDuration={}
+            autoHideDuration={4000}
           >
             <ButtonsProvider>
               <QueryClientProvider client={queryClient}>

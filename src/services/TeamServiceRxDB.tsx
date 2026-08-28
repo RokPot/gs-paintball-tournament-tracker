@@ -1,7 +1,11 @@
 import { useCallback } from 'react';
+import { toPersistedLeaderboardTeam } from 'services/rxdb/database';
 import { useRxDB } from 'store/RxDBContext';
+import LeaderboardTeam from 'types/LeadeboardTeam';
 import Team from 'types/Team';
+import { LeaderboardTeamDto } from 'types/dto/LeaderboardTeamDto';
 import { TeamDto } from 'types/dto/TeamDto';
+import { sortTeamsByCreatedAt } from 'utils/teamUtils';
 
 /**
  * TeamService using RxDB
@@ -66,9 +70,10 @@ const useTeamServiceRxDB = () => {
         }
 
         // Update the team using incrementalModify
-        await existing.incrementalModify((oldData) => ({
+        await existing.incrementalModify((oldData: any) => ({
           ...oldData,
           ...team,
+          createdAt: oldData.createdAt || team.createdAt,
         }));
 
         const teamData = existing.toMutableJSON();
@@ -171,7 +176,7 @@ const useTeamServiceRxDB = () => {
           .exec();
 
         // Convert to Team instances
-        const teams = teamDocs.map((doc) => {
+        const teams = teamDocs.map((doc: any) => {
           const teamData = doc.toMutableJSON();
 
           return new Team({
@@ -179,12 +184,38 @@ const useTeamServiceRxDB = () => {
           } as any);
         });
 
-        return teams;
+        return sortTeamsByCreatedAt(teams);
       } catch (error: any) {
         throw new Error(`Failed to get teams: ${error.message}`);
       }
     },
     [database],
+  );
+
+  const addNewLeaderboardTeam = useCallback(
+    async (leaderboardTeam: LeaderboardTeamDto) => {
+      if (!database) {
+        throw new Error('RxDB database not initialized');
+      }
+
+      const stored = toPersistedLeaderboardTeam(leaderboardTeam);
+      if (!stored.id || !stored.teamId) {
+        throw new Error('Missing required leaderboard team fields');
+      }
+
+      const insertedDoc =
+        await database.collections.leaderboardTeams.insert(stored);
+      const data = insertedDoc.toMutableJSON();
+      const team = leaderboardTeam.team
+        ? new Team(leaderboardTeam.team as any)
+        : await getTeam(stored.teamId);
+
+      return new LeaderboardTeam({
+        ...data,
+        team: team || ({} as any),
+      } as any);
+    },
+    [database, getTeam],
   );
 
   return {
@@ -193,6 +224,7 @@ const useTeamServiceRxDB = () => {
     deleteTeam,
     getTeam,
     getTeams,
+    addNewLeaderboardTeam,
   };
 };
 

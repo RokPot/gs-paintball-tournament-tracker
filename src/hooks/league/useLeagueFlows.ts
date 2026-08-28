@@ -1,5 +1,6 @@
 import { useSnackbar } from 'notistack';
 import { useCallback } from 'react';
+import useActiveStateServiceRxDB from 'services/ActiveStateServiceRxDB';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import League from 'types/League';
 import Tournament from 'types/Tournament';
@@ -11,13 +12,13 @@ import {
 
 const useLeagueFlows = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { invalidateSelectedLeague, invalidateLeaguesList } =
-    LeagueQueries.useLeagueInvalidations();
+  const { invalidateLeaguesList } = LeagueQueries.useLeagueInvalidations();
   const { mutateAsync: updateExistingLeagueMutate } =
     LeagueQueries.useUpdateLeague();
   const { mutateAsync: addLeagueMutate } = LeagueQueries.useAddLeague();
   const { mutateAsync: deleteExistingLeagueMutate } =
     LeagueQueries.useDeleteLeague();
+  const { setActiveState, getActiveState } = useActiveStateServiceRxDB();
 
   const setSelectedLeagueTournament = useCallback(
     async (tournament?: Tournament, selectedLeague?: League | null) => {
@@ -28,9 +29,15 @@ const useLeagueFlows = () => {
         const updatedLeague = selectedLeague;
         updatedLeague.activeTournament = tournament || undefined;
 
+        await setActiveState({
+          tournamentId: tournament?._id || null,
+          gameId: null,
+        });
         await updateExistingLeagueMutate(updatedLeague);
-        enqueueSnackbar('Tournament selected', snackbarSuccessOptions);
-        await invalidateSelectedLeague();
+        enqueueSnackbar(
+          tournament ? 'Tournament selected' : 'Tournament cleared',
+          snackbarSuccessOptions,
+        );
         await invalidateLeaguesList();
       } catch (e) {
         processError(e);
@@ -40,7 +47,7 @@ const useLeagueFlows = () => {
     [
       enqueueSnackbar,
       invalidateLeaguesList,
-      invalidateSelectedLeague,
+      setActiveState,
       updateExistingLeagueMutate,
     ],
   );
@@ -50,24 +57,24 @@ const useLeagueFlows = () => {
     currentActiveLeague?: League | null,
   ) => {
     try {
-      const isCurrentLeagueSameAsNewLeague =
-        newActiveLeague?.id === currentActiveLeague?.id;
+      const isTogglingOff =
+        !newActiveLeague || newActiveLeague.id === currentActiveLeague?.id;
 
-      const isLeagueAlreadyActiveAndIsNotNewLeague =
-        currentActiveLeague && !isCurrentLeagueSameAsNewLeague;
-
-      if (isLeagueAlreadyActiveAndIsNotNewLeague) {
-        currentActiveLeague.isLeagueSelected = false;
-        await updateExistingLeagueMutate(currentActiveLeague);
-      }
-
-      if (newActiveLeague) {
-        newActiveLeague.isLeagueSelected = !isCurrentLeagueSameAsNewLeague;
-        await updateExistingLeagueMutate(newActiveLeague);
+      if (isTogglingOff) {
+        await setActiveState({
+          leagueId: null,
+          tournamentId: null,
+          gameId: null,
+        });
+      } else {
+        await setActiveState({
+          leagueId: newActiveLeague._id,
+          tournamentId: newActiveLeague.activeTournament?._id || null,
+          gameId: null,
+        });
         enqueueSnackbar('League selected', snackbarSuccessOptions);
       }
 
-      await invalidateSelectedLeague();
       await invalidateLeaguesList();
     } catch (e) {
       processError(e);
@@ -98,7 +105,15 @@ const useLeagueFlows = () => {
 
   const deleteExistingLeague = async (league: League) => {
     try {
+      const activeState = await getActiveState();
       await deleteExistingLeagueMutate(league);
+      if (activeState?.leagueId === league._id) {
+        await setActiveState({
+          leagueId: null,
+          tournamentId: null,
+          gameId: null,
+        });
+      }
       enqueueSnackbar('League deleted', snackbarSuccessOptions);
       await invalidateLeaguesList();
     } catch (e) {
