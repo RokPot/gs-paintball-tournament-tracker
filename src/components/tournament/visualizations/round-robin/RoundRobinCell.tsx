@@ -1,6 +1,7 @@
 import {
   Avatar,
   Theme,
+  Tooltip,
   Typography,
   alpha,
   css,
@@ -115,6 +116,8 @@ interface IRoundRobinTeamCellProps {
   rowIndex: number;
   columnIndex: number;
   team: Team;
+  hoveredRowIndex?: number;
+  hoveredColumnIndex?: number;
   onMouseEnterCell?: (rowIndex: number, cellIndex: number) => void;
   onMouseLeaveCell?: () => void;
 }
@@ -123,31 +126,45 @@ export const RoundRobinTeamCell: React.FC<IRoundRobinTeamCellProps> = ({
   columnIndex,
   rowIndex,
   team,
+  hoveredColumnIndex,
+  hoveredRowIndex,
   onMouseEnterCell,
   onMouseLeaveCell,
 }) => {
+  const theme = useTheme();
+  const teamIndex = columnIndex === 0 ? rowIndex : columnIndex;
+  const isHoveringOver =
+    hoveredColumnIndex === teamIndex || hoveredRowIndex === teamIndex;
+
   return (
     <StyledRoundRobinCell
-      onMouseEnter={() => onMouseEnterCell?.(rowIndex, columnIndex)}
+      onMouseEnter={() => onMouseEnterCell?.(teamIndex, teamIndex)}
       onMouseLeave={() => onMouseLeaveCell?.()}
+      backgroundCellColor={
+        isHoveringOver ? alpha(theme.palette.primary.main, 0.25) : undefined
+      }
     >
-      <Avatar
-        variant="rounded"
-        style={{
-          backgroundColor: team?.color,
-          width: '50px',
-          height: '50px',
-          borderRadius: '0px',
-        }}
-      >
-        <Typography
-          variant="p2Medium"
-          style={{ textTransform: 'uppercase' }}
-          textAlign="center"
+      <Tooltip title={team?.teamName || ''} arrow disableInteractive>
+        <Avatar
+          variant="rounded"
+          style={{
+            backgroundColor: team?.color,
+            width: '50px',
+            height: '50px',
+            borderRadius: '0px',
+            opacity: isHoveringOver ? 0.85 : 1,
+          }}
         >
-          {team.teamName}
-        </Typography>
-      </Avatar>
+          <Typography
+            variant="p2Medium"
+            style={{ textTransform: 'uppercase' }}
+            textAlign="center"
+            noWrap
+          >
+            {team?.teamTag || team?.teamName}
+          </Typography>
+        </Avatar>
+      </Tooltip>
     </StyledRoundRobinCell>
   );
 };

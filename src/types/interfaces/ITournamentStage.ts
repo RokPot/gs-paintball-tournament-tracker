@@ -1,9 +1,9 @@
 import TournamentGroup from 'types/TournamentGroup';
 import TournamentScheduleGame from 'types/TournamentScheduleGame';
 import { TournamentType } from 'types/TournamentType';
-import { PouchDBDto } from 'types/dto/PouchDBDto';
+import { RxDBDto } from 'types/dto/RxDBDto';
 
-export interface ITournamentStage extends PouchDBDto {
+export interface ITournamentStage extends RxDBDto {
   id: string;
   stage: number;
   groups: TournamentGroup[];

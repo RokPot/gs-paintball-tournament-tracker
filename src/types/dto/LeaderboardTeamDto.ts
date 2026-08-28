@@ -1,7 +1,7 @@
-import Team from 'types/Team';
-import { PouchDBDto } from './PouchDBDto';
+import { RxDBDto } from './RxDBDto';
+import { TeamDto } from './TeamDto';
 
-export interface LeaderboardTeamDto extends PouchDBDto {
+export interface LeaderboardTeamDto extends RxDBDto {
   id: string;
   totalWins: number;
   totalLosses: number;
@@ -10,5 +10,5 @@ export interface LeaderboardTeamDto extends PouchDBDto {
   rank: number;
   previousRank?: number;
   teamId: string;
-  team?: Team;
+  team?: TeamDto;
 }

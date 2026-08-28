@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from 'react';
 import { TeamQueries } from 'services/queries/team/TeamQueries';
 import useConfirmationModalStore from 'store/ConfirmationModalStore';
 import Team from 'types/Team';
+import { formatDate } from 'utils/dateUtils';
 
 const StyledHeaderContainer = styled('div')(
   () => css`
@@ -66,8 +67,9 @@ const TeamsPage = () => {
     {
       field: 'Team',
       headerName: 'Team name',
-      minWidth: 150,
-      maxWidth: 350,
+      minWidth: 200,
+      maxWidth: 450,
+      flex: 1,
       renderCell: (params) => {
         return (
           <FlexContainer flexDirection="row" gap={8}>
@@ -87,6 +89,7 @@ const TeamsPage = () => {
         );
       },
     },
+
     {
       field: 'wins',
       headerName: 'Wins',
@@ -100,15 +103,15 @@ const TeamsPage = () => {
     {
       field: 'draw',
       headerName: 'Draws',
+      flex: 1,
       width: 100,
     },
     {
-      field: 'empty',
-      headerName: '',
-      renderCell: () => <div />,
-      renderHeader: () => <div />,
-      hideSortIcons: true,
-      flex: 1,
+      field: 'createdAt',
+      headerName: 'Created at',
+      width: 130,
+      valueGetter: (params) => params.row?.createdAt?.valueOf() ?? 0,
+      valueFormatter: (params) => formatDate(params.value),
     },
     {
       field: 'actions',

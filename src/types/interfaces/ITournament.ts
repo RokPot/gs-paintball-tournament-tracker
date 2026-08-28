@@ -4,9 +4,9 @@ import Team from 'types/Team';
 import { TournamentSettings } from 'types/TournamentSettings';
 import TournamentStage from 'types/TournamentStage';
 import TournamentState from 'types/TournamentState';
-import { PouchDBDto } from 'types/dto/PouchDBDto';
+import { RxDBDto } from 'types/dto/RxDBDto';
 
-export interface ITournament extends PouchDBDto {
+export interface ITournament extends RxDBDto {
   id: string;
 
   teams?: Team[];

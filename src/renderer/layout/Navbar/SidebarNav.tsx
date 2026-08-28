@@ -17,10 +17,10 @@ import {
 } from '@mui/material';
 import clsx from 'clsx';
 import FlexContainer from 'components/shared/FlexContainer';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Menu, Sidebar } from 'react-pro-sidebar';
 import routes from 'renderer/main/Routes';
-import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import { TournamentContext } from 'store/TournamentContext';
 import LogoImage from '../../../../assets/logo3.svg';
 import LogoTextImage from '../../../../assets/logo_text.svg';
 import CustomMenuItem from './CustomMenuItem';
@@ -80,7 +80,7 @@ const navBarItems = [
 const SidebarNav: React.FC = () => {
   const theme = useTheme();
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
-  const { data: activeLeague } = LeagueQueries.useActiveLeague();
+  const { activeLeague } = useContext(TournamentContext);
   return (
     <Sidebar
       width="180px"

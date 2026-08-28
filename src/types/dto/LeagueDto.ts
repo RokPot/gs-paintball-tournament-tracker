@@ -1,26 +1,26 @@
-import { PouchDBDto } from './PouchDBDto';
-import LeaderboardTeam from 'types/LeadeboardTeam';
-import Team from 'types/Team';
-import Tournament from 'types/Tournament';
+import { LeaderboardTeamDto } from './LeaderboardTeamDto';
+import { RxDBDto } from './RxDBDto';
+import { TeamDto } from './TeamDto';
+import { TournamentDto } from './TournamentDto';
 
-export interface LeagueDto extends PouchDBDto {
+export interface LeagueDto extends RxDBDto {
   id: string;
 
   name: string;
 
-  teams?: Team[];
+  createdAt: string;
 
-  tournaments?: Tournament[];
+  teams?: TeamDto[];
 
-  leaderboard?: LeaderboardTeam[];
+  tournaments?: TournamentDto[];
+
+  leaderboard?: LeaderboardTeamDto[];
 
   teamIds: string[];
 
   tournamentIds: string[];
 
   leaderboardTeamIds: string[];
-
-  isLeagueSelected?: boolean;
 
   activeTournamentId?: string;
 }

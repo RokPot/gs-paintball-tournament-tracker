@@ -5,21 +5,21 @@ import FlexContainer from 'components/shared/FlexContainer';
 import LeaderboardList from 'components/teams/LeaderboardList';
 import { useContext, useMemo, useState } from 'react';
 import { TournamentContext } from 'store/TournamentContext';
-import TournamentGroup from 'types/TournamentGroup';
-import TournamentStage from 'types/TournamentStage';
 import { calculateTournamentGroupLeaderboard } from 'utils/tournamentResultUtils';
 import TournamentStageTabSwitch from './TournamentStageTabSwitch';
 
 const TournamentResultsTab = () => {
   const { activeTournament } = useContext(TournamentContext);
 
-  const [selectedStage, setSelectedStage] = useState<
-    TournamentStage | undefined
-  >(activeTournament?.currentStage);
+  const [selectedStageId, setSelectedStageId] = useState<string | undefined>();
+  const selectedStage =
+    activeTournament?.stages?.find((stage) => stage.id === selectedStageId) ||
+    activeTournament?.currentStage;
 
-  const [selectedGroup, setSelectedGroup] = useState<
-    TournamentGroup | undefined
-  >(activeTournament?.currentStage?.groups?.[0]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>();
+  const selectedGroup =
+    selectedStage?.groups?.find((group) => group.id === selectedGroupId) ||
+    selectedStage?.groups?.[0];
 
   const groupLeaderboard = useMemo(() => {
     if (!selectedGroup) {
@@ -57,7 +57,7 @@ const TournamentResultsTab = () => {
     >
       <TournamentStageTabSwitch
         selectedTournament={activeTournament}
-        onStageSelected={setSelectedStage}
+        onStageSelected={(stage) => setSelectedStageId(stage.id)}
       />
       <CustomTabs
         items={
@@ -67,9 +67,7 @@ const TournamentResultsTab = () => {
           })) || []
         }
         onTabChanged={(newTabGroupId) => {
-          setSelectedGroup(
-            selectedStage?.groups.find((group) => group.id === newTabGroupId),
-          );
+          setSelectedGroupId(newTabGroupId);
         }}
       />
       <LeaderboardList teams={groupLeaderboard} />

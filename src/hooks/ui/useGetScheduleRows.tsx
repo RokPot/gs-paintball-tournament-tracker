@@ -31,7 +31,7 @@ const useGetScheduleRows = (
     // Filtering before the rows are built keeps group headers from being
     // emitted for groups that have no remaining games.
     return withoutByes.filter(filterScheduledGame);
-  }, [tournamentStage?.schedule, filterScheduledGame]);
+  }, [tournamentStage, filterScheduledGame]);
 
   const currentGroups = useMemo(() => {
     if (!tournamentStage?.groups) {

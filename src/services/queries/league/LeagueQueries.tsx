@@ -1,41 +1,30 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import useLeagueService from 'services/LeagueService';
+import useLeagueServiceRxDB from 'services/LeagueServiceRxDB';
 import League from 'types/League';
 
 export namespace LeagueQueries {
   export const keys = {
     all: ['leagues'] as const,
-    selectedLeague: () => [...keys.all, 'selected-league'],
     list: () => [...keys.all, 'list'],
   };
 
-  export const useActiveLeague = (defaultDisabled: boolean = false) => {
-    const { getActiveLeague } = useLeagueService();
-
-    return useQuery({
-      queryKey: LeagueQueries.keys.selectedLeague(),
-      queryFn: () => getActiveLeague().then((res) => res),
-      enabled: !defaultDisabled,
-    });
-  };
-
   export const useAddLeague = () => {
-    const { addNewLeague } = useLeagueService();
+    const { addNewLeague } = useLeagueServiceRxDB();
 
     return useMutation({
       mutationFn: (league: League) => {
-        return addNewLeague(league);
+        return addNewLeague(league.toDto());
       },
     });
   };
 
   export const useDeleteLeague = () => {
-    const { deleteLeague } = useLeagueService();
+    const { deleteLeague } = useLeagueServiceRxDB();
 
     return useMutation({
       mutationFn: (league: League) => {
-        return deleteLeague(league);
+        return deleteLeague(league.toDto());
       },
     });
   };
@@ -47,19 +36,13 @@ export namespace LeagueQueries {
       queryClient.invalidateQueries({ queryKey: LeagueQueries.keys.list() });
     }, [queryClient]);
 
-    const invalidateSelectedLeague = useCallback(async () => {
-      queryClient.invalidateQueries({
-        queryKey: LeagueQueries.keys.selectedLeague(),
-      });
-    }, [queryClient]);
     return {
       invalidateLeaguesList,
-      invalidateSelectedLeague,
     };
   };
 
   export const useLeaguesList = () => {
-    const { getLeagues } = useLeagueService();
+    const { getLeagues } = useLeagueServiceRxDB();
 
     return useQuery({
       queryKey: LeagueQueries.keys.list(),
@@ -68,11 +51,11 @@ export namespace LeagueQueries {
   };
 
   export const useUpdateLeague = () => {
-    const { updateLeague } = useLeagueService();
+    const { updateLeague } = useLeagueServiceRxDB();
 
     return useMutation({
       mutationFn: (league: League) => {
-        return updateLeague(league);
+        return updateLeague(league.toDto());
       },
     });
   };

@@ -8,16 +8,10 @@ export enum DocType {
   TournamentStage = 'tournamentStage',
   TournamentActivity = 'tournamentActivity',
 }
-export class IPouchDB {
+export class IRxDB {
   _id: string;
 
-  _rev?: string;
-
-  docType?: DocType;
-
-  constructor(id: string, rev?: string, docType?: DocType) {
+  constructor(id: string) {
     this._id = id;
-    this._rev = rev;
-    this.docType = docType;
   }
 }

@@ -454,6 +454,34 @@ describe('TournamentFlow', () => {
     ).toBe(DefaultGameSettings.gameTimeInSeconds);
   });
 
+  it('keeps leftover clock time to one decimal second', () => {
+    const scheduledGame = {
+      game: TestUtils.generateGame({
+        index: 1,
+        team1,
+        team2,
+        gameState: GameState.created,
+        gameWinner: GameWinner.notYet,
+        gameTime: DefaultGameSettings.gameTimeInSeconds,
+      }),
+    } as TournamentScheduleGame;
+
+    TournamentFlow.addMatchDataToGame(
+      scheduledGame,
+      TestUtils.generateMatch({
+        index: 1,
+        matchDurationInSeconds: 4600,
+        matchState: MatchState.team1Win,
+        team1Margin: 2,
+        team2Margin: 0,
+      }),
+      295400,
+      4600,
+    );
+
+    expect(scheduledGame.game.gameTime).toBe(295.4);
+  });
+
   it('keeps a finished paired game finished when activating the pair', () => {
     const group = TestUtils.generateTournamentGroup(
       1,

@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import useGameService from 'services/GameService';
+import useGameServiceRxDB from 'services/GameServiceRxDB';
 import Game from 'types/Game';
 
 export namespace GameQueries {
@@ -8,7 +8,7 @@ export namespace GameQueries {
   };
 
   export const useAddGame = () => {
-    const { addNewGame } = useGameService();
+    const { addNewGame } = useGameServiceRxDB();
 
     return useMutation({
       mutationFn: (game: Game) => {
@@ -18,7 +18,7 @@ export namespace GameQueries {
   };
 
   export const useAddGames = () => {
-    const { addNewGameBatch } = useGameService();
+    const { addNewGameBatch } = useGameServiceRxDB();
 
     return useMutation({
       mutationFn: (games: Game[]) => {
@@ -28,7 +28,7 @@ export namespace GameQueries {
   };
 
   export const useDeleteGame = () => {
-    const { deleteGame } = useGameService();
+    const { deleteGame } = useGameServiceRxDB();
 
     return useMutation({
       mutationFn: (game: Game) => {
@@ -38,12 +38,16 @@ export namespace GameQueries {
   };
 
   export const useUpdateGame = () => {
-    const { updateGame: updateExistingGame } = useGameService();
+    const { updateGame: updateExistingGame } = useGameServiceRxDB();
 
     return useMutation({
       mutationFn: (game: Game) => {
         return updateExistingGame(game.toDto());
       },
+      // NOTE: No manual invalidation needed!
+      // When a game is updated, RxDB observables (useTournamentObservable, etc.)
+      // automatically detect the change and update subscribed components.
+      // This means tournament data stays in sync without manual cache invalidation.
     });
   };
 }

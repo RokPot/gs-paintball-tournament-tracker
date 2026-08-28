@@ -6,7 +6,9 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import useLeagueFlows from 'hooks/league/useLeagueFlows';
+import { useContext } from 'react';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import { TournamentContext } from 'store/TournamentContext';
 import League from 'types/League';
 
 interface IProps {
@@ -16,7 +18,7 @@ interface IProps {
 const SelectLeague = ({ onLeagueSelected }: IProps) => {
   const { setSelectedLeague } = useLeagueFlows();
   const { data: leaguesList } = LeagueQueries.useLeaguesList();
-  const { data: activeLeague } = LeagueQueries.useActiveLeague();
+  const { activeLeague } = useContext(TournamentContext);
   const setSelectedLeagueInternal = async (e: SelectChangeEvent<League>) => {
     const newSelectedLeague = leaguesList?.find(
       (league) => league.id === e.target.value,

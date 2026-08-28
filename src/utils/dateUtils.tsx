@@ -34,3 +34,16 @@ export const convertFromSecondsDayjs = (seconds: number) => {
 export const fromDayjsToSeconds = (time: Dayjs) => {
   return time.minute() * 60 + time.second();
 };
+
+export const formatDate = (
+  value?: Dayjs | Date | string | number | null,
+) => {
+  if (value === undefined || value === null || value === '' || value === 0) {
+    return '';
+  }
+  const parsed = dayjs(value);
+  if (!parsed.isValid()) {
+    return '';
+  }
+  return parsed.format('DD/MM/YYYY');
+};

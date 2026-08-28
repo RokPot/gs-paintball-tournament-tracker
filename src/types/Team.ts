@@ -1,10 +1,10 @@
 import dayjs, { Dayjs } from 'dayjs';
 import { TeamMember } from './TeamMember';
 import { TeamDto } from './dto/TeamDto';
-import { DocType, IPouchDB } from './interfaces/IPouchDB';
+import { IRxDB } from './interfaces/IRxDB';
 import { ITeam } from './interfaces/ITeam';
 
-export default class Team extends IPouchDB {
+export default class Team extends IRxDB {
   id: string;
 
   teamName: string;
@@ -21,10 +21,10 @@ export default class Team extends IPouchDB {
 
   color?: string;
 
-  dateCreated: Dayjs;
+  createdAt: Dayjs;
 
   constructor(props: ITeam) {
-    super(props._id, props._rev, props.docType || DocType.Team);
+    super(props._id);
     this.id = props.id;
     this.teamName = props.teamName;
     this.teamTag = props.teamTag;
@@ -33,14 +33,12 @@ export default class Team extends IPouchDB {
     this.draw = props.draw || 0;
     this.members = props.members || [];
     this.color = props.color || '#ffbbff';
-    this.dateCreated = props.dateCreated || dayjs();
+    this.createdAt = props.createdAt ? dayjs(props.createdAt) : dayjs();
   }
 
   public toDto = (): TeamDto => {
     return {
       _id: this._id,
-      _rev: this._rev,
-      docType: this.docType,
       id: this.id,
       teamName: this.teamName,
       teamTag: this.teamTag,
@@ -49,6 +47,7 @@ export default class Team extends IPouchDB {
       members: this.members,
       color: this.color,
       draw: this.draw,
+      createdAt: this.createdAt.toISOString(),
     };
   };
 }

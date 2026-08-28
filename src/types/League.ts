@@ -1,14 +1,18 @@
+import dayjs, { Dayjs } from 'dayjs';
+import { sortTeamsByCreatedAt } from 'utils/teamUtils';
 import LeaderboardTeam from './LeadeboardTeam';
 import Team from './Team';
 import Tournament from './Tournament';
 import { LeagueDto } from './dto/LeagueDto';
 import { ILeague } from './interfaces/ILeague';
-import { DocType, IPouchDB } from './interfaces/IPouchDB';
+import { IRxDB } from './interfaces/IRxDB';
 
-export default class League extends IPouchDB {
+export default class League extends IRxDB {
   id: string;
 
   name: string;
+
+  createdAt: Dayjs;
 
   teams: Team[];
 
@@ -16,18 +20,17 @@ export default class League extends IPouchDB {
 
   leaderboard: LeaderboardTeam[];
 
-  isLeagueSelected?: boolean;
-
   activeTournament?: Tournament;
 
   constructor(props: ILeague) {
-    super(props._id, props._rev, props.docType || DocType.League);
+    super(props._id);
     this.id = props.id;
     this.name = props.name;
-    this.teams = props.teams || [];
+    this.createdAt = props.createdAt ? dayjs(props.createdAt) : dayjs();
+    this.teams = sortTeamsByCreatedAt(props.teams || []);
     this.tournaments = props.tournaments || [];
     this.leaderboard = props.leaderboard || [];
-    this.isLeagueSelected = props.isLeagueSelected;
+    this.activeTournament = props.activeTournament;
   }
 
   public addLeaderboardTeam = (leaderboardTeam: LeaderboardTeam) => {
@@ -35,21 +38,23 @@ export default class League extends IPouchDB {
   };
 
   public addTeam = (team: Team) => {
-    this.teams = [...this.teams, team];
+    this.teams = sortTeamsByCreatedAt([...this.teams, team]);
   };
 
   public toDto = (): LeagueDto => {
     return {
       _id: this._id,
-      _rev: this._rev,
-      docType: this.docType,
       id: this.id,
       name: this.name,
+      createdAt: this.createdAt.toISOString(),
       teamIds: this.teams.map((team) => team._id),
       tournamentIds: this.tournaments.map((tournament) => tournament._id),
-      leaderboardTeamIds: this.leaderboard.map((tournament) => tournament._id),
-      isLeagueSelected: this.isLeagueSelected,
+      leaderboardTeamIds: this.leaderboard.map((team) => team._id),
       activeTournamentId: this.activeTournament?._id,
+      // Optionally include full DTOs if needed (for deserialization)
+      teams: this.teams.map((team) => team.toDto()),
+      tournaments: this.tournaments.map((tournament) => tournament.toDto()),
+      leaderboard: this.leaderboard.map((team) => team.toDto()),
     };
   };
 }

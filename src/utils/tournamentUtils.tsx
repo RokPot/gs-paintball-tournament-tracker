@@ -827,7 +827,7 @@ export const generateNewGames = (
   gameSettings?: GameSettings,
   type?: TournamentType,
 ) => {
-  if (!teams?.length || !gameSettings || !type) {
+  if (!teams?.length || !gameSettings || !type || teams.length < 2) {
     return {
       games: [],
       totalNumberOfRounds: 0,

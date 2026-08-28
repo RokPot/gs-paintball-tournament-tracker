@@ -24,13 +24,15 @@ import AddOrEditTournament from 'components/tournament/AddOrEditTournament';
 import TournamentShortList from 'components/tournament/TournamentListShort';
 import useLeagueFlows from 'hooks/league/useLeagueFlows';
 import useTournamentFlows from 'hooks/tournament/useTournamentFlows';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import { TeamQueries } from 'services/queries/team/TeamQueries';
 import { TournamentQueries } from 'services/queries/tournament/TournamentQueries';
+import { TournamentContext } from 'store/TournamentContext';
 import League from 'types/League';
 import Team from 'types/Team';
 import Tournament from 'types/Tournament';
+import { formatDate } from 'utils/dateUtils';
 import { createNewLeaderboardTeam } from 'utils/teamUtils';
 
 const StyledHeaderContainer = styled('div')(
@@ -84,13 +86,14 @@ const LeaguesPage = () => {
   const { mutateAsync: addNewTeam } = TeamQueries.useAddTeam();
   const { mutateAsync: addNewLeaderBoardTeam } =
     TeamQueries.useAddLeaderboardTeam();
+  const { activeLeague } = useContext(TournamentContext);
+
   const theme = useTheme();
 
   const { addOrEditLeague, deleteExistingLeague, setSelectedLeague } =
     useLeagueFlows();
   const { data: leaguesList, isLoading: isFetchingLeaguesList } =
     LeagueQueries.useLeaguesList();
-  const { data: activeLeague } = LeagueQueries.useActiveLeague();
   const { mutateAsync: updateTournament } =
     TournamentQueries.useUpdateTournament();
   const { addNewTournamentToLeague } = useTournamentFlows();
@@ -132,6 +135,7 @@ const LeaguesPage = () => {
     const newLeaderboardTeam = await addNewLeaderBoardTeam(
       createNewLeaderboardTeam(team),
     );
+
     if (!newTeam || !newLeaderboardTeam) {
       return;
     }
@@ -148,12 +152,12 @@ const LeaguesPage = () => {
 
   const columns: GridColDef<League>[] = [
     {
-      field: 'isLeagueSelected',
+      field: 'isActive',
       headerName: '',
       width: 60,
       renderCell: (params) => {
         return (
-          params.row?.isLeagueSelected && (
+          params.row?._id === activeLeague?._id && (
             <StyledActiveBadge>
               <Typography variant="subtitle2">Active</Typography>
             </StyledActiveBadge>
@@ -178,6 +182,13 @@ const LeaguesPage = () => {
       headerName: '# of Tournaments',
       flex: 1,
       valueGetter: (params) => `${params?.row?.tournaments?.length || 0}`,
+    },
+    {
+      field: 'createdAt',
+      headerName: 'Created at',
+      width: 130,
+      valueGetter: (params) => params.row?.createdAt?.valueOf() ?? 0,
+      valueFormatter: (params) => formatDate(params.value),
     },
     {
       field: 'actions',
@@ -215,7 +226,7 @@ const LeaguesPage = () => {
                 width={15}
                 height={15}
                 color={
-                  params.row?.isLeagueSelected
+                  params.row?._id === activeLeague?._id
                     ? theme.palette.error.dark
                     : theme.palette.success.dark
                 }

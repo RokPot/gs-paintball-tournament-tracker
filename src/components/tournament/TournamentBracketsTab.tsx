@@ -3,16 +3,16 @@ import EmptyInboxIcon from 'assets/icons/EmptyInbox';
 import FlexContainer from 'components/shared/FlexContainer';
 import { useContext, useState } from 'react';
 import { TournamentContext } from 'store/TournamentContext';
-import TournamentStage from 'types/TournamentStage';
 import TournamentStageTabSwitch from './TournamentStageTabSwitch';
 import TournamentTypesPreview from './visualizations/TournamentTypesPreview';
 
 const TournamentBracketsTab: React.FC = () => {
   const { activeTournament, activeLeague } = useContext(TournamentContext);
 
-  const [selectedStage, setSelectedStage] = useState<
-    TournamentStage | undefined
-  >(activeTournament?.currentStage);
+  const [selectedStageId, setSelectedStageId] = useState<string | undefined>();
+  const selectedStage =
+    activeTournament?.stages?.find((stage) => stage.id === selectedStageId) ||
+    activeTournament?.currentStage;
 
   if (!activeTournament || !activeLeague) {
     return null;
@@ -33,7 +33,6 @@ const TournamentBracketsTab: React.FC = () => {
       </FlexContainer>
     );
   }
-
   return (
     <FlexContainer
       flexDirection="column"
@@ -45,7 +44,7 @@ const TournamentBracketsTab: React.FC = () => {
     >
       <TournamentStageTabSwitch
         selectedTournament={activeTournament}
-        onStageSelected={setSelectedStage}
+        onStageSelected={(stage) => setSelectedStageId(stage.id)}
       />
       <FlexContainer
         flexDirection="row"

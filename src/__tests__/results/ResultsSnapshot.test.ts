@@ -53,7 +53,6 @@ const buildActiveLeague = () => {
     id: 'league1',
     name: 'league1',
     teams,
-    isLeagueSelected: true,
   });
   league.activeTournament = tournament;
 

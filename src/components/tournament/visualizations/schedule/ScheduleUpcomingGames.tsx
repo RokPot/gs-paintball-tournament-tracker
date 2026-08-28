@@ -41,7 +41,7 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
   fontSize = 14,
   isInResultsWindow,
 }) => {
-  const { activeLeague } = useContext(TournamentContext);
+  const { activeLeague, tournamentRevision } = useContext(TournamentContext);
 
   const theme = useTheme();
 
@@ -52,7 +52,10 @@ const ScheduleUpcomingGames: React.FC<IProps> = ({
       TournamentFlow.getUpcomingScheduleGameGroups(
         activeLeague?.activeTournament?.currentStage?.schedule,
       ),
-    [activeLeague?.activeTournament?.currentStage?.schedule],
+    [
+      activeLeague?.activeTournament?.currentStage?.schedule,
+      tournamentRevision,
+    ],
   );
 
   const getTeamName = (team: Team) => {

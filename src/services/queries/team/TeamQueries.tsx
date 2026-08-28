@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import useTeamService from 'services/TeamService';
+import useTeamServiceRxDB from 'services/TeamServiceRxDB';
 import LeaderboardTeam from 'types/LeadeboardTeam';
 import Team from 'types/Team';
 
@@ -11,41 +11,31 @@ export namespace TeamQueries {
   };
 
   export const useAddTeam = () => {
-    const { addNewTeam } = useTeamService();
+    const { addNewTeam } = useTeamServiceRxDB();
 
     return useMutation({
       mutationFn: (team: Team) => {
-        return addNewTeam(team);
+        return addNewTeam(team.toDto());
       },
     });
   };
 
   export const useAddLeaderboardTeam = () => {
-    const { addNewLeaderBoardTeam } = useTeamService();
+    const { addNewLeaderboardTeam } = useTeamServiceRxDB();
 
     return useMutation({
-      mutationFn: (team: LeaderboardTeam) => {
-        return addNewLeaderBoardTeam(team);
-      },
-    });
-  };
-
-  export const useAddLeaderboardTeams = () => {
-    const { addNewLeaderBoardTeams } = useTeamService();
-
-    return useMutation({
-      mutationFn: (teams: LeaderboardTeam[]) => {
-        return addNewLeaderBoardTeams(teams);
+      mutationFn: (leaderboardTeam: LeaderboardTeam) => {
+        return addNewLeaderboardTeam(leaderboardTeam.toDto());
       },
     });
   };
 
   export const useDeleteTeam = () => {
-    const { deleteTeam: deleteTeamService } = useTeamService();
+    const { deleteTeam: deleteTeamService } = useTeamServiceRxDB();
 
     return useMutation({
       mutationFn: (team: Team) => {
-        return deleteTeamService(team);
+        return deleteTeamService(team.toDto());
       },
     });
   };
@@ -63,7 +53,7 @@ export namespace TeamQueries {
   };
 
   export const useTeamsList = () => {
-    const { getTeams } = useTeamService();
+    const { getTeams } = useTeamServiceRxDB();
 
     return useQuery({
       queryKey: TeamQueries.keys.list(),
@@ -72,11 +62,11 @@ export namespace TeamQueries {
   };
 
   export const useUpdateTeam = () => {
-    const { updateTeam: updateTeamService } = useTeamService();
+    const { updateTeam: updateTeamService } = useTeamServiceRxDB();
 
     return useMutation({
       mutationFn: (team: Team) => {
-        return updateTeamService(team);
+        return updateTeamService(team.toDto());
       },
     });
   };

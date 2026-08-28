@@ -27,6 +27,12 @@ import routes from 'renderer/main/Routes';
 import { LeagueQueries } from 'services/queries/league/LeagueQueries';
 import League from 'types/League';
 import Tournament from 'types/Tournament';
+// Only import test panels in development
+
+const ActiveStateDebugPanel =
+  process.env.NODE_ENV === 'development'
+    ? require('components/dev/ActiveStateDebugPanel').default
+    : null;
 
 const StyledStackingContainer = styled('div')(
   () => css`
@@ -46,7 +52,6 @@ const HomePage: React.FC = () => {
   const { data: leaguesList, isLoading: isFetchingLeaguesList } =
     LeagueQueries.useLeaguesList();
   const { addNewTournamentToLeague } = useTournamentFlows();
-  const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
 
   const addNewTournamentInternal = useCallback(
     async (tournament: Tournament, league?: League) => {
@@ -54,10 +59,9 @@ const HomePage: React.FC = () => {
         return;
       }
       await addNewTournamentToLeague(tournament, league);
-      await invalidateSelectedLeague();
       setQuickAddTournamentForLeague(undefined);
     },
-    [addNewTournamentToLeague, invalidateSelectedLeague],
+    [addNewTournamentToLeague],
   );
 
   return (
@@ -174,7 +178,7 @@ const HomePage: React.FC = () => {
             {league?.tournaments
               ?.reverse()
               .slice(0, 4)
-              .map((tournament, index) => (
+              .map((tournament: Tournament, index: number) => (
                 <Card style={{ width: '300px' }} key={tournament.id}>
                   <CardHeader
                     avatar={
@@ -204,6 +208,8 @@ const HomePage: React.FC = () => {
           </StyledStackingContainer>
         ))}
       </FlexContainer>
+      {/* Debug Panels - Only shown in development */}
+      {ActiveStateDebugPanel && <ActiveStateDebugPanel />}
       <CustomModal
         isModalOpen={!!quickAddTournamentForLeague}
         onClose={() => {

@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import ButtonsProvider from 'store/ButtonsContext';
-import PouchDBProvider from 'store/PouchDBContext';
+import RxDBProvider from 'store/RxDBContext';
 import TournamentProvider from 'store/TournamentContext';
 import ConfirmationModal from '../../components/shared/ConfirmationModal';
 import { theme } from '../../theme/theme';
@@ -83,11 +83,11 @@ const App = () => {
       />
 
       <ErrorBoundary fallbackRender={Fallback}>
-        <PouchDBProvider>
+        <RxDBProvider>
           <SnackbarProvider
             maxSnack={5}
             anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-            autoHideDuration={}
+            autoHideDuration={4000}
           >
             <ButtonsProvider>
               <QueryClientProvider client={queryClient}>
@@ -119,7 +119,7 @@ const App = () => {
               </QueryClientProvider>
             </ButtonsProvider>
           </SnackbarProvider>
-        </PouchDBProvider>
+        </RxDBProvider>
       </ErrorBoundary>
     </ThemeProvider>
   );

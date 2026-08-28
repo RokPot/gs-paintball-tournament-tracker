@@ -1,7 +1,7 @@
 import useGameFlows from 'hooks/game/useGameFlows';
 import useCountdownSound from 'hooks/sounds/useCountdownSound';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { LeagueQueries } from 'services/queries/league/LeagueQueries';
+import useActiveStateServiceRxDB from 'services/ActiveStateServiceRxDB';
 import { TournamentQueries } from 'services/queries/tournament/TournamentQueries';
 import useTimerStore from 'store/TimerStore';
 import Game from 'types/Game';
@@ -30,8 +30,7 @@ import useTournamentFlows from './useTournamentFlows';
 const useTournamentLogic = (activeLeague?: League | null) => {
   const { mutateAsync: updateTournament } =
     TournamentQueries.useUpdateTournament();
-
-  const { invalidateSelectedLeague } = LeagueQueries.useLeagueInvalidations();
+  const { setActiveGame: setActiveGameId } = useActiveStateServiceRxDB();
 
   const location = useLocation();
 
@@ -91,8 +90,10 @@ const useTournamentLogic = (activeLeague?: League | null) => {
     if (!tournament?.currentStageSchedule) {
       return undefined;
     }
-    return tournament.currentStageSchedule;
-  }, [tournament?.currentStageSchedule]);
+    return dirtyCount >= 0
+      ? tournament.currentStageSchedule
+      : tournament.currentStageSchedule;
+  }, [tournament?.currentStageSchedule, dirtyCount]);
 
   const currentGroups = useMemo(() => {
     if (!tournament?.currentStageGroups) {
@@ -110,10 +111,17 @@ const useTournamentLogic = (activeLeague?: League | null) => {
     if (!tournament || !currentSchedule) {
       return undefined;
     }
-    return currentSchedule?.find(
+    const scheduled = currentSchedule.find(
       (scheduledGame) => tournament.state.activeGameId === scheduledGame.id,
     );
-  }, [currentSchedule, tournament]);
+    if (!scheduled) {
+      return undefined;
+    }
+    return {
+      ...scheduled,
+      game: scheduled.game,
+    };
+  }, [currentSchedule, tournament, dirtyCount]);
 
   const tournamentSettings = useMemo(() => {
     if (!tournament) {
@@ -210,15 +218,13 @@ const useTournamentLogic = (activeLeague?: League | null) => {
       if (newGame2) {
         await updateGameData(newGame2.game);
       }
-      await Promise.all([
-        updateTournament(tournament),
-        invalidateSelectedLeague(),
-      ]);
+      await updateTournament(tournament);
+      await setActiveGameId(newActiveGame.game?._id || null);
       forceRefreshTournament();
     },
     [
       forceRefreshTournament,
-      invalidateSelectedLeague,
+      setActiveGameId,
       tournament,
       updateGameData,
       updateTournament,
@@ -245,12 +251,10 @@ const useTournamentLogic = (activeLeague?: League | null) => {
       starterGames.newPairedGame2,
     );
     resetTimer();
-    await invalidateSelectedLeague();
     forceRefreshTournament();
   }, [
     currentSchedule,
     forceRefreshTournament,
-    invalidateSelectedLeague,
     resetTimer,
     setNewActiveGroupAndGames,
     tournament,
@@ -294,14 +298,8 @@ const useTournamentLogic = (activeLeague?: League | null) => {
     tournament.state.status = TournamentStatus.finished;
 
     await updateTournament(tournament);
-    await invalidateSelectedLeague();
     forceRefreshTournament();
-  }, [
-    forceRefreshTournament,
-    invalidateSelectedLeague,
-    tournament,
-    updateTournament,
-  ]);
+  }, [forceRefreshTournament, tournament, updateTournament]);
 
   const goToNextTournamentStage = useCallback(async () => {
     if (!tournament?.state) {
@@ -651,6 +649,7 @@ const useTournamentLogic = (activeLeague?: League | null) => {
       confirmNextTournamentStage,
       onTeamPause,
       forceRefreshTournament,
+      tournamentRevision: dirtyCount,
     };
   }, [
     currentStage,
@@ -668,6 +667,7 @@ const useTournamentLogic = (activeLeague?: League | null) => {
     confirmNextTournamentStage,
     onTeamPause,
     forceRefreshTournament,
+    dirtyCount,
   ]);
 };
 

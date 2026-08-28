@@ -1,9 +1,9 @@
-import { Match } from 'types/Match';
-import { GameState, GameWinner } from 'types/GameState';
 import { BracketProperties } from 'types/BracketProperties';
-import { PouchDBDto } from './PouchDBDto';
+import { GameState, GameWinner } from 'types/GameState';
+import { Match } from 'types/Match';
+import { RxDBDto } from './RxDBDto';
 
-export interface GameDto extends PouchDBDto {
+export interface GameDto extends RxDBDto {
   id: string;
 
   team1Id: string;

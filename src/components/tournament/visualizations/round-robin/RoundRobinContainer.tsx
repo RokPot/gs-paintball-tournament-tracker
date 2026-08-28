@@ -23,7 +23,6 @@ const RoundRobinContainer: React.FC<IProps> = ({
   const { teams, groupIndex } = group;
   const [hoveredColumn, setHoveredColumn] = useState<number>();
   const [hoveredRow, setHoveredRow] = useState<number>();
-
   const onMouseEnterCell = (row: number, column: number) => {
     setHoveredColumn(column);
     setHoveredRow(row);
@@ -58,6 +57,8 @@ const RoundRobinContainer: React.FC<IProps> = ({
                         rowIndex={rowIndex}
                         onMouseEnterCell={onMouseEnterCell}
                         onMouseLeaveCell={onMouseLeaveCell}
+                        hoveredColumnIndex={hoveredColumn}
+                        hoveredRowIndex={hoveredRow}
                         team={
                           teams[
                             (columnIndex === 0 && rowIndex > 0
